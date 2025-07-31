@@ -1,0 +1,7 @@
+reportes/*.*
+php/temp_chart/*.*
+php/informe/temp-image/*.*
+php/informe/temp-pdf/*.*
+php/database_backup/*.*
+*/error_log
+error_log
