@@ -1781,3 +1781,29 @@ ALTER TABLE `valor_metodo_referencia`
   ADD CONSTRAINT `fk_valor_metodo_referencia_muestra1` FOREIGN KEY (`id_muestra`) REFERENCES `muestra` (`id_muestra`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_valor_metodo_referencia_unidad1` FOREIGN KEY (`id_unidad`) REFERENCES `unidad` (`id_unidad`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
+
+CREATE TABLE
+    selecciones_consenso (
+        id_seleccion INT AUTO_INCREMENT PRIMARY KEY,
+        id_configuracion INT NOT NULL,
+        id_muestra INT NOT NULL,
+        id_resultado INT NOT NULL,
+        fecha_seleccion DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (
+            id_configuracion,
+            id_muestra,
+            id_resultado,
+            fecha_seleccion
+        ),
+        CONSTRAINT fk_sc_configuracion FOREIGN KEY (id_configuracion) REFERENCES configuracion_laboratorio_analito (id_configuracion),
+        CONSTRAINT fk_sc_muestra FOREIGN KEY (id_muestra) REFERENCES muestra (id_muestra),
+        CONSTRAINT fk_sc_resultado FOREIGN KEY (id_resultado) REFERENCES resultado (id_resultado)
+    );
+
+CREATE INDEX idx_sc_config_muestra ON selecciones_consenso (id_configuracion, id_muestra);
+
+CREATE INDEX idx_sc_resultado ON selecciones_consenso (id_resultado);
+
+ALTER TABLE media_evaluacion_caso_especial
+ADD COLUMN percentil_25 DECIMAL(10, 3) DEFAULT 0,
+ADD COLUMN percentil_75 DECIMAL(10, 3) DEFAULT 0;
