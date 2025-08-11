@@ -38,6 +38,9 @@ class TodosParticipantesFabrica extends ResultadosParticipantesFabrica
             $idConfigConsensoActual = $configAnalito['id_configuracion'];
         }
 
+        $idMuestraActual = isset($muestra['id_muestra']) ? $muestra['id_muestra'] : null; // Obtener id_muestra
+        $fechaSeleccionActual = $nueva_fecha; // La fecha de corte es la fecha de seleccion
+
 
         $estrategia = new ObResultadosParticipantesEstrategia(
             $idPrograma,
@@ -45,7 +48,9 @@ class TodosParticipantesFabrica extends ResultadosParticipantesFabrica
             $muestra['id_lote'],
             $configAnalito['id_analito'],
             $nueva_fecha,
-            $idConfigConsensoActual
+            $idConfigConsensoActual,
+            $idMuestraActual,
+            $fechaSeleccionActual
         );
         $estrategia->setRepository($this->resultadosRepository);
         return $estrategia;

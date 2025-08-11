@@ -12,15 +12,13 @@ class Repository
     {
         // Log de la consulta para debugging
         error_log("QUERY_DEBUG: " . $query);
-        
+
         $resultadoQuery = mysql_query($query);
-        
+
         // Verificar si hay errores en la consulta
         if (!$resultadoQuery) {
             $error = mysql_error();
-            error_log("MYSQL_ERROR: " . $error);
-            error_log("QUERY_FAILED: " . $query);
-            // En PHP 5.6 no podemos usar Exception de esta manera
+
             $dataArray = array('error' => 'Error en la consulta SQL: ' . $error);
             return $dataArray;
         }
@@ -33,8 +31,7 @@ class Repository
                 $data
             );
         }
-        
-        error_log("QUERY_RESULT_COUNT: " . count($dataArray));
+
         return $dataArray;
     }
 }

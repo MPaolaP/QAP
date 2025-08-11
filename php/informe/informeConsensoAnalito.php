@@ -114,7 +114,36 @@ if (
 
     $nombre_unidad = $qryData["nombre_unidad"];
 
-    $qryConsenso = "SELECT 
+    $id_config_consenso = $id_configuracion;
+    $fecha_corte_escaped = mysql_real_escape_string($fecha_corte);
+
+    // Consultar selecciones previas de la base de datos
+    $sql_get_selected = "SELECT id_resultado
+                        FROM selecciones_consenso
+                        WHERE id_configuracion = '" . mysql_real_escape_string($id_config_consenso) . "'
+                        AND id_muestra = '" . mysql_real_escape_string($muestra) . "'
+                        AND DATE(fecha_seleccion) = DATE('" . $fecha_corte_escaped . "')";
+
+    $result_selected = mysql_query($sql_get_selected);
+    $previamente_seleccionados_db = array();
+
+    if ($result_selected) {
+        while ($row_selected = mysql_fetch_assoc($result_selected)) {
+            $previamente_seleccionados_db[] = $row_selected['id_resultado'];
+        }
+    }
+
+    // Convertir a un array asociativo para búsqueda rápida
+    $previamente_seleccionados_map = array();
+    foreach ($previamente_seleccionados_db as $id) {
+        $previamente_seleccionados_map[$id] = true;
+    }
+
+    // Determinar si hay selecciones previas en la DB
+    $hay_selecciones_db = !empty($previamente_seleccionados_map);
+
+
+    $qryConsenso = "SELECT
             resultado.id_resultado as 'id_unico_resultado',
             resultado.valor_resultado as 'resultado',
             resultado.fecha_resultado as 'fecha_resultado',
@@ -137,15 +166,14 @@ if (
             join unidad on unidad.id_unidad = configuracion_laboratorio_analito.id_unidad
             join analito on analito.id_analito = configuracion_laboratorio_analito.id_analito
             join metodologia on metodologia.id_metodologia = configuracion_laboratorio_analito.id_metodologia
-        WHERE 
-            resultado.valor_resultado IS NOT NULL 
+        WHERE
+            resultado.valor_resultado IS NOT NULL
             AND resultado.valor_resultado != ''
             AND lote.nombre_lote = '" . mysql_real_escape_string($nombre_lote) . "'
-            AND analito.nombre_analito = '" . mysql_real_escape_string($nombre_analito) . "' 
+            AND analito.nombre_analito = '" . mysql_real_escape_string($nombre_analito) . "'
             AND unidad.nombre_unidad = '" . mysql_real_escape_string($nombre_unidad) . "'
             AND resultado.fecha_resultado <= '" . $fecha_corte . "'
         ORDER BY CAST(resultado.valor_resultado AS DECIMAL(10, 3))";
-
 
     // EJECUTAR LA CONSULTA Y GUARDAR TODOS LOS RESULTADOS EN UN ARRAY TEMPORAL ---
     $todos_los_resultados_db = array();
@@ -160,19 +188,11 @@ if (
     $qryArrayFinalConsenso = []; // Para los INCLUIDOS que se usarán en Grubbs
     $qryArrayConsensoExcluidos = []; // Para los EXCLUIDOS
 
-    $ids_seleccionados = null;
-    if (
-        isset($_SESSION['selecciones_consenso_personalizadas'][$id_configuracion]) &&
-        is_array($_SESSION['selecciones_consenso_personalizadas'][$id_configuracion])
-    ) {
-        $ids_seleccionados = $_SESSION['selecciones_consenso_personalizadas'][$id_configuracion];
 
-    }
-
-    //  ITERAR Y SEPARAR LOS RESULTADOS EN LOS DOS ARRAYS ---
+    //  ITERAR Y SEPARAR LOS RESULTADOS EN LOS DOS ARRAYS ---
     foreach ($todos_los_resultados_db as $row) {
         $item_completo = [
-            "id_unico_resultado" => $row["id_unico_resultado"], // Guardamos el ID por si lo necesitas
+            "id_unico_resultado" => $row["id_unico_resultado"],
             "resultado" => $row["resultado"],
             "fecha_resultado" => $row["fecha_resultado"],
             "nombre_programa" => $row["nombre_programa"],
@@ -184,17 +204,17 @@ if (
             "nombre_metodologia" => $row["nombre_metodologia"]
         ];
 
-        if ($ids_seleccionados !== null) {
-            // Si hay una selección personalizada guardada (incluso si está vacía)...
-            if (in_array((string) $row['id_unico_resultado'], array_map('strval', $ids_seleccionados))) {
-                // ... y el ID de esta fila SÍ está en la lista de seleccionados, va al array principal.
+        if ($hay_selecciones_db) {
+            // Si hay selecciones previas en la DB
+            if (isset($previamente_seleccionados_map[$row['id_unico_resultado']])) {
+                // Si el ID de esta fila SÍ está en la lista de seleccionados de la DB, va al array principal.
                 array_push($qryArrayFinalConsenso, $item_completo);
             } else {
-                // ... y el ID de esta fila NO está en la lista de seleccionados, va al array de excluidos.
+                // Si el ID de esta fila NO está en la lista de seleccionados de la DB, va al array de excluidos.
                 array_push($qryArrayConsensoExcluidos, $item_completo);
             }
         } else {
-            // Si NO hay selección personalizada guardada, todos los resultados van al array principal.
+            // Si NO hay selecciones previas en la DB, todos los resultados van al array principal inicialmente.
             array_push($qryArrayFinalConsenso, $item_completo);
         }
     }

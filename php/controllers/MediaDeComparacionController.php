@@ -323,6 +323,62 @@ class MediaDeComparacionController
         $this->indicadores = $indicadores;
         return $indicadores;
     }
+	/**
+     * Calcula los indicadores de satisfacción, alarma y no satisfactorio
+     * a partir de un array de resultados de cálculo sin niveles anidados,
+     * devolviendo una estructura de datos completa.
+     *
+     * @param array $resultadosDeCalculo Un array de resultados, donde cada elemento
+     * contiene las claves 'zscore' y 'n'.
+     * @return array Una estructura de datos completa con resultados, porcentajes y evaluación.
+     */
+    public function calcularPorcentajesDesdeArraySimple($resultadosDeCalculo)
+    {
+        $indicadores = [
+            "resultados" => [
+                "satisfactorio" => 0,
+                "alarma" => 0,
+                "no_satisfactorio" => 0,
+            ],
+            "porcentaje" => [],
+            "total" => 0,
+            "ids" => [], // No se puede popular con este array de entrada, se devuelve vacío
+            "evaluacion" => [] // Se llenará con los zscores del array de entrada
+        ];
+
+        $i = 0; // Se usará un contador como ID para la evaluación, ya que no hay IDs en el array
+        foreach ($resultadosDeCalculo as $calculo) {
+            if (isset($calculo["n"]) && $calculo["n"] >= 1 && isset($calculo["zscore"])) {
+                $resultado = -1;
+
+                if ($calculo["zscore"] >= -2 && $calculo["zscore"] < 2) {
+                    $resultado = 1;
+                    $indicadores["resultados"]["satisfactorio"]++;
+                } else if (($calculo["zscore"] >= 2 && $calculo["zscore"] < 3) || ($calculo["zscore"] >= -3 && $calculo["zscore"] < -2)) {
+                    $resultado = 0;
+                    $indicadores["resultados"]["alarma"]++;
+                } else {
+                    $resultado = -1;
+                    $indicadores["resultados"]["no_satisfactorio"]++;
+                }
+
+                $indicadores["total"]++;
+                $indicadores["evaluacion"][$i] = $calculo["zscore"];
+                $i++;
+            }
+        }
+
+        // Calcular los porcentajes finales
+        foreach ($indicadores["resultados"] as $key => $valorInicador) {
+            if ($indicadores["total"] > 0) {
+                $indicadores["porcentaje"][$key] = round(($valorInicador * 100) / $indicadores["total"], 2);
+            } else {
+                $indicadores["porcentaje"][$key] = 0;
+            }
+        }
+
+        return $indicadores;
+    }
 
     public function getIndicadorAnalitoMuestraUnidad($idAnalito, $idMuestra, $idMetodologia, $idUnidad, $idAnalizador)
     {
@@ -378,7 +434,7 @@ class MediaDeComparacionController
         $n = $resultadosParticipantes["n"];
         // Nueva fórmula de Z-Score basada en mediana e IQR y la de la incertidumbre
         $mediana = $resultadosParticipantes["mediana"];
-        $iqr = $resultadosParticipantes["iqr"];
+        $iqr = $resultadosParticipantes["q3"] - $resultadosParticipantes["q1"];
 
         // Evitar división por cero
 
@@ -397,8 +453,8 @@ class MediaDeComparacionController
 
         $diferencia = 0;
 
-        if ($resultadosParticipantes["de"] != 0) {
-            $diferencia = (($resultadoLaboratorio - $resultadosParticipantes["media"]) / $resultadosParticipantes["media"]) * 100;
+        if ($mediana != 0) {
+            $diferencia = (($resultadoLaboratorio - $mediana) / $mediana) * 100;
         }
         $incerctidumbreSup = "N/A";
         $incerctidumbreInf = "N/A";

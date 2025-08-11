@@ -1,11 +1,14 @@
 <?php
-require_once __DIR__."/Repository.php";
-class MediaEvaluacionEspecialRepository extends Repository {
+require_once __DIR__ . "/Repository.php";
+class MediaEvaluacionEspecialRepository extends Repository
+{
 
-    public function getMedia($idConfiguracion,$nivelLote,$idMuestra,$idLab)
-    {
-        $query = "
+	public function getMedia($idConfiguracion, $nivelLote, $idMuestra, $idLab)
+	{
+		$query = "
 		SELECT 
+		mec.percentil_25,
+		mec.percentil_75,
 		mec.media_estandar,
 
 		mec.desviacion_estandar,
@@ -31,8 +34,8 @@ class MediaEvaluacionEspecialRepository extends Repository {
 			left join unidad unidad_mc on unidad_mc.id_unidad = dc.id_unidad_mc
 
 		INNER JOIN configuracion_laboratorio_analito cla ON mec.id_configuracion = cla.id_configuracion 
-		WHERE cla.id_configuracion = " . $idConfiguracion . " AND mec.nivel =". $nivelLote ." AND mec.id_muestra = " . $idMuestra . " AND mec.id_laboratorio = " .$idLab  ." LIMIT 0,1";
+		WHERE cla.id_configuracion = " . $idConfiguracion . " AND mec.nivel =" . $nivelLote . " AND mec.id_muestra = " . $idMuestra . " AND mec.id_laboratorio = " . $idLab . " LIMIT 0,1";
 
-        return $this->ejecutarQuery($query);
-    }
+		return $this->ejecutarQuery($query);
+	}
 }

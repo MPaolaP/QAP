@@ -90,14 +90,17 @@ class IntercuartilV2
     public function getPromediosNormales()
     {
         $defaults = array(
+
             "media" => 0,
             "de" => 0,
             "cv" => 0,
+            "cv_robusto" => 0,
             "n" => 0,
             "mediana" => 0,
             "q1" => 0,
             "q3" => 0,
-            "iqr" => 0
+            "iqr" => 0,
+            "s" => 0
         );
 
         if (empty($this->new_array_resultados)) {
@@ -114,11 +117,13 @@ class IntercuartilV2
             "media" => $media,
             "de" => $de,
             "cv" => $cv,
+            "cv_robusto" => (((($this->get_q1()) - ($this->get_q3())) / 1.349) / $this->get_q2()) * 100,
             "n" => $n,
             "mediana" => $this->get_q2(),
             "q1" => $this->get_q1(),
             "q3" => $this->get_q3(),
-            "iqr" => $this->get_iqr()
+            "iqr" => ($this->get_q1()) - ($this->get_q3()),
+            "s" => (($this->get_q1()) - ($this->get_q3())) / 1.349
         );
 
     }

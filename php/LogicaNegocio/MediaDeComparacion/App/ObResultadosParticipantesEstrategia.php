@@ -18,7 +18,11 @@ class ObResultadosParticipantesEstrategia implements ObtenedorResultadosInterfac
     private $fechaCorte;
 
     private $idConfigConsensoActual;
-    public function __construct($idPrograma, $idUnidad, $idLote, $idAnalito, $fechaCorte, $idConfigConsensoActual = null)
+
+    private $idMuestraConsenso;
+    private $fechaSeleccionConsenso;
+
+    public function __construct($idPrograma, $idUnidad, $idLote, $idAnalito, $fechaCorte, $idConfigConsensoActual = null, $idMuestraConsenso = null, $fechaSeleccionConsenso = null)
     {
         $this->idPrograma = $idPrograma;
         $this->idUnidad = $idUnidad;
@@ -26,7 +30,8 @@ class ObResultadosParticipantesEstrategia implements ObtenedorResultadosInterfac
         $this->idAnalito = $idAnalito;
         $this->fechaCorte = $fechaCorte;
         $this->idConfigConsensoActual = $idConfigConsensoActual;
-
+        $this->idMuestraConsenso = $idMuestraConsenso;
+        $this->fechaSeleccionConsenso = $fechaSeleccionConsenso;
 
     }
 
@@ -43,7 +48,9 @@ class ObResultadosParticipantesEstrategia implements ObtenedorResultadosInterfac
             $this->idLote,
             $this->idAnalito,
             $this->fechaCorte,
-            $this->idConfigConsensoActual
+            $this->idConfigConsensoActual,
+            $this->idMuestraConsenso,
+            $this->fechaSeleccionConsenso
         );
     }
 }

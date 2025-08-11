@@ -113,6 +113,8 @@ switch ($header) {
 
 		$fechaCorte = $filterArray[count($filterArray) - 1];
 
+		$arrayCalculosModificados = [];
+
 
 
 		$pageContent = array(
@@ -611,7 +613,11 @@ switch ($header) {
 
 			$qry = "SELECT 
 
+					percentil_25,
+
 					media_estandar,
+
+					percentil_75,
 
 					desviacion_estandar,
 
@@ -724,145 +730,189 @@ switch ($header) {
 
 					case 4: // Media de consenso 2.
 
-						if ($fechaCorte === NULL || $fechaCorte === '' || $fechaCorte === 'NULL') {
-							$qry_aleatory = "SELECT fecha_reporte FROM `fecha_reporte_muestra` 
+						if (
+
+							($qryData_2["media_estandar"] == 0 || $qryData_2["media_estandar"] == null) &&
+
+							($qryData_2["desviacion_estandar"] == 0 || $qryData_2["media_estandar"] == null)
+
+						) { // Si la media y la D.E. No estan definidas
+
+
+							if ($fechaCorte === NULL || $fechaCorte === '' || $fechaCorte === 'NULL') {
+								// Si no se proporciona fechaCorte, se obtiene la última fecha de reporte
+								// para el laboratorio y muestra actuales de la base de datos.
+								$qry_aleatory = "SELECT fecha_reporte FROM `fecha_reporte_muestra` 
 											WHERE id_laboratorio = '" . mysql_real_escape_string($labid) . "' 
 											AND id_muestra = '" . mysql_real_escape_string($sampleid) . "'";
-							$result = mysql_query($qry_aleatory);
-							mysqlException(mysql_error(), "_23_");
+								$result = mysql_query($qry_aleatory);
+								mysqlException(mysql_error(), "_23_");
 
-							$innerQryData_aleatory = mysql_fetch_array($result);
-							$fecha_reporte = $innerQryData_aleatory['fecha_reporte'];
+								$innerQryData_aleatory = mysql_fetch_array($result);
+								$fecha_reporte = $innerQryData_aleatory['fecha_reporte'];
 
-
-						} else {
-							$fechaDecodificada = base64_decode($fechaCorte);
-							$fechaArray = json_decode($fechaDecodificada, true);
-
-							// Busca la primera fecha no vacía en el JSON
-							$fecha_reporte = null;
-							foreach ($fechaArray as $key => $value) {
-								if (!empty($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-									$fecha_reporte = $value;
-									break; // Usa la primera fecha válida
-								}
-							}
-						}
-
-
-						// Calculo para participante de QAP Online
-
-						$nom_analito_cs = $pageContent["labconfigurationitems"]["nombre_analito"][$x];
-
-						$nom_unidad_cs = $pageContent["labconfigurationitems"]["nombre_unidad"][$x];
-
-						$id_analito_cs = $pageContent["labconfigurationitems"]["id_analito"][$x];
-
-
-						// Aqui va el Query de la consulta de analitos
-						$current_id_config_para_sesion = $configurationids["id_configuracion"][$x];
-						$ids_seleccionados_personalizados = null;
-
-						error_log("INFORME_DEBUG (Caso 4): Procesando config ID " . $current_id_config_para_sesion . " para el analito '" . $nom_analito_cs . "'");
-
-						// 1. Verificar si hay selecciones personalizadas en la sesión para esta configuración
-						if (
-							isset($_SESSION['selecciones_consenso_personalizadas'][$current_id_config_para_sesion]) &&
-							is_array($_SESSION['selecciones_consenso_personalizadas'][$current_id_config_para_sesion]) &&
-							!empty($_SESSION['selecciones_consenso_personalizadas'][$current_id_config_para_sesion])
-						) {
-
-							$ids_seleccionados_personalizados = $_SESSION['selecciones_consenso_personalizadas'][$current_id_config_para_sesion];
-						}
-						// 2. Construir la consulta base para obtener los participantes
-
-						$qry_participantes_base = "SELECT 
-                                resultado.id_resultado, 
-                                resultado.valor_resultado AS 'resultado' 
-                            FROM programa 
-                                JOIN muestra_programa ON programa.id_programa = muestra_programa.id_programa 
-                                JOIN muestra ON muestra.id_muestra = muestra_programa.id_muestra 
-                                JOIN lote ON lote.id_lote = muestra_programa.id_lote 
-                                JOIN resultado ON muestra.id_muestra = resultado.id_muestra 
-                                JOIN configuracion_laboratorio_analito ON configuracion_laboratorio_analito.id_configuracion = resultado.id_configuracion 
-                                JOIN unidad ON unidad.id_unidad = configuracion_laboratorio_analito.id_unidad 
-                                JOIN analito ON analito.id_analito = configuracion_laboratorio_analito.id_analito 
-                            WHERE 
-                                resultado.valor_resultado IS NOT NULL 
-                                AND resultado.valor_resultado != ''
-                                AND lote.nombre_lote = '" . mysql_real_escape_string($lotNombre) . "' 
-                                AND analito.nombre_analito = '" . mysql_real_escape_string($nom_analito_cs) . "' 
-                                AND unidad.nombre_unidad = '" . mysql_real_escape_string($nom_unidad_cs) . "' 
-                                AND resultado.fecha_resultado <= '" . mysql_real_escape_string($fecha_reporte) . "'
-                            
-                        ";
-
-						$qry_participantes_final = $qry_participantes_base;
-
-						// 3. Si hay selecciones personalizadas, modificar la consulta para usarlas
-						if ($ids_seleccionados_personalizados !== null) {
-							$ids_escapados_para_sql = [];
-							foreach ($ids_seleccionados_personalizados as $id_sel) {
-								if (is_numeric($id_sel)) {
-									$ids_escapados_para_sql[] = intval($id_sel);
-								}
-							}
-
-							if (!empty($ids_escapados_para_sql)) {
-								$qry_participantes_final .= " AND resultado.id_resultado IN (" . implode(",", $ids_escapados_para_sql) . ")";
 							} else {
-								$qry_participantes_final .= " AND 1=0 ";
+								// Si se proporciona fechaCorte, se decodifica
+								$fechaDecodificada = base64_decode($fechaCorte);
+								$fechaArray = json_decode($fechaDecodificada, true);
 
-							}
-						}
+								// Se busca la fecha específica para el $sampleid actual en el array decodificado.
+								if (isset($fechaArray[$sampleid]) && !empty($fechaArray[$sampleid]) && preg_match('/^Dd{4}-\d{2}-\d{2}$/', $fechaArray[$sampleid])) {
+									$fecha_reporte = $fechaArray[$sampleid];
+								} else {
 
-						// 4. Ejecutar la consulta (base o modificada) y preparar datos para Grubbs/Intercuartil
-						$objIntercuartil = new Intercuartil();
-						$objGrubbs = new Grubbs();
-						$qryArrayFinalConsenso = array(); // Array para los valores numéricos de resultado
-
-						$query_result_participantes = mysql_query($qry_participantes_final);
-						mysqlException(mysql_error(), "_01_caso4_modificado");
-
-						if ($query_result_participantes) {
-							while ($qryDataConsenso = mysql_fetch_assoc($query_result_participantes)) {
-								// Solo añadir el 'valor_resultado' si es numérico
-								if (isset($qryDataConsenso["resultado"]) && is_numeric($qryDataConsenso["resultado"])) {
-									array_push(
-										$qryArrayFinalConsenso,
-										// Grubbs/Intercuartil esperan un array de arrays asociativos con la clave 'resultado'
-										array("resultado" => floatval($qryDataConsenso["resultado"]))
-									);
+									$qry_aleatory = "SELECT fecha_reporte FROM `fecha_reporte_muestra`
+										WHERE id_laboratorio = '" . mysql_real_escape_string($labid) . "'
+										AND id_muestra = '" . mysql_real_escape_string($sampleid) . "'";
+									$result = mysql_query($qry_aleatory);
+									mysqlException(mysql_error(), "_23_fallback");
+									$innerQryData_aleatory = mysql_fetch_array($result);
+									$fecha_reporte = $innerQryData_aleatory['fecha_reporte'];
 								}
 							}
+
+
+							// Calculo para participante de QAP Online
+
+							$nom_analito_cs = $pageContent["labconfigurationitems"]["nombre_analito"][$x];
+
+							$nom_unidad_cs = $pageContent["labconfigurationitems"]["nombre_unidad"][$x];
+
+							$id_analito_cs = $pageContent["labconfigurationitems"]["id_analito"][$x];
+
+							$current_id_config_para_sesion = $configurationids["id_configuracion"][$x];
+
+
+							// 1. AHORA, OBTENER LOS IDS SELECCIONADOS PREVIAMENTE DESDE LA BASE DE DATOS
+							$previamente_seleccionados_db = array();
+							$sql_get_selected_db = "SELECT id_resultado
+                            FROM selecciones_consenso
+                            WHERE id_configuracion = '" . mysql_real_escape_string($current_id_config_para_sesion) . "'
+                            AND id_muestra = '" . mysql_real_escape_string($sampleid) . "'
+                            AND DATE(fecha_seleccion) = DATE('" . mysql_real_escape_string($fecha_reporte) . "')";
+
+							$result_selected_db = mysql_query($sql_get_selected_db);
+							if ($result_selected_db) {
+								while ($row_selected_db = mysql_fetch_assoc($result_selected_db)) {
+									$previamente_seleccionados_db[] = $row_selected_db['id_resultado'];
+								}
+							}
+
+							// Convertir a un array asociativo para búsqueda rápida si fuera necesario,
+							// o simplemente usar $previamente_seleccionados_db directamente para el IN clause.
+							$ids_seleccionados_personalizados_db = $previamente_seleccionados_db;
+							$hay_selecciones_db = !empty($ids_seleccionados_personalizados_db);
+
+
+							// 2. Construir la consulta base para obtener los participantes
+							$qry_participantes_base = "SELECT 
+                                    resultado.id_resultado, 
+                                    resultado.valor_resultado AS 'resultado' 
+                                FROM programa 
+                                    JOIN muestra_programa ON programa.id_programa = muestra_programa.id_programa 
+                                    JOIN muestra ON muestra.id_muestra = muestra_programa.id_muestra 
+                                    JOIN lote ON lote.id_lote = muestra_programa.id_lote 
+                                    JOIN resultado ON muestra.id_muestra = resultado.id_muestra 
+                                    JOIN configuracion_laboratorio_analito ON configuracion_laboratorio_analito.id_configuracion = resultado.id_configuracion 
+                                    JOIN unidad ON unidad.id_unidad = configuracion_laboratorio_analito.id_unidad 
+                                    JOIN analito ON analito.id_analito = configuracion_laboratorio_analito.id_analito 
+                                WHERE 
+                                    resultado.valor_resultado IS NOT NULL 
+                                    AND resultado.valor_resultado != ''
+                                    AND lote.nombre_lote = '" . mysql_real_escape_string($lotNombre) . "' 
+                                    AND analito.nombre_analito = '" . mysql_real_escape_string($nom_analito_cs) . "' 
+                                    AND unidad.nombre_unidad = '" . mysql_real_escape_string($nom_unidad_cs) . "' 
+                                    AND resultado.fecha_resultado <= '" . mysql_real_escape_string($fecha_reporte) . "'";
+
+							$qry_participantes_final = $qry_participantes_base;
+
+							// 3. Si hay selecciones personalizadas EN LA DB, modificar la consulta para usarlas
+							if ($hay_selecciones_db) {
+								$ids_escapados_para_sql = [];
+								foreach ($ids_seleccionados_personalizados_db as $id_sel) { // Iterar sobre los IDs de la DB
+									if (is_numeric($id_sel)) {
+										$ids_escapados_para_sql[] = intval($id_sel);
+									}
+								}
+
+								if (!empty($ids_escapados_para_sql)) {
+									$qry_participantes_final .= " AND resultado.id_resultado IN (" . implode(",", $ids_escapados_para_sql) . ")";
+								} else {
+									// Si la DB tiene selecciones pero el array está vacío (ej: se deseleccionaron todos),
+									// se quiere que no se muestre nada.
+									$qry_participantes_final .= " AND 1=0 ";
+								}
+							}
+
+							// 4. Ejecutar la consulta (base o modificada) y preparar datos para Grubbs/Intercuartil
+							$objIntercuartil = new Intercuartil();
+							$objGrubbs = new Grubbs();
+							$qryArrayFinalConsenso = array(); // Array para los valores numéricos de resultado
+
+							$query_result_participantes = mysql_query($qry_participantes_final);
+							mysqlException(mysql_error(), "_01_caso4_modificado");
+
+							if ($query_result_participantes) {
+								while ($qryDataConsenso = mysql_fetch_assoc($query_result_participantes)) {
+									// Solo añadir el 'valor_resultado' si es numérico
+									if (isset($qryDataConsenso["resultado"]) && is_numeric($qryDataConsenso["resultado"])) {
+										array_push(
+											$qryArrayFinalConsenso,
+											// Grubbs/Intercuartil esperan un array de arrays asociativos con la clave 'resultado'
+											array("resultado" => floatval($qryDataConsenso["resultado"]))
+										);
+									}
+								}
+							}
+
+
+
+							$objGrubbs->exclusionAtipicos($qryArrayFinalConsenso, "resultado");
+							$qryData_participantes = $objGrubbs->getPromediosNormales("resultado");
+							// Variables de media de comparacion
+
+							$pageContent["labconfigurationitems"]["tipo_media_estandar"][$x] = "Consenso";
+
+							$pageContent["labconfigurationitems"]["media_estandar"][$x] = $qryData_participantes['mediana'];
+
+							$pageContent["labconfigurationitems"]["mediana"][$x] = $qryData_participantes['mediana'];
+
+							$pageContent["labconfigurationitems"]["iqr"][$x] = $qryData_participantes['iqr'];
+
+							$pageContent["labconfigurationitems"]["desviacion_estandar"][$x] = $qryData_participantes['s'];
+
+							$pageContent["labconfigurationitems"]["coeficiente_variacion"][$x] = $qryData_participantes['cv'];
+
+							$pageContent["labconfigurationitems"]["n_evaluacion"][$x] = $qryData_participantes['n'];
+
+							$pageContent["labconfigurationitems"]["comp"][$x] = $qryData_2['tipo_consenso_wwr'];
+
+							$pageContent["labconfigurationitems"]["nombre_unidad_comp"][$x] = $pageContent["labconfigurationitems"]["nombre_unidad"][$x]; // Si es por participantes QAP de deja la misma unidades
+
 						} else {
+
+							$pageContent["labconfigurationitems"]["tipo_media_estandar"][$x] = "Consenso";
+
+							$pageContent["labconfigurationitems"]["q1"][$x] = $qryData_2['percentil_25'];
+							$pageContent["labconfigurationitems"]["q3"][$x] = $qryData_2['percentil_75'];
+							$pageContent["labconfigurationitems"]["iqr"][$x] = $qryData_2['percentil_75'] - $qryData_2['percentil_25'];
+
+							$pageContent["labconfigurationitems"]["media_estandar"][$x] = $qryData_2['media_estandar'];
+
+							$pageContent["labconfigurationitems"]["mediana"][$x] = $qryData_2['media_estandar'];
+
+							$pageContent["labconfigurationitems"]["desviacion_estandar"][$x] = ($qryData_2['percentil_75'] - $qryData_2['percentil_25']) * 0.7413;
+							$pageContent["labconfigurationitems"]["s"][$x] = ($qryData_2['percentil_75'] - $qryData_2['percentil_25']) * 0.7413;
+
+							$pageContent["labconfigurationitems"]["coeficiente_variacion"][$x] = $qryData_2['coeficiente_variacion'];
+
+							$pageContent["labconfigurationitems"]["n_evaluacion"][$x] = $qryData_2['n_evaluacion'];
+
+							$pageContent["labconfigurationitems"]["comp"][$x] = $qryData_2['tipo_consenso_wwr'];
+
+							$pageContent["labconfigurationitems"]["nombre_unidad_comp"][$x] = $pageContent["labconfigurationitems"]["nombre_unidad"][$x]; // Si es por participantes QAP de deja la misma unidades
+
 						}
-
-
-
-						$objGrubbs->exclusionAtipicos($qryArrayFinalConsenso, "resultado");
-						$qryData_participantes = $objGrubbs->getPromediosNormales("resultado");
-						// Variables de media de comparacion
-
-						$pageContent["labconfigurationitems"]["tipo_media_estandar"][$x] = "Consenso";
-
-						$pageContent["labconfigurationitems"]["media_estandar"][$x] = $qryData_participantes['mediana'];
-
-						$pageContent["labconfigurationitems"]["mediana"][$x] = $qryData_participantes['mediana'];
-
-						$pageContent["labconfigurationitems"]["iqr"][$x] = $qryData_participantes['iqr'];
-
-						$pageContent["labconfigurationitems"]["desviacion_estandar"][$x] = $qryData_participantes['s'];
-
-						$pageContent["labconfigurationitems"]["coeficiente_variacion"][$x] = $qryData_participantes['cv'];
-
-						$pageContent["labconfigurationitems"]["n_evaluacion"][$x] = $qryData_participantes['n'];
-
-						$pageContent["labconfigurationitems"]["comp"][$x] = $qryData_2['tipo_consenso_wwr'];
-
-						$pageContent["labconfigurationitems"]["nombre_unidad_comp"][$x] = $pageContent["labconfigurationitems"]["nombre_unidad"][$x]; // Si es por participantes QAP de deja la misma unidades
-
-
 
 						break;
 
@@ -2478,9 +2528,10 @@ switch ($header) {
 
 
 
+			if ($pageContent["labconfigurationitems"]["zscore"][$x] == "") {
 
-			if (abs($pageContent["labconfigurationitems"]["zscore"][$x]) < 2) {
-
+				$pageContent["labconfigurationitems"]["zscoreperformance"][$x] = null;
+			} else if (abs($pageContent["labconfigurationitems"]["zscore"][$x]) < 2) {
 				$pageContent["labconfigurationitems"]["zscoreperformance"][$x] = 1;
 			} else if (abs($pageContent["labconfigurationitems"]["zscore"][$x]) >= 2 && abs($pageContent["labconfigurationitems"]["zscore"][$x]) < 3) {
 
@@ -3346,7 +3397,7 @@ switch ($header) {
 
 		echo "<td style='" . $pageContent["tablestyle_border_left"] . "width: 2%;'>&nbsp;</td>";
 
-		echo "<td style='width: 96%;" . $pageContent["tablestyle_text_justify"] . "font-size:9pt;' >
+		echo "<td style='width: 96%; font-family: Times New Roman, Georgia, Helvetica !important;" . $pageContent["tablestyle_text_justify"] . "font-size:10pt;' >
 
 
 
@@ -3387,44 +3438,74 @@ switch ($header) {
 
 							<br><strong>Diseño de los programas QAP: </strong><br><br>
 							
-							Los programas QAP LC están compuestos por rondas de acuerdo con la frecuencia establecida para cada programa. Las matrices utilizadas con conmutables con las muestras de las pacientes procesadas en la cotidianidad del laboratorio. El valor asignado se obtiene a partir de una comparación interlaboratorios a nivel internacional, el consenso QAP y/o un laboratorio con material o metodología de referencia trazable al JCTLM.<br><br><br>
-							
+							Los programas QAP LC están compuestos por rondas de acuerdo con la frecuencia establecida para cada programa. Las matrices utilizadas con conmutables con las muestras de las pacientes procesadas en la cotidianidad del laboratorio. El valor asignado se obtiene a partir de una comparación interlaboratorios a nivel internacional, el consenso QAP y/o un laboratorio con material o metodología de referencia trazable al JCTLM.<br><br>
+	
                             <strong>Cálculos para el análisis estadístico cuando la media de comparación es internacional o es método trazable a material y/o avalado por el JCTLM </strong><br><br>
-                            <strong>Formula Desviación Estandar:</strong><br>
-                            <img src='css/images/Formula D.E.png' alt='Fórmula D.E' height='28' width='220'></img><br>
+                            <strong>Formula Desviación Estándar:</strong><br>
+                            <img src='css/images/Formula D.E.png' alt='Fórmula D.E' height='38'></img><br>
                             <strong>Formula Media:</strong><br>
-                            <img src='css/images/Formula media.png' alt='Fórmula media' height='25' width='180'></img><br>
+                            <img src='css/images/Formula media.png' alt='Fórmula media' height='32'></img><br>
                             <strong>Formula Zscore:</strong><br><br>
-                            <img src='css/images/Formula zcore.png' alt='Fórmula zcore' height='28' width='400'></img><br>
+                            <img src='css/images/Formula zcore.png' alt='Fórmula zcore' height='36'></img><br>
 							<strong>Formula Incertidumbre:</strong><br>
-                            <img src='css/images/Formula incertidumbre.png' alt='Formula incertidumbre' height='28' width='100'></img><br><br>
-							<strong>Definiciones y cálculos para el análisis estadístico cuando la media de comparación es por consenso: </strong>
+                            <img src='css/images/Formula incertidumbre.png' alt='Formula incertidumbre' height='22'></img>
+
+
+						</td>";
+
+
+		echo "<td style='" . $pageContent["tablestyle_border_right"] . "width: 2%;'>&nbsp;</td>";
+
+		echo "</tr>";
+
+
+
+		echo "<td colspan='3' style='" . $pageContent["tablestyle_border_left"] . $pageContent["tablestyle_border_right"] . $pageContent["tablestyle_border_bottom"] . "; width: 100%;'>&nbsp;</td>";
+
+
+
+		echo "</tbody>";
+
+		echo "</table>";
+
+		tablePrinter('br', 'no_border');
+
+		tablePrinter('br', 'no_border');
+
+
+
+		echo "<div class='col margin-top-2 margin-bottom-1 sheet' data-sheet='true' title='216|279' style='width:864px !important; height:1115px !important; margin: auto;' alt='P' id='" . md5(uniqid(rand(), true)) . "'>";
+
+		tablePrinter('header2', '1. TÉRMINOS GENERALES', $labid, $sampleid);
+
+		echo "<table style='width: 100%;' cellpadding='5' cellspacing='0'>";
+
+		echo "<tbody>";
+
+		echo "<tr>";
+
+		echo "<td style='" . $pageContent["tablestyle_border_left"] . "width: 2%;'>&nbsp;</td>";
+
+
+		echo "<td style='width: 96%; font-family: Times New Roman, Georgia, Helvetica !important;" . $pageContent["tablestyle_text_justify"] . "font-size:10pt;' >
+
+
+							<br><br><strong>Definiciones y cálculos para el análisis estadístico cuando la media de comparación es por consenso: </strong>
 							<ul>
 								<li>Resultado del laboratorio (u): Valor informado por un laboratorio participante en un ensayo de aptitud.</li>
-								<li>Mediana: Valor central de los datos ordenados. Se emplea como estimador robusto del valor asignado.</li><br><br><br><br><br><br><br>
+								<li>Mediana: Valor central de los datos ordenados. Se emplea como estimador robusto del valor asignado.</li>
 								<li>Rango intercuartílico (IQR): Diferencia entre el tercer y primer cuartil. Delimita el rango que contiene el 50% central de los datos, excluyendo valores atípicos. </li><br>
-								<img src='css/images/Formula IQR.png' alt='Formula IQR' height='20' width='100'></img><br>
+								<img src='css/images/Formula IQR.png' alt='Formula IQR' height='23'></img>
 								<li>Desviación estándar robusta (s*): Estimación de la desviación estándar basada en el IQR.</li><br>
-								<img src='css/images/Formula s.png' alt='Formula desviación estandar robusta' height='30' width='80'></img>
+								<img src='css/images/Formula s.png' alt='Formula desviación estandar robusta' height='38'></img>
 							</ul>
 							<strong>Z-Score Robusto: </strong><br>
-							<img src='css/images/Formula zscore robusto.png' alt='Fórmula zscore robusto' height='30' width='130'></img><br>
-							Donde:
-							<ul>
-								<li>u: Resultado informado por el laboratorio.</li>
-								<li>Mediana: Valor asignado robusto.</li>
-								<li>s*: Desviación estándar robusta.</li>
-							</ul><br>
+							<img src='css/images/Formula zscore robusto.png' alt='Fórmula zscore robusto' height='35'></img><br>
+							<img src='css/images/Descripcion z robusta.png' alt='Fórmula zscore robusto' height='62'></img><br>
 							<strong>Incertidumbre del valor asignado: </strong><br>
-							<img src='css/images/Formula incertidumbre robusta.png' alt='Fórmula incertidumbre valor asignado' height='30' width='120'></img><br>
-							Donde:
-							<ul>
-								<li>u(x_pt): Incertidumbre estándar del valor asignado.</li>
-								<li>s*: Desviación estándar robusta.</li>
-								<li>p: Número de resultados utilizados para estimar el valor asignado.</li>
-								<li>1.25: Factor correctivo recomendado por la norma.</li>
-							</ul><br>
-								
+							<img src='css/images/Formula incertidumbre robusta.png' alt='Fórmula incertidumbre valor asignado' height='40'></img><br>
+							<img src='css/images/Descripcion incertidumbre robusta.png' alt='Fórmula incertidumbre valor asignado' height='77'></img><br>
+
 						</td>";
 
 		echo "<td style='" . $pageContent["tablestyle_border_right"] . "width: 2%;'>&nbsp;</td>";
@@ -5249,23 +5330,27 @@ switch ($header) {
 
 									<tr style='font-size: 5pt'>
 
-										<th style='font-weight:bold;text-align:center; width: 27.5%;'>1</th>
+									 	<th style='font-weight:bold;text-align:center; width: 27.5%;'>1</th>
 
-										<th style='font-weight:bold;text-align:center; width: 7.5%'>2</th>
+									 	<th style='font-weight:bold;text-align:center; width: 6.5%'>2</th>
 
-										<th style='font-weight:bold;text-align:center; width: 7.5%'>3</th>
+									 	<th style='font-weight:bold;text-align:center; width: 7.5%'>3</th>
 
-										<th style='font-weight:bold;text-align:center; width: 7.5%'>4</th>
+									 	<th style='font-weight:bold;text-align:center; width: 6.5%'>4</th>
 
-										<th style='font-weight:bold;text-align:center; width: 15%'>5</th>
+									 	<th style='font-weight:bold;text-align:center; width: 6.5%'>5</th>
 
-										<th style='font-weight:bold;text-align:center; width: 10%'>6</th>
+									 	<th style='font-weight:bold;text-align:center; width: 6.5%'>6</th>
 
-										<th style='font-weight:bold;text-align:center; width: 10%'>7</th>
+									 	<th style='font-weight:bold;text-align:center; width: 11%'>7</th>
 
-										<th style='font-weight:bold;text-align:center; width: 15%'>8</th>
+									 	<th style='font-weight:bold;text-align:center; width: 10%'>8</th>
 
-									</tr>
+									 	<th style='font-weight:bold;text-align:center; width: 7%'>9</th>
+
+									 	<th style='font-weight:bold;text-align:center; width: 11%'>10</th>
+
+									 </tr>
 
 
 
@@ -5273,19 +5358,23 @@ switch ($header) {
 
 										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 27.5%;'>Fuente de comparación<br></th>
 
-										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 7.5%'>X<sub>pt</sub><br></th>
+										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 6.5%'>P25<br></th>
 
-										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 7.5%'>D.E.<br></th>
+										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 7.5%'> X<sub>pt</sub><br></th>
 
-										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 7.5%'>n/N<br></th>
+										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 6.5%'>P75<br></th>
 
-										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 15%'>Incertidumbre<br></th>
+										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 6.5%'>D.E.<br></th>
 
-										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 10%'>Diferencia%<br></th>
+										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 6.5%'>n/N<br></th>
 
-										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 10%'>Z-score<br></th>
+										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 11%'> Incertidumbre<br></th>
 
-										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 15%'>Valoración<br></th>
+										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 10%'> Diferencia%<br></th>
+
+										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 7%'> Z-score<br></th>
+
+										<th style='font-weight:bold;background-color:#FFF;border:1px solid #B2BABB;border-bottom:2px solid #B2BABB;text-align:center; width: 11%'> Valoración<br></th>
 
 									</tr>";
 
@@ -5299,6 +5388,10 @@ switch ($header) {
 
 										<th style='text-align:center; width: 27.5%;border-left:1px solid #B2BABB;'>RL-MMT-JCTLM<sup>1</sup></th>";
 
+						// P25 No aplica para el JCTLM
+		
+						echo "<td style='width: 6.5%;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
+
 						// X<sub>pt</sub>
 		
 						if ($pageContent["labconfigurationitems"]["referencemedia"][$x] == "" || $pageContent["labconfigurationitems"]["referencemedia"][$x] == 0) {
@@ -5310,12 +5403,17 @@ switch ($header) {
 						}
 
 
+						// P75 No aplica para el JCTLM
+		
+						echo "<td style='width: 6.5%;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
 
-						echo "<td style='text-align:center; width: 7.5%'>N/A</td> "; // DE
+
+
+						echo "<td style='text-align:center; width: 6.5%'>N/A</td> "; // DE
 		
-						echo "<td style='text-align:center; width: 7.5%'>N/A</td>"; // N
+						echo "<td style='text-align:center; width: 6.5%'>N/A</td>"; // N
 		
-						echo "<td style='text-align:center; width: 15%'>N/A</td>"; // Incertidumbre
+						echo "<td style='text-align:center; width: 11%'>N/A</td>"; // Incertidumbre
 		
 
 
@@ -5333,7 +5431,7 @@ switch ($header) {
 
 
 
-						echo "<td style='text-align:center; width: 10%'>N/A</td>"; // Z-Score
+						echo "<td style='text-align:center; width: 7%'>N/A</td>"; // Z-Score
 		
 
 
@@ -5341,13 +5439,13 @@ switch ($header) {
 		
 						if ($pageContent["labconfigurationitems"]["sampleperformancereference"][$x] === 0) {
 
-							echo "<td style='width:15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>No satisfactorio</td>";
+							echo "<td style='width:11%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>No satisfactorio</td>";
 						} else if ($pageContent["labconfigurationitems"]["sampleperformancereference"][$x] == 1) {
 
-							echo "<td style='width:15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>Satisfactorio</td>";
+							echo "<td style='width:11%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>Satisfactorio</td>";
 						} else if ($pageContent["labconfigurationitems"]["sampleperformancereference"][$x] == null) {
 
-							echo "<td style='width:15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
+							echo "<td style='width:11%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
 						}
 
 						echo "</tr>";
@@ -5355,6 +5453,7 @@ switch ($header) {
 
 
 						switch ($pageContent["labconfigurationitems"]["tipo_media_estandar"][$x]) {
+
 
 							case "Consenso": // Si la media es por consenso
 		
@@ -5366,21 +5465,27 @@ switch ($header) {
 
 								echo "<th style='text-align:center;width:27.5%;border-left:1px solid #B2BABB;'>Media de comparación internacional</th>";
 
+								echo "<td style='text-align:center;width:6.5%'>N/A</td>"; // P25 (No aplica para la media de comparación internacional)
+		
 								echo "<td style='text-align:center;width:7.5%'>N/A</td>"; // X<sub>pt</sub>
 		
-								echo "<td style='text-align:center;width:7.5%'>N/A</td>"; // D.E.
+								echo "<td style='text-align:center;width:6.5%'>N/A</td>"; // P75 (No aplica para la media de comparación internacional)
 		
-								echo "<td style='text-align:center;width:7.5%'>N/A</td>"; // N
+								echo "<td style='text-align:center;width:6.5%'>N/A</td>"; // D.E.
 		
-								echo "<td style='width: 15%;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>"; // Incertidumbre
+								echo "<td style='text-align:center;width:6.5%'>N/A</td>"; // N
+		
+								echo "<td style='width: 11%;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>"; // Incertidumbre
 		
 								echo "<td style='width: 10%;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>"; // Diff
 		
-								echo "<td style='text-align:center;width: 10%'>N/A</td>"; // Zscore
+								echo "<td style='text-align:center;width: 7%'>N/A</td>"; // Zscore
 		
-								echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>"; // Valoración
+								echo "<td style='width: 11%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>"; // Valoración
 		
 								echo "</tr>";
+
+
 
 
 
@@ -5392,924 +5497,338 @@ switch ($header) {
 
 									$pageContent["labconfigurationitems"]["n_evaluacion"][$x] == ""
 
-								) { // Antes de la versión 7 de QAP Online
-		
-
-
-									// // Seccion para todos los participantes de QAP
-		
-									// $nom_analito_cs = $pageContent["labconfigurationitems"]["nombre_analito"][$x];
-		
-									// $nom_unidad_cs = $pageContent["labconfigurationitems"]["nombre_unidad"][$x];
-		
-									// $nom_metodologia_cs = $pageContent["labconfigurationitems"]["nombre_metodologia"][$x];
-		
-									// $qry_aleatory = "SELECT fecha_vencimiento FROM $tbl_muestra_programa WHERE id_muestra = " . $sampleid;
-		
-									// $innerQryData_aleatory = mysql_fetch_array(mysql_query($qry_aleatory));
-		
-									// mysqlException(mysql_error(), "_23_" . $x);
-		
-									// $fechalimite_aleatory = $innerQryData_aleatory['fecha_vencimiento'];
-		
-
-
-									// // Aqui va el Query de la consulta de analitos
-		
-									// $qry_participantes = "SELECT 
-		
-									// 									resultado.valor_resultado as 'resultado'
-		
-									// 								from programa 
-		
-									// 									join muestra_programa on programa.id_programa = muestra_programa.id_programa 
-		
-									// 									join muestra on muestra.id_muestra = muestra_programa.id_muestra 
-		
-									// 									join lote on lote.id_lote = muestra_programa.id_lote 
-		
-									// 									join resultado on muestra.id_muestra = resultado.id_muestra 
-		
-									// 									join configuracion_laboratorio_analito on configuracion_laboratorio_analito.id_configuracion = resultado.id_configuracion 
-		
-									// 									join unidad on unidad.id_unidad = configuracion_laboratorio_analito.id_unidad 
-		
-									// 									join analito on analito.id_analito = configuracion_laboratorio_analito.id_analito 
-		
-									// 								where 
-		
-									// 									resultado.valor_resultado is not null 
-		
-									// 									and resultado.valor_resultado != ''
-		
-									// 									and lote.nombre_lote = '" . $lotNombre . "' 
-		
-									// 									and analito.nombre_analito = '" . $nom_analito_cs . "' 
-		
-									// 									and unidad.nombre_unidad = '" . $nom_unidad_cs . "'
-		
-									// 								";
-		
-
-
-									// $objGrubbs = new Grubbs();
-		
-
-
-									// $qryArrayFinalConsenso = array();
-		
-									// $qryArrayParticipantes = mysql_query($qry_participantes);
-		
-									// mysqlException(mysql_error(), "_01");
-		
-
-
-									// while ($qryDataConsenso = mysql_fetch_array($qryArrayParticipantes)) {
-		
-									// 	array_push(
-		
-									// 		$qryArrayFinalConsenso,
-		
-									// 		array("resultado" => $qryDataConsenso["resultado"])
-		
-									// 	);
-									// }
-		
-
-
-									// $objGrubbs->exclusionAtipicos($qryArrayFinalConsenso, "resultado");
-		
-									// $qryData_participantes = $objGrubbs->getPromediosNormales("resultado");
-		
-
-
-									// if ($pageContent["programtype"] == 1) { // Si el programa es cuantitativo
-		
-
-
-									// 	if ($qryData_participantes["de"] != 0 && $qryData_participantes["media"] != "" && $qryData_participantes["media"] != 0) {
-		
-									// 		$incertidumbre_inf = ($qryData_participantes["media"] - ($qryData_participantes["de"] * 2));
-		
-									// 		$incertidumbre_sup = ($qryData_participantes["media"] + ($qryData_participantes["de"] * 2));
-									// 	} else {
-		
-									// 		$incertidumbre_sup = "N/A";
-		
-									// 		$incertidumbre_inf = "N/A";
-									// 	}
-		
-
-
-
-
-									// 	if ($qryData_participantes["de"] == 0) {
-		
-									// 		$zscore_cal = 0;
-									// 	} else {
-		
-									// 		$zscore_cal = ($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $qryData_participantes["media"]) / $qryData_participantes["de"];
-									// 	}
-		
-
-
-
-
-									// 	if ($qryData_participantes["media"] == 0) {
-		
-									// 		$dif_por_cal = 0;
-									// 	} else {
-		
-									// 		$dif_por_cal = (($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $qryData_participantes["media"]) / $qryData_participantes["media"]) * 100;
-									// 	}
-		
-
-
-
-
-									// 	// Todos los participantes de QAP
-		
-									// 	echo "<tr style='font-size: 7pt; background-color:#EAECEE;'>
-		
-									// 				<th style='text-align:center;width: 27.5%;border-left:1px solid #B2BABB;'>Todos los participantes de QAP</th>
-		
-									// 				<td style='text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestra["n"] < 1) ? "N/A" : $calculoAnalitoMuestra["media"]) . "</td>
-		
-									// 				<td style='text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestra["n"] < 1) ? "N/A" : $calculoAnalitoMuestra["de"]) . "</td>
-		
-									// 				<td style='text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestra["n"] < 1) ? "N/A" : $calculoAnalitoMuestra["n"]) . "</td>
-		
-									// 				<td style='text-align:center;width: 15%'>" . (($calculoAnalitoMuestra["n"] < 1) ? "N/A" : $calculoAnalitoMuestra["incertidumbre_inf"] . " a " . $calculoAnalitoMuestra["incertidumbre_sup"]) . "</td>
-		
-									// 				<td style='text-align:center;width: 10%'>" . (($calculoAnalitoMuestra["n"] < 1) ? "N/A" : $calculoAnalitoMuestra["diff"]) . "</td>
-		
-									// 				<td style='text-align:center;width: 10%'>" . (($calculoAnalitoMuestra["n"] < 1) ? "N/A" : $calculoAnalitoMuestra["zscore"]) . "</td>";
-		
-
-
-									// 				if($calculoAnalitoMuestra["n"] < 1) {
-									// 					$rendimiento = "N/A";
-									// 				}else {
-		
-									// 					if ($indicador == 1) {
-		
-									// 						$rendimiento = "Satisfactorio";
-									// 					} else if ($indicador == 0) {
-									// 						$rendimiento = 'Alarma';
-									// 					} else {
-		
-									// 						$rendimiento = "No satisfactorio";
-									// 					}
-									// 				}
-		
-
-
-									// 	echo "<td style='text-align:center;width: 15%; border-right:1px solid #B2BABB;'>" . $rendimiento . "</td>";
-		
-									// 	echo "</tr>";
-									// }
+								) {
 								} else { // Después de la versión 7 de QAP Online
 		
 
+									$mostrarTodosParticipantes = true;
+									$mostrarMismaMetodologia = true;
+									$leyendaCV = "";
+									$leyendaDatosInsuficientes = "";
 
-									// Participantes de QAP
-									// 4. Todos los participantes de QAP 
-									// zscore 4.
+									// Lógica para la leyenda y la visualización
 		
+									if (isset($calculoAnalitoMuestra["n"]) && $calculoAnalitoMuestra["n"] < 4) {
+										$mostrarTodosParticipantes = false;
+										$leyendaDatosInsuficientes = "No hay suficientes datos para la comparación de todos los participantes QAP. ";
+									}
 
+									if (isset($calculoAnalitoMuestraMisma["n"]) && $calculoAnalitoMuestraMisma["n"] < 4) {
+										$mostrarMismaMetodologia = false;
+										$leyendaDatosInsuficientes = "No hay suficientes datos para la comparación de la misma metodología.";
+									}
 
+									if (isset($calculoAnalitoMuestra["n"]) && $calculoAnalitoMuestra["n"] < 4 && isset($calculoAnalitoMuestraMisma["n"]) && $calculoAnalitoMuestraMisma["n"] < 4) {
+										$mostrarTodosParticipantes = false;
+										$mostrarMismaMetodologia = false;
+										$leyendaDatosInsuficientes = "No hay suficientes datos para la comparación de todos los participantes QAP y con la misma metodología.";
+									}
 
-
+									// ---------------------- IMPRESIÓN DE LA TABLA ----------------------
+									// Fila para "Todos los participantes de QAP"
 									echo "<tr style='font-size: 7pt; background-color:#EAECEE;'>";
+									echo "<th style='text-align:center;width:27.5%;border-left:1px solid #B2BABB;'>Todos los participantes de QAP<sup>2</sup></th>";
 
-									echo "<th style='text-align:center;width:27.5%;border-left:1px solid #B2BABB;'>Todos los participantes de QAP<sup>2</sup></th>
+									if ($mostrarTodosParticipantes) {
+										$datosAUsar = $calculoAnalitoMuestra;
+										$indicadorAUsar = $indicador;
 
-													<td style='text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["mediana"], 2)) . "</td>
+										if (isset($datosAUsar["n"]) && $datosAUsar["n"] >= 4) {
 
-													<td style='text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["s"], 2)) . "</td>
-
-													<td style='text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["n"], 2)) . "</td>
-
-													<td style='text-align:center;width: 15%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["incertidumbre"], 2)) . "</td>
-
-													<td style='text-align:center;width: 10%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["diff"], 2)) . "</td>
-
-													<td style='text-align:center;width: 10%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["zscore"], 2)) . "</td>";
-
-									// Valoración
-		
-									/*if (null !== ($pageContent["labconfigurationitems"]["valor_resultado"][$x])) {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																  echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															  } else {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																  if ($pageContent["labconfigurationitems"]["zscoreperformance"][$x] == 1) {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	  echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>Satisfactorio</td>";
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																  } else if ($pageContent["labconfigurationitems"]["zscoreperformance"][$x] == 2) {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	  echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>Alarma</td>";
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																  } else if ($pageContent["labconfigurationitems"]["zscoreperformance"][$x] == 3) {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	  echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>No satisfactorio</td>";
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																  } else if ($pageContent["labconfigurationitems"]["zscoreperformance"][$x] === null) {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	  echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																  }
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															  }*/
-									if ($calculoAnalitoMuestra["n"] < 4) {
-										$rendimiento = "N/A";
-									} else {
-
-										if ($indicador == 1) {
-
-											$rendimiento = "Satisfactorio";
-										} else if ($indicador == 0) {
-											$rendimiento = 'Alarma';
+											echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["q1"], 2) . "</td>";
+											echo "<td style='text-align:center;width: 7.5%'>" . round($datosAUsar["mediana"], 2) . "</td>";
+											echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["q3"], 2) . "</td>";
+											echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["s"], 2) . "</td>";
+											echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["n"], 2) . "</td>";
+											echo "<td style='text-align:center;width: 11%'>" . round($datosAUsar["incertidumbre"], 2) . "</td>";
+											echo "<td style='text-align:center;width: 10%'>" . round($datosAUsar["diff"], 2) . "</td>";
+											echo "<td style='text-align:center;width: 7%'>" . round($datosAUsar["zscore"], 2) . "</td>";
+											if ($indicadorAUsar == 1) {
+												$rendimiento = "Satisfactorio";
+											} else if ($indicadorAUsar == 0) {
+												$rendimiento = 'Alarma';
+											} else {
+												$rendimiento = "No satisfactorio";
+											}
 										} else {
-
-											$rendimiento = "No satisfactorio";
+											echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+											echo "<td style='text-align:center;width: 7.5%'>N/A</td>";
+											echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+											echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+											echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+											echo "<td style='text-align:center;width: 11%'>N/A</td>";
+											echo "<td style='text-align:center;width: 10%'>N/A</td>";
+											echo "<td style='text-align:center;width: 7%'>N/A</td>";
+											$rendimiento = "N/A";
 										}
-									}
-
-									echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>" . $rendimiento . "</td>";
-
-									echo "</tr>";
-								}
-
-
-
-
-
-								// Siempre imprimir la seccion de participantes de la misma metodologia
-		
-								$nom_analito_cs = $pageContent["labconfigurationitems"]["nombre_analito"][$x];
-
-								$nom_unidad_cs = $pageContent["labconfigurationitems"]["nombre_unidad"][$x];
-
-								$nom_metodologia_cs = $pageContent["labconfigurationitems"]["nombre_metodologia"][$x];
-
-
-
-								// Seccion para los participantes con la misma metodologia
-		
-								$qry_aleatory = "SELECT fecha_vencimiento FROM $tbl_muestra_programa WHERE id_muestra = " . $sampleid;
-
-								$innerQryData_aleatory = mysql_fetch_array(mysql_query($qry_aleatory));
-
-								mysqlException(mysql_error(), "_23_" . $x);
-
-								$fechalimite_aleatory = $innerQryData_aleatory['fecha_vencimiento'];
-
-								$qry_participantes_met = "SELECT 
-
-													resultado.valor_resultado as 'resultado'
-
-												from programa 
-
-													join muestra_programa on programa.id_programa = muestra_programa.id_programa 
-
-													join muestra on muestra.id_muestra = muestra_programa.id_muestra 
-
-													join lote on lote.id_lote = muestra_programa.id_lote 
-
-													join resultado on muestra.id_muestra = resultado.id_muestra 
-
-													join  configuracion_laboratorio_analito on configuracion_laboratorio_analito.id_configuracion = resultado.id_configuracion 
-
-													join unidad on unidad.id_unidad = configuracion_laboratorio_analito.id_unidad 
-
-													join analito on analito.id_analito = configuracion_laboratorio_analito.id_analito 
-
-													join metodologia on metodologia.id_metodologia = configuracion_laboratorio_analito.id_metodologia
-
-												where 
-
-													resultado.valor_resultado is not null 
-
-													and resultado.valor_resultado != ''
-
-													and lote.nombre_lote = '" . $lotNombre . "' 
-
-													and analito.nombre_analito = '" . $nom_analito_cs . "' 
-
-													and unidad.nombre_unidad = '" . $nom_unidad_cs . "'
-
-													and metodologia.nombre_metodologia = '" . $nom_metodologia_cs . "'";
-
-
-
-								$objGrubbs = new Grubbs();
-
-								$qryArrayFinalConsenso = array();
-
-								$qryArrayParticipantes = mysql_query($qry_participantes_met);
-
-								mysqlException(mysql_error(), "_01");
-
-
-
-								while ($qryDataConsenso = mysql_fetch_array($qryArrayParticipantes)) {
-
-									array_push(
-
-										$qryArrayFinalConsenso,
-
-										array("resultado" => $qryDataConsenso["resultado"])
-
-									);
-								}
-
-
-
-								$objGrubbs->exclusionAtipicos($qryArrayFinalConsenso, "resultado");
-
-								$qryData_participantes_met = $objGrubbs->getPromediosNormales("resultado");
-
-
-
-								if ($pageContent["programtype"] == 1) { // Si el programa es cuantitativo
-		
-
-
-									if ($qryData_participantes_met["de"] != 0 && $qryData_participantes_met["media"] != 0) {
-
-										$incertidumbre_inf = ($qryData_participantes_met["media"] - ($qryData_participantes_met["de"] * 2));
-
-										$incertidumbre_sup = ($qryData_participantes_met["media"] + ($qryData_participantes_met["de"] * 2));
 									} else {
-
-										$incertidumbre_inf = "N/A";
-
-										$incertidumbre_sup = "N/A";
-									}
-
-
-
-
-
-									if ($qryData_participantes_met["de"] == 0) {
-
-										$zscore_cal = 0;
-									} else {
-
-										$zscore_cal = ($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $qryData_participantes_met["media"]) / $qryData_participantes_met["de"];
-									}
-
-
-
-
-
-									if ($qryData_participantes_met["media"] == 0) {
-
-										$dif_por_cal = 0;
-									} else {
-
-										$dif_por_cal = (($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $qryData_participantes_met["media"]) / $qryData_participantes_met["media"]) * 100;
-									}
-
-
-
-
-									// Participantes de QAP Con la misma metodología 2
-		
-									/*echo "<tr style='font-size: 7pt;background-color:#fff'>
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												   <th style='border-left:1px solid #B2BABB;border-bottom:1px solid #B2BABB;text-align:center;width: 27.5%;'>Participantes QAP misma metodología</th>
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												   <td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . (($qryData_participantes_met["n"] < 5) ? "N/A" : (round($qryData_participantes_met["media"], 2))). "(".$calculoAnalitoMuestra["media"] . "</td>
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												   <td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . (($qryData_participantes_met["n"] < 5) ? "N/A" : (round($qryData_participantes_met["de"], 2))) . "</td>
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												   <td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . (($qryData_participantes_met["n"] < 5) ? "N/A" : ($qryData_participantes_met["n"])). "(". $calculoAnalitoMuestra["n"]. "</td>
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												   <td style='border-bottom:1px solid #B2BABB;text-align:center;width: 15%'>" . (($qryData_participantes_met["n"] < 5) ? "N/A" : (round($incertidumbre_inf, 2) . " a " . round($incertidumbre_sup, 2))) . "</td>
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												   <td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . (($qryData_participantes_met["n"] < 5) ? "N/A" : (round($dif_por_cal, 2))) . "</td>
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . (($qryData_participantes_met["n"] < 5) ? "N/A" : (round($zscore_cal, 2))) ."(".$calculoAnalitoMuestra["zscore"] .")". "</td>";
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															   */
-
-
-									echo "<tr style='font-size: 7pt;background-color:#fff'>
-
-													<th style='border-left:1px solid #B2BABB;border-bottom:1px solid #B2BABB;text-align:center;width: 27.5%;'>Participantes QAP misma metodología<sup>2</sup></th>
-													
-													<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["mediana"], 2)) . "</td>
-
-													<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["s"], 2)) . "</td>
-
-													<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["n"], 2)) . "</td>
-
-													<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 15%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["incertidumbre"], 2)) . "</td>
-
-													<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["diff"], 2)) . "</td>
-
-													<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["zscore"], 2)) . "</td>";
-									/*if ($zscore_cal == "" || $qryData_participantes_met["n"] < 5) {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															   $rendimiento = "N/A";
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								   } else {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									   if (abs($zscore_cal) < 2 || $zscore_cal == 0) {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																   $rendimiento = "Satisfactorio";
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									   } else if (abs($zscore_cal) >= 2 && abs($zscore_cal) < 3) {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																   $rendimiento = 'Alarma';
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									   } else if (abs($zscore_cal) >= 3) {
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																   $rendimiento = "No satisfactorio";
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															   }
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								   }*/
-									if ($calculoAnalitoMuestraMisma["n"] < 4) {
+										echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 7.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 11%'>N/A</td>";
+										echo "<td style='text-align:center;width: 10%'>N/A</td>";
+										echo "<td style='text-align:center;width: 7%'>N/A</td>";
 										$rendimiento = "N/A";
-									} else {
-
-										if ($indicadorMisma == 1) {
-
-											$rendimiento = "Satisfactorio";
-										} else if ($indicadorMisma == 0) {
-											$rendimiento = 'Alarma';
-										} else {
-
-											$rendimiento = "No satisfactorio";
-										}
 									}
-
-									echo "<td style='text-align:center;width: 15%; border-right:1px solid #B2BABB;border-bottom:1px solid #B2BABB;'>" . $rendimiento . "</td>";
-
+									echo "<td style='width: 11%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>" . $rendimiento . "</td>";
 									echo "</tr>";
+
+									// Fila para "Participantes QAP misma metodología"
+									echo "<tr style='font-size: 7pt;background-color:#fff'>";
+									echo "<th style='border-left:1px solid #B2BABB;border-bottom:1px solid #B2BABB;text-align:center;width: 27.5%;'>Participantes QAP misma metodología<sup>2</sup></th>";
+
+									if ($mostrarMismaMetodologia) {
+										$datosAUsar = $calculoAnalitoMuestraMisma;
+										$indicadorAUsar = $indicadorMisma;
+
+										if (isset($datosAUsar["n"]) && $datosAUsar["n"] >= 4) {
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["q1"], 2) . "</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . round($datosAUsar["mediana"], 2) . "</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["q3"], 2) . "</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["s"], 2) . "</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["n"], 2) . "</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 11%'>" . round($datosAUsar["incertidumbre"], 2) . "</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . round($datosAUsar["diff"], 2) . "</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7%'>" . round($datosAUsar["zscore"], 2) . "</td>";
+
+											if ($indicadorAUsar == 1) {
+												$rendimiento = "Satisfactorio";
+											} else if ($indicadorAUsar == 0) {
+												$rendimiento = 'Alarma';
+											} else {
+												$rendimiento = "No satisfactorio";
+											}
+										} else {
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>N/A</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 11%'>N/A</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>N/A</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7%'>N/A</td>";
+											$rendimiento = "N/A";
+										}
+									} else {
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 11%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7%'>N/A</td>";
+										$rendimiento = "N/A";
+									}
+									echo "<td style='text-align:center;width: 11%; border-right:1px solid #B2BABB;border-bottom:1px solid #B2BABB;'>" . $rendimiento . "</td>";
+									echo "</tr>";
+
+									// Leyendas
+									if (!empty($leyendaDatosInsuficientes)) {
+										echo "<tr><td colspan='10' style='font-size: 7pt;'>" . $leyendaDatosInsuficientes . "</td></tr>";
+									}
 								}
-
-
-
 								break;
-
 
 
 							default: // Si no es mediante consenso
 		
-								// Comparación internacional
+
+								// Determinar qué datos mostrar según la lógica del CV
+								$mostrarTodosParticipantes = true;
+								$mostrarMismaMetodologia = true;
+								$leyendaCV = "";
+								$leyendaDatosInsuficientes = "";
+
+								// Lógica para la leyenda y la visualización
 		
+								if (isset($calculoAnalitoMuestra["n"]) && $calculoAnalitoMuestra["n"] < 4) {
+									$mostrarTodosParticipantes = false;
+									$leyendaDatosInsuficientes = "No hay suficientes datos para la comparación de todos los participantes QAP. ";
+								}
+
+								if (isset($calculoAnalitoMuestraMisma["n"]) && $calculoAnalitoMuestraMisma["n"] < 4) {
+									$mostrarMismaMetodologia = false;
+									$leyendaDatosInsuficientes = "No hay suficientes datos para la comparación de la misma metodología.";
+								}
+
+								if (isset($calculoAnalitoMuestra["n"]) && $calculoAnalitoMuestra["n"] < 4 && isset($calculoAnalitoMuestraMisma["n"]) && $calculoAnalitoMuestraMisma["n"] < 4) {
+									$mostrarTodosParticipantes = false;
+									$mostrarMismaMetodologia = false;
+									$leyendaDatosInsuficientes = "No hay suficientes datos para la comparación de todos los participantes QAP y con la misma metodología.";
+								}
+
+								// ---------------------- IMPRESIÓN DE LA TABLA ----------------------
+								// Fila para "Media de inserto" o "Media de comparación internacional"
 								echo "<tr style='font-size: 7pt; background-color:#FFF;'>";
-
-
-
 								if ($pageContent["labconfigurationitems"]["tipo_media_estandar"][$x] == "Inserto") {
-
 									echo "<th style='text-align:center;width:27.5%;border-left:1px solid #B2BABB;'>Media de inserto</th>";
 								} else {
-
 									echo "<th style='text-align:center;width:27.5%;border-left:1px solid #B2BABB;'>Media de comparación internacional</th>";
 								}
 
+								echo "<td style='text-align:center;width:6.5%'>N/A</td>";
+								echo "<td style='text-align:center;width:7.5%'>" . (($pageContent["labconfigurationitems"]["media_estandar"][$x] == "" || $pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") ? "N/A" : round($pageContent["labconfigurationitems"]["media_estandar"][$x], 2)) . "</td>";
+								echo "<td style='text-align:center;width:6.5%'>N/A</td>";
+								echo "<td style='text-align:center;width:6.5%'>" . (($pageContent["labconfigurationitems"]["desviacion_estandar"][$x] == "" || $pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") ? "N/A" : round($pageContent["labconfigurationitems"]["desviacion_estandar"][$x], 2)) . "</td>";
+								echo "<td style='text-align:center;width:6.5%'>" . (($pageContent["labconfigurationitems"]["n_evaluacion"][$x] == "" || $pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") ? "N/A" : $pageContent["labconfigurationitems"]["n_evaluacion"][$x]) . "</td>";
 
-
-								echo "<td style='text-align:center;width:7.5%'>" . (($pageContent["labconfigurationitems"]["media_estandar"][$x] == "" || $pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") ? "N/A" : round($pageContent["labconfigurationitems"]["media_estandar"][$x], 2)) . "</td>"; // X<sub>pt</sub>
-		
-								echo "<td style='text-align:center;width:7.5%'>" . (($pageContent["labconfigurationitems"]["desviacion_estandar"][$x] == "" || $pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") ? "N/A" : round($pageContent["labconfigurationitems"]["desviacion_estandar"][$x], 2)) . "</td>"; // D.E.
-		
-								echo "<td style='text-align:center;width:7.5%'>" . (($pageContent["labconfigurationitems"]["n_evaluacion"][$x] == "" || $pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") ? "N/A" : $pageContent["labconfigurationitems"]["n_evaluacion"][$x]) . "</td>"; // N
-		
-
-
-								// Incertidumbre inferior
-		
-								if (is_numeric($pageContent["labconfigurationitems"]["media_estandar"][$x]) && is_numeric($pageContent["labconfigurationitems"]["desviacion_estandar"][$x]) && $pageContent["labconfigurationitems"]["valor_resultado"][$x] != "") { // Si la media y la desviacion estandar estan definidas
-		
-									$incertidumbre_inferior = $pageContent["labconfigurationitems"]["media_estandar"][$x] - ($pageContent["labconfigurationitems"]["desviacion_estandar"][$x] * 2);
-								} else {
-
-									$incertidumbre_inferior = "N/A";
+								// Incertidumbre
+								$incertidumbre_inf = "N/A";
+								$incertidumbre_sup = "N/A";
+								if (is_numeric($pageContent["labconfigurationitems"]["media_estandar"][$x]) && is_numeric($pageContent["labconfigurationitems"]["desviacion_estandar"][$x]) && $pageContent["labconfigurationitems"]["valor_resultado"][$x] != "") {
+									$incertidumbre_inf = $pageContent["labconfigurationitems"]["media_estandar"][$x] - ($pageContent["labconfigurationitems"]["desviacion_estandar"][$x] * 2);
+									$incertidumbre_sup = $pageContent["labconfigurationitems"]["media_estandar"][$x] + ($pageContent["labconfigurationitems"]["desviacion_estandar"][$x] * 2);
 								}
-
-								// Incertiumbre superior
-		
-								if (is_numeric($pageContent["labconfigurationitems"]["media_estandar"][$x]) && is_numeric($pageContent["labconfigurationitems"]["desviacion_estandar"][$x]) && $pageContent["labconfigurationitems"]["valor_resultado"][$x] != "") { // Si la media y la desviacion estandar estan definidas
-		
-									$incertidumbre_superior = $pageContent["labconfigurationitems"]["media_estandar"][$x] + ($pageContent["labconfigurationitems"]["desviacion_estandar"][$x] * 2);
+								if ($incertidumbre_inf == "N/A" || $incertidumbre_sup == "N/A") {
+									echo "<td style='width: 11%;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
 								} else {
-
-									$incertidumbre_superior = "N/A";
+									echo "<td style='width: 11%;" . $pageContent["tablestyle_text_center"] . "'>" . round($incertidumbre_inf, 2) . " a " . round($incertidumbre_sup, 2) . "</td>";
 								}
-
-								// Impresion de valores
-		
-								if ($incertidumbre_inferior == "N/A" || $incertidumbre_superior == "N/A") {
-
-									echo "<td style='width: 15%;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
-								} else {
-
-									echo "<td style='width: 15%;" . $pageContent["tablestyle_text_center"] . "'>" . round($incertidumbre_inferior, 2) . " a " . round($incertidumbre_superior, 2) . "</td>";
-
-								}
-
-
 
 								// Diferencia porcentual
-		
-								if ($pageContent["labconfigurationitems"]["media_estandar"][$x] == "" || $pageContent["labconfigurationitems"]["media_estandar"][$x] == 0 || $pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") {
-
-									$pageContent["labconfigurationitems"]["diff_porcentual"][$x] = "N/A";
-
-									echo "<td style='width: 10%;" . $pageContent["tablestyle_text_center"] . "'>" . $pageContent["labconfigurationitems"]["diff_porcentual"][$x] . "</td>";
-								} else {
-
-									$pageContent["labconfigurationitems"]["diff_porcentual"][$x] = (($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $pageContent["labconfigurationitems"]["media_estandar"][$x]) / $pageContent["labconfigurationitems"]["media_estandar"][$x]) * 100;
-
+								if (isset($pageContent["labconfigurationitems"]["diff_porcentual"][$x])) {
 									echo "<td style='width: 10%;" . $pageContent["tablestyle_text_center"] . "'>" . round($pageContent["labconfigurationitems"]["diff_porcentual"][$x], 2) . "</td>";
+								} else {
+									echo "<td style='width: 10%;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
 								}
-
-
 
 								// Z-Score
-		
-								echo "<td style='text-align:center;width: 10%'>" . (($pageContent["labconfigurationitems"]["zscore"][$x] === "" || $pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") ? "N/A" : round($pageContent["labconfigurationitems"]["zscore"][$x], 2)) . "</td>";
-
-
+								if (isset($pageContent["labconfigurationitems"]["zscore"][$x])) {
+									echo "<td style='text-align:center;width: 7%'>" . round($pageContent["labconfigurationitems"]["zscore"][$x], 2) . "</td>";
+								} else {
+									echo "<td style='text-align:center;width: 7%'>N/A</td>";
+								}
 
 								// Valoración
-		
-								if ($pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") {
-
-									echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
-								} else {
-
+								if (isset($pageContent["labconfigurationitems"]["zscoreperformance"][$x])) {
+									$rendimiento = "N/A";
 									if ($pageContent["labconfigurationitems"]["zscoreperformance"][$x] == 1) {
-
-										echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>Satisfactorio</td>";
+										$rendimiento = "Satisfactorio";
 									} else if ($pageContent["labconfigurationitems"]["zscoreperformance"][$x] == 2) {
-
-										echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>Alarma</td>";
+										$rendimiento = 'Alarma';
 									} else if ($pageContent["labconfigurationitems"]["zscoreperformance"][$x] == 3) {
-
-										echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>No satisfactorio</td>";
-									} else if ($pageContent["labconfigurationitems"]["zscoreperformance"][$x] === null) {
-
-										echo "<td style='width: 15%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
+										$rendimiento = "No satisfactorio";
 									}
+									echo "<td style='width: 11%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>" . $rendimiento . "</td>";
+								} else {
+									echo "<td style='width: 11%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
 								}
-
 								echo "</tr>";
 
-
-
-								// Seccion para todos los participantes de QAP
-		
-								$nom_analito_cs = $pageContent["labconfigurationitems"]["nombre_analito"][$x];
-
-								$nom_unidad_cs = $pageContent["labconfigurationitems"]["nombre_unidad"][$x];
-
-								$nom_metodologia_cs = $pageContent["labconfigurationitems"]["nombre_metodologia"][$x];
-
-								$qry_aleatory = "SELECT fecha_vencimiento FROM $tbl_muestra_programa WHERE id_muestra = " . $sampleid;
-
-								$innerQryData_aleatory = mysql_fetch_array(mysql_query($qry_aleatory));
-
-								mysqlException(mysql_error(), "_23_" . $x);
-
-								$fechalimite_aleatory = $innerQryData_aleatory['fecha_vencimiento'];
-
-
-
-								// Aqui va el Query de la consulta de analitos
-		
-								$qry_participantes = "SELECT 
-
-												resultado.valor_resultado as 'resultado'
-
-											from programa 
-
-												join muestra_programa on programa.id_programa = muestra_programa.id_programa 
-
-												join muestra on muestra.id_muestra = muestra_programa.id_muestra 
-
-												join lote on lote.id_lote = muestra_programa.id_lote 
-
-												join resultado on muestra.id_muestra = resultado.id_muestra 
-
-												join configuracion_laboratorio_analito on configuracion_laboratorio_analito.id_configuracion = resultado.id_configuracion 
-
-												join unidad on unidad.id_unidad = configuracion_laboratorio_analito.id_unidad 
-
-												join analito on analito.id_analito = configuracion_laboratorio_analito.id_analito 
-
-											where 
-
-												resultado.valor_resultado is not null 
-
-												and resultado.valor_resultado != ''
-
-												and lote.nombre_lote = '" . $lotNombre . "' 
-
-												and analito.nombre_analito = '" . $nom_analito_cs . "' 
-
-												and unidad.nombre_unidad = '" . $nom_unidad_cs . "'
-												
-												order by CAST(resultado.valor_resultado AS DECIMAL(10, 2))
-
-											";
-
-
-
-								$objGrubbs = new Grubbs();
-
-								$objIntercuartil = new Intercuartil();
-
-
-
-								$qryArrayFinalConsenso = array();
-
-								$qryArrayParticipantes = mysql_query($qry_participantes);
-
-								mysqlException(mysql_error(), "_01");
-
-
-
-								while ($qryDataConsenso = mysql_fetch_array($qryArrayParticipantes)) {
-
-									array_push(
-
-										$qryArrayFinalConsenso,
-
-										array("resultado" => $qryDataConsenso["resultado"])
-
-									);
-								}
-
-								$objIntercuartil->test_intercuartil($qryArrayFinalConsenso, "resultado");
-
-								$qryData_participantes = $objIntercuartil->getPromediosNormales("resultado");
-
-								$zscoreintercuartil[] = ($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $qryData_participantes["media"]) / $qryData_participantes["de"];
-
-								//$objGrubbs->exclusionAtipicos($qryArrayFinalConsenso, "resultado");
-		
-								//$qryData_participantes = $objGrubbs->getPromediosNormales("resultado");
-		
-
-
-								if ($pageContent["programtype"] == 1) { // Si el programa es cuantitativo
-		
-
-
-									if ($qryData_participantes["de"] != 0 && $qryData_participantes["media"] != "" && $qryData_participantes["media"] != 0) {
-
-										$incertidumbre_inf = ($qryData_participantes["media"] - ($qryData_participantes["de"] * 2));
-
-										$incertidumbre_sup = ($qryData_participantes["media"] + ($qryData_participantes["de"] * 2));
-									} else {
-
-										$incertidumbre_sup = "N/A";
-
-										$incertidumbre_inf = "N/A";
-									}
-
-
-
-
-
-									if ($qryData_participantes["de"] == 0) {
-
-										$zscore_cal = 0;
-									} else {
-
-										$zscore_cal = ($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $qryData_participantes["media"]) / $qryData_participantes["de"];
-									}
-
-
-
-
-
-									if ($qryData_participantes["media"] == 0) {
-
-										$dif_por_cal = 0;
-									} else {
-
-										$dif_por_cal = (($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $qryData_participantes["media"]) / $qryData_participantes["media"]) * 100;
-									}
-
-
-									// Todos los participantes de QAP 3
-		
-									echo "<tr style='font-size: 7pt; background-color:#EAECEE;'>
-
-													<th style='text-align:center;width: 27.5%;border-left:1px solid #B2BABB;'>Todos los participantes de QAP<sup>2</sup></th>
-
-													<td style='text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["mediana"], 2)) . "</td>
-
-													<td style='text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["s"], 2)) . "</td>
-
-													<td style='text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["n"], 2)) . "</td>
-
-													<td style='text-align:center;width: 15%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["incertidumbre"], 2)) . "</td>
-
-													<td style='text-align:center;width: 10%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["diff"], 2)) . "</td>
-
-													<td style='text-align:center;width: 10%'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["zscore"], 2)) . "</td>";
-
-
-									// if ($zscore_cal == "" || $qryData_participantes["n"] < 1) {
-		
-
-
-									if ($calculoAnalitoMuestra["n"] < 4) {
-										$rendimiento = "N/A";
-									} else {
-										if ($indicador == 1) {
-
+								// Fila para "Todos los participantes de QAP"
+								echo "<tr style='font-size: 7pt; background-color:#EAECEE;'>";
+								echo "<th style='text-align:center;width: 27.5%;border-left:1px solid #B2BABB;'>Todos los participantes de QAP<sup>2</sup></th>";
+
+								if ($mostrarTodosParticipantes) {
+									$datosAUsar = $calculoAnalitoMuestra;
+									$indicadorAUsar = $indicador;
+
+									if (isset($datosAUsar["n"]) && $datosAUsar["n"] >= 4) {
+										echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["q1"], 2) . "</td>";
+										echo "<td style='text-align:center;width: 7.5%'>" . round($datosAUsar["mediana"], 2) . "</td>";
+										echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["q3"], 2) . "</td>";
+										echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["s"], 2) . "</td>";
+										echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["n"], 2) . "</td>";
+										echo "<td style='text-align:center;width: 11%'>" . round($datosAUsar["incertidumbre"], 2) . "</td>";
+										echo "<td style='text-align:center;width: 10%'>" . round($datosAUsar["diff"], 2) . "</td>";
+										echo "<td style='text-align:center;width: 7%'>" . round($datosAUsar["zscore"], 2) . "</td>";
+
+										if ($indicadorAUsar == 1) {
 											$rendimiento = "Satisfactorio";
-										} else if ($indicador == 0) {
-											$rendimiento = 'Alarma';
-										} else {
-
-											$rendimiento = "No satisfactorio";
-										}
-									}
-
-
-
-
-									echo "<td style='text-align:center;width: 15%; border-right:1px solid #B2BABB;'>" . $rendimiento . "</td>";
-
-									echo "</tr>";
-								}
-
-
-
-								// Seccion para los participantes con la misma metodologia
-		
-								$qry_aleatory = "SELECT fecha_vencimiento FROM $tbl_muestra_programa WHERE id_muestra = " . $sampleid;
-
-								$innerQryData_aleatory = mysql_fetch_array(mysql_query($qry_aleatory));
-
-								mysqlException(mysql_error(), "_23_" . $x);
-
-								$fechalimite_aleatory = $innerQryData_aleatory['fecha_vencimiento'];
-
-								$qry_participantes_met = "SELECT 
-
-												resultado.valor_resultado as 'resultado'
-
-											from programa 
-
-												join muestra_programa on programa.id_programa = muestra_programa.id_programa 
-
-												join muestra on muestra.id_muestra = muestra_programa.id_muestra 
-
-												join lote on lote.id_lote = muestra_programa.id_lote 
-
-												join resultado on muestra.id_muestra = resultado.id_muestra 
-
-												join  configuracion_laboratorio_analito on configuracion_laboratorio_analito.id_configuracion = resultado.id_configuracion 
-
-												join unidad on unidad.id_unidad = configuracion_laboratorio_analito.id_unidad 
-
-												join analito on analito.id_analito = configuracion_laboratorio_analito.id_analito 
-
-												join metodologia on metodologia.id_metodologia = configuracion_laboratorio_analito.id_metodologia
-
-											where 
-
-												resultado.valor_resultado is not null 
-
-												and resultado.valor_resultado != ''
-
-												and lote.nombre_lote = '" . $lotNombre . "' 
-
-												and analito.nombre_analito = '" . $nom_analito_cs . "' 
-
-												and unidad.nombre_unidad = '" . $nom_unidad_cs . "'
-
-												and metodologia.nombre_metodologia = '" . $nom_metodologia_cs . "'
-
-											";
-
-
-
-								$objGrubbs = new Grubbs();
-
-								$objIntercuartil = new Intercuartil();
-
-								$qryArrayFinalConsenso = array();
-
-								$qryArrayParticipantes = mysql_query($qry_participantes_met);
-
-								mysqlException(mysql_error(), "_01");
-
-
-
-								while ($qryDataConsenso = mysql_fetch_array($qryArrayParticipantes)) {
-
-									array_push(
-
-										$qryArrayFinalConsenso,
-
-										array("resultado" => $qryDataConsenso["resultado"])
-
-									);
-								}
-
-
-
-								$objGrubbs->exclusionAtipicos($qryArrayFinalConsenso, "resultado");
-
-								$qryData_participantes_met = $objGrubbs->getPromediosNormales("resultado");
-
-
-
-								if ($pageContent["programtype"] == 1) { // Si el programa es cuantitativo
-		
-
-
-									if ($qryData_participantes_met["de"] != 0 && $qryData_participantes_met["media"] != 0) {
-
-										$incertidumbre_inf = ($qryData_participantes_met["media"] - ($qryData_participantes_met["de"] * 2));
-
-										$incertidumbre_sup = ($qryData_participantes_met["media"] + ($qryData_participantes_met["de"] * 2));
-									} else {
-
-										$incertidumbre_inf = "N/A";
-
-										$incertidumbre_sup = "N/A";
-									}
-
-
-
-
-
-									if ($qryData_participantes_met["de"] == 0) {
-
-										$zscore_cal = 0;
-									} else {
-
-										$zscore_cal = ($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $qryData_participantes_met["media"]) / $qryData_participantes_met["de"];
-									}
-
-
-
-
-
-									if ($qryData_participantes_met["media"] == 0) {
-
-										$dif_por_cal = 0;
-									} else {
-
-										$dif_por_cal = (($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $qryData_participantes_met["media"]) / $qryData_participantes_met["media"]) * 100;
-									}
-
-
-
-									// Participantes de QAP Con la misma metodología 1
-		
-									echo "<tr style='font-size: 7pt;background-color:#fff'>
-
-														<th style='border-left:1px solid #B2BABB;border-bottom:1px solid #B2BABB;text-align:center;width: 27.5%;'>Participantes QAP misma metodología<sup>2</sup></th>
-
-														<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma['mediana'], 2)) . "</td>
-
-														<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["s"], 2)) . "</td>
-
-														<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["n"], 2)) . "</td>
-
-														<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 15%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["incertidumbre"], 2)) . "</td>
-
-														<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["diff"], 2)) . "</td>
-
-														<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . (($calculoAnalitoMuestraMisma["n"] < 4) ? "N/A" : round($calculoAnalitoMuestraMisma["zscore"], 2)) . "</td>";
-
-
-
-									// if ($zscore_cal == "" || $qryData_participantes_met["n"] < 1) {
-		
-
-
-									if ($calculoAnalitoMuestraMisma["n"] < 4) {
-										$rendimiento = "N/A";
-									} else {
-
-
-										if ($indicadorMisma == 1) {
-
-											$rendimiento = "Satisfactorio";
-										} else if ($indicadorMisma == 0) {
+										} else if ($indicadorAUsar == 0) {
 											$rendimiento = 'Alarma';
 										} else {
 											$rendimiento = "No satisfactorio";
 										}
+									} else {
+										echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 7.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='text-align:center;width: 11%'>N/A</td>";
+										echo "<td style='text-align:center;width: 10%'>N/A</td>";
+										echo "<td style='text-align:center;width: 7%'>N/A</td>";
+										$rendimiento = "N/A";
 									}
-
-
-									echo "<td style='text-align:center;width: 15%; border-right:1px solid #B2BABB;border-bottom:1px solid #B2BABB;'>" . $rendimiento . "</td>";
-
-									echo "</tr>";
+								} else {
+									echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+									echo "<td style='text-align:center;width: 7.5%'>N/A</td>";
+									echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+									echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+									echo "<td style='text-align:center;width: 6.5%'>N/A</td>";
+									echo "<td style='text-align:center;width: 11%'>N/A</td>";
+									echo "<td style='text-align:center;width: 10%'>N/A</td>";
+									echo "<td style='text-align:center;width: 7%'>N/A</td>";
+									$rendimiento = "N/A";
 								}
+								echo "<td style='width: 11%;border-right:1px solid #B2BABB;" . $pageContent["tablestyle_text_center"] . "'>" . $rendimiento . "</td>";
+								// echo "</tr>";
+		
+								// Fila para "Participantes QAP misma metodología"
+								echo "<tr style='font-size: 7pt;background-color:#fff'>";
+								echo "<th style='border-left:1px solid #B2BABB;border-bottom:1px solid #B2BABB;text-align:center;width: 27.5%;'>Participantes QAP misma metodología<sup>2</sup></th>";
 
+								if ($mostrarMismaMetodologia) {
+									$datosAUsar = $calculoAnalitoMuestraMisma;
+									$indicadorAUsar = $indicadorMisma;
 
+									if (isset($datosAUsar["n"]) && $datosAUsar["n"] >= 4) {
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["q1"], 2) . "</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>" . round($datosAUsar["mediana"], 2) . "</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["q3"], 2) . "</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["s"], 2) . "</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["n"], 2) . "</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 11%'>" . round($datosAUsar["incertidumbre"], 2) . "</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . round($datosAUsar["diff"], 2) . "</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7%'>" . round($datosAUsar["zscore"], 2) . "</td>";
 
+										if ($indicadorAUsar == 1) {
+											$rendimiento = "Satisfactorio";
+										} else if ($indicadorAUsar == 0) {
+											$rendimiento = 'Alarma';
+										} else {
+											$rendimiento = "No satisfactorio";
+										}
+									} else {
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 11%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>N/A</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7%'>N/A</td>";
+										$rendimiento = "N/A";
+									}
+								} else {
+									echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+									echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7.5%'>N/A</td>";
+									echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+									echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+									echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>N/A</td>";
+									echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 11%'>N/A</td>";
+									echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>N/A</td>";
+									echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7%'>N/A</td>";
+									$rendimiento = "N/A";
+								}
+								echo "<td style='text-align:center;width: 11%; border-right:1px solid #B2BABB;border-bottom:1px solid #B2BABB;'>" . $rendimiento . "</td>";
+								echo "</tr>";
+
+								// Leyendas
+								if (!empty($leyendaDatosInsuficientes)) {
+									echo "<tr><td colspan='10' style='font-size: 7pt;'>" . $leyendaDatosInsuficientes . "</td></tr>";
+								}
+								if (!empty($leyendaCV)) {
+									echo "<tr><td colspan='10' style='font-size: 7pt;'>" . $leyendaCV . "</td></tr>";
+								}
 								break;
+
 						}
+
 
 
 
@@ -6375,6 +5894,7 @@ switch ($header) {
 
 
 						tablePrinter('br', 'no_border');
+
 
 
 
@@ -6722,466 +6242,298 @@ switch ($header) {
 		switch ($pageContent["programtype"]) {
 
 			case 1:
-
-
-
 				$repeat = true;
-
 				$maxRows = 35;
-
 				$itemCounter = 0;
 
+				// Determinar si necesitamos dividir las tablas
+				$totalMuestras = sizeof($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0]);
+				$muestrasPorTabla = array();
 
-
-				echo "<div class='col margin-top-1 margin-bottom-1 sheet' data-sheet='true' title='216|279' style='width:864px !important; height:1115px !important; margin: auto;' alt='P' id='" . md5(uniqid(rand(), true)) . "'>";
-
-				tablePrinter('header2', '6. RESUMEN DE RONDA', $labid, $sampleid);
-
-				tablePrinter('br', 'no_border');
-
-				echo "<table style='width: 100%;' cellpadding='5' cellspacing='0'>";
-
-				echo "<tbody>";
-
-				echo "<tr style='font-size:7px;font-weight:bold;'>";
-
-				echo "<th style='" . $pageContent["tablestyle_border_left"] . $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"] . $pageContent["tablestyle_text_center"] . "' rowspan='2'>Ítem</th>";
-
-				echo "<th style='" . $pageContent["tablestyle_border_right"] . $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"] . $pageContent["tablestyle_text_center"] . "' colspan='2' rowspan='2'>Mensurando</th>";
-
-
-
-				if (isset($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0])) {
-
-					for ($x = 0; $x < sizeof($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0]); $x++) {
-
-						echo "<th style='" . (($x + 1) == sizeof($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0]) ? $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_right"] . $pageContent["tablestyle_border_top"] : $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"]) . $pageContent["tablestyle_text_center"] . "' colspan='3'>Muestra " . $pageContent["labconfigurationitemsforthewholeround"]["muestra"][0][$x] . "</th>";
-					}
+				if ($totalMuestras > 8) {
+					// Primera tabla: 6 muestras (índices 0-5)
+					$muestrasPorTabla[0] = array_slice($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0], 0, 6);
+					// Segunda tabla: el resto de muestras (índices 6 en adelante)
+					$muestrasPorTabla[1] = array_slice($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0], 6);
+				} else {
+					// Una sola tabla con todas las muestras
+					$muestrasPorTabla[0] = $pageContent["labconfigurationitemsforthewholeround"]["muestra"][0];
 				}
 
+				// Generar cada tabla
+				for ($tablaIndex = 0; $tablaIndex < count($muestrasPorTabla); $tablaIndex++) {
+					$muestrasActuales = $muestrasPorTabla[$tablaIndex];
+					$offsetMuestra = ($tablaIndex == 0) ? 0 : 6; // Para la segunda tabla, empezamos desde el índice 6
+		
+					echo "<div class='col margin-top-1 margin-bottom-1 sheet' data-sheet='true' title='216|279' style='width:864px !important; height:1115px !important; margin: auto;' alt='P' id='" . md5(uniqid(rand(), true)) . "'>";
 
+					// Solo mostrar el encabezado principal en la primera tabla
+					if ($tablaIndex == 0) {
+						tablePrinter('header2', '6. RESUMEN DE RONDA', $labid, $sampleid);
+						tablePrinter('br', 'no_border');
+					}
 
-				echo "</tr>";
+					echo "<table style='width: 100%;' cellpadding='5' cellspacing='0'>";
+					echo "<tbody>";
+					echo "<tr style='font-size:7px;font-weight:bold;'>";
+					echo "<th style='" . $pageContent["tablestyle_border_left"] . $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"] . $pageContent["tablestyle_text_center"] . "' rowspan='2'>Ítem</th>";
+					echo "<th style='" . $pageContent["tablestyle_border_right"] . $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"] . $pageContent["tablestyle_text_center"] . "' colspan='2' rowspan='2'>Mensurando</th>";
 
-				echo "<tr style='font-size:5px;font-weight:bold;'>";
+					// Encabezados de muestras para la tabla actual
+					for ($x = 0; $x < sizeof($muestrasActuales); $x++) {
+						echo "<th style='" . (($x + 1) == sizeof($muestrasActuales) ? $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_right"] . $pageContent["tablestyle_border_top"] : $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"]) . $pageContent["tablestyle_text_center"] . "' colspan='3'>Muestra " . $muestrasActuales[$x] . "</th>";
+					}
 
-
-
-				if (isset($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0])) {
-
-
+					echo "</tr>";
+					echo "<tr style='font-size:5px;font-weight:bold;'>";
 
 					$notificaciones_muestra = [];
 
-
-
-
-					for ($x = 0; $x < sizeof($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0]); $x++) {
-
-
+					// Subencabezados para las muestras actuales
+					for ($x = 0; $x < sizeof($muestrasActuales); $x++) {
+						$indiceOriginal = $offsetMuestra + $x;
 
 						// Para la ronda Y se agregan los tres tipos de notificaciones
-		
-						$notificaciones_muestra[$x] = [];
-
-						$notificaciones_muestra[$x]["tardio"] = 0;
-
-						$notificaciones_muestra[$x]["ausente"] = 0;
-
-						$notificaciones_muestra[$x]["revalorado"] = 0;
-
-
+						$notificaciones_muestra[$indiceOriginal] = [];
+						$notificaciones_muestra[$indiceOriginal]["tardio"] = 0;
+						$notificaciones_muestra[$indiceOriginal]["ausente"] = 0;
+						$notificaciones_muestra[$indiceOriginal]["revalorado"] = 0;
 
 						echo "<th style='" . $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"] . $pageContent["tablestyle_text_center"] . "'>Dif% con RL-MMT-JCTLM</th>";
-
 						echo "<th style='" . $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"] . $pageContent["tablestyle_text_center"] . "'>Z-S<br>WWR</th>";
-
-						echo "<th style='" . (($x + 1) == sizeof($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0]) ? $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_right"] . $pageContent["tablestyle_border_top"] : $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"]) . $pageContent["tablestyle_text_center"] . "'>Z Score participantes QAP</th>";
-					}
-				}
-
-
-
-				echo "</tr>";
-
-
-				//var_dump($configurationids["id_analito"]);
-				//exit;
-				for ($x = 0; $x < sizeof($configurationids["id_analito"]); $x++) {
-
-
-
-					if ((($x + 1) % 2) == 0) {
-
-						$trBackgroundColor = "white";
-					} else {
-
-						$trBackgroundColor = "#f2f2f2";
+						echo "<th style='" . (($x + 1) == sizeof($muestrasActuales) ? $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_right"] . $pageContent["tablestyle_border_top"] : $pageContent["tablestyle_border_bottom"] . $pageContent["tablestyle_border_top"]) . $pageContent["tablestyle_text_center"] . "'>Z Score participantes QAP</th>";
 					}
 
+					echo "</tr>";
 
+					// Reiniciar contador para cada tabla
+					$itemCounterLocal = 0;
 
-					if (!isset($configurationids["id_analito"][$itemCounter])) {
-
-
-
-						echo "<tr style='background-color:" . $trBackgroundColor . ";font-size:6px;'>";
-
-
-
-						echo "<td style='font-weight:bold;" . $pageContent["tablestyle_border_left"] . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
-
-						echo "<td style='font-weight:bold;" . $pageContent["tablestyle_text_center"] . "' colspan='2'>&nbsp;</td>";
-
-
-
-						if (isset($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0])) {
-
-							for ($y = 0; $y < sizeof($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0]); $y++) {
-
-
-
-								echo "<td style='font-weight:bold;" . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
-
-								echo "<td style='font-weight:bold;" . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
-
-								echo "<td style='font-weight:bold;" . (($y + 1) == sizeof($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0]) ? $pageContent["tablestyle_border_right"] : "") . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
-							}
+					// Filas de datos
+					for ($x = 0; $x < sizeof($configurationids["id_analito"]); $x++) {
+						if ((($x + 1) % 2) == 0) {
+							$trBackgroundColor = "white";
+						} else {
+							$trBackgroundColor = "#f2f2f2";
 						}
 
+						if (!isset($configurationids["id_analito"][$itemCounterLocal])) {
+							echo "<tr style='background-color:" . $trBackgroundColor . ";font-size:6px;'>";
+							echo "<td style='font-weight:bold;" . $pageContent["tablestyle_border_left"] . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
+							echo "<td style='font-weight:bold;" . $pageContent["tablestyle_text_center"] . "' colspan='2'>&nbsp;</td>";
 
-
-						echo "</tr>";
-					} else {
-
-
-
-						echo "<tr style='background-color:" . $trBackgroundColor . ";font-size:6px;'>";
-
-						echo "<td style='" . $pageContent["tablestyle_border_left"] . $pageContent["tablestyle_text_center"] . "'>" . ($itemCounter + 1) . "</td>";
-
-						echo "<td style='" . $pageContent["tablestyle_text_left"] . "' colspan='2'>" . $pageContent["labconfigurationitems"]["nombre_analito"][$itemCounter] . "</td>";
-
-
-
-						for ($y = 0; $y < sizeof($pageContent["labconfigurationitemsforthewholeround"]["resultado"][$itemCounter]); $y++) {
-
-
-							$calculoAnalitoMuestra = $controllerMediaDeComparacionTodosLosParticipantes->getCalculoPorAnalitoIdMuestraId(
-								$configurationids["id_analito"][$itemCounter],
-								$pageContent["labconfigurationitemsforthewholeround"]["id_muestra"][$itemCounter][$y],
-								$configurationids["id_metodologia"][$itemCounter],
-								$configurationids["id_unidad"][$itemCounter],
-								$configurationids["id_analizador"][$itemCounter]
-							);
-
-
-							if (($y + 1) <= $pageContent["programsamplenumber"]) {
-
-								$badge = "";
+							for ($y = 0; $y < sizeof($muestrasActuales); $y++) {
+								echo "<td style='font-weight:bold;" . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
+								echo "<td style='font-weight:bold;" . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
+								echo "<td style='font-weight:bold;" . (($y + 1) == sizeof($muestrasActuales) ? $pageContent["tablestyle_border_right"] : "") . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
+							}
+							echo "</tr>";
+						} else {
+							echo "<tr style='background-color:" . $trBackgroundColor . ";font-size:6px;'>";
+							echo "<td style='" . $pageContent["tablestyle_border_left"] . $pageContent["tablestyle_text_center"] . "'>" . ($itemCounterLocal + 1) . "</td>";
+							echo "<td style='" . $pageContent["tablestyle_text_left"] . "' colspan='2'>" . $pageContent["labconfigurationitems"]["nombre_analito"][$itemCounterLocal] . "</td>";
 
 
 
-								if ($pageContent["labconfigurationitemsforthewholeround"]["fecha_resultado"][$itemCounter][$y] == "" || $pageContent["labconfigurationitemsforthewholeround"]["fecha_muestra"][$itemCounter][$y] == "") {
+							// Procesar solo las muestras correspondientes a esta tabla
+							for ($y = 0; $y < sizeof($muestrasActuales); $y++) {
+								$indiceOriginalMuestra = $offsetMuestra + $y;
 
-									//
-		
-								} else {
 
-									if (strtotime($pageContent["labconfigurationitemsforthewholeround"]["fecha_resultado"][$itemCounter][$y]) > strtotime($pageContent["labconfigurationitemsforthewholeround"]["fecha_muestra"][$itemCounter][$y]) && ($y + 1) <= $pageContent["programsamplenumber"]) {
+								$sampleIdActual = $pageContent["labconfigurationitemsforthewholeround"]["id_muestra"][$itemCounterLocal][$indiceOriginalMuestra];
+								$calculoAnalitoMuestra = $controllerMediaDeComparacionTodosLosParticipantes->getCalculoPorAnalitoIdMuestraId(
+									$configurationids["id_analito"][$itemCounterLocal],
+									$sampleIdActual,
+									$configurationids["id_metodologia"][$itemCounterLocal],
+									$configurationids["id_unidad"][$itemCounterLocal],
+									$configurationids["id_analizador"][$itemCounterLocal]
+								);
 
-										if ($filterArray[5]) {
 
-											$badge = $badge . "<span hidden='hidden'>6</span><span class='glyphicon glyphicon-hourglass'></span>";
+								$FECHA_INICIO_NUEVA_FORMULA_ZSCORE = strtotime("2025-06-01");
+								// la siguiente comparacion puede fallar luego del 2038 por el overflow de la unix epoch
+								if (isset($fechasMuestras[$sampleIdActual]) && strtotime($fechasMuestras[$sampleIdActual]) < $FECHA_INICIO_NUEVA_FORMULA_ZSCORE) {
+									// zscore = ((resultado reportado por el lab) - (media de consenso)) / desviación estándar de consenso
+									$calculoAnalitoMuestra["zscore"] = (floatval($calculoAnalitoMuestra["valor_lab"]) - $calculoAnalitoMuestra["media"]) / $calculoAnalitoMuestra["de"];
+								}
+								if ($calculoAnalitoMuestra["n"] >= 4 && $fechasMuestras[$sampleIdActual] <= $fechasMuestras[$sampleid]) {
+									$arrayCalculosModificados[] = $calculoAnalitoMuestra;
+								}
 
-											$pageContent["ammountoflateresults"] = $pageContent["ammountoflateresults"] + 1;
 
-											$notificaciones_muestra[$y]["tardio"] = $notificaciones_muestra[$y]["tardio"] + 1;
+
+								$calculoAnalitoMuestra["color"] = "";
+								if ($calculoAnalitoMuestra["zscore"] !== "" && $calculoAnalitoMuestra["zscore"] !== null && is_numeric($calculoAnalitoMuestra["zscore"]) && $calculoAnalitoMuestra["n"] >= 4) {
+									if (abs($calculoAnalitoMuestra["zscore"]) <= 2) {
+										$calculoAnalitoMuestra["color"] = "#afffaf"; // Verde
+									} else if (abs($calculoAnalitoMuestra["zscore"]) > 2 && abs($calculoAnalitoMuestra["zscore"]) <= 3) {
+										$calculoAnalitoMuestra["color"] = "#ffff7d"; // Amarillo
+									} else if (abs($calculoAnalitoMuestra["zscore"]) > 3) {
+										$calculoAnalitoMuestra["color"] = "#ff7d7d"; // Rojo
+									}
+								}
+
+								if (($indiceOriginalMuestra + 1) <= $pageContent["programsamplenumber"]) {
+									$badge = "";
+
+									if ($pageContent["labconfigurationitemsforthewholeround"]["fecha_resultado"][$itemCounterLocal][$indiceOriginalMuestra] == "" || $pageContent["labconfigurationitemsforthewholeround"]["fecha_muestra"][$itemCounterLocal][$indiceOriginalMuestra] == "") {
+										//
+									} else {
+										if (strtotime($pageContent["labconfigurationitemsforthewholeround"]["fecha_resultado"][$itemCounterLocal][$indiceOriginalMuestra]) > strtotime($pageContent["labconfigurationitemsforthewholeround"]["fecha_muestra"][$itemCounterLocal][$indiceOriginalMuestra]) && ($indiceOriginalMuestra + 1) <= $pageContent["programsamplenumber"]) {
+											if ($filterArray[5]) {
+												$badge = $badge . "<span hidden='hidden'>6</span><span class='glyphicon glyphicon-hourglass'></span>";
+												$pageContent["ammountoflateresults"] = $pageContent["ammountoflateresults"] + 1;
+												$notificaciones_muestra[$indiceOriginalMuestra]["tardio"] = $notificaciones_muestra[$indiceOriginalMuestra]["tardio"] + 1;
+											}
 										}
 									}
-								}
 
-								if ($pageContent["labconfigurationitemsforthewholeround"]["resultado"][$itemCounter][$y] == "" && ($y + 1) <= $pageContent["programsamplenumber"]) {
-
-									if ($filterArray[6]) {
-
-										$badge = $badge . "<span hidden='hidden'>x</span><span class='glyphicon glyphicon-remove'></span>";
-
-										$pageContent["ammountofemptyresults"] = $pageContent["ammountofemptyresults"] + 1;
-
-										$notificaciones_muestra[$y]["ausente"] = $notificaciones_muestra[$y]["ausente"] + 1;
+									if ($pageContent["labconfigurationitemsforthewholeround"]["resultado"][$itemCounterLocal][$indiceOriginalMuestra] == "" && ($indiceOriginalMuestra + 1) <= $pageContent["programsamplenumber"]) {
+										if ($filterArray[6]) {
+											$badge = $badge . "<span hidden='hidden'>x</span><span class='glyphicon glyphicon-remove'></span>";
+											$pageContent["ammountofemptyresults"] = $pageContent["ammountofemptyresults"] + 1;
+											$notificaciones_muestra[$indiceOriginalMuestra]["ausente"] = $notificaciones_muestra[$indiceOriginalMuestra]["ausente"] + 1;
+										}
 									}
-								}
 
-								if ($pageContent["labconfigurationitemsforthewholeround"]["editado"][$itemCounter][$y] == 1 && ($y + 1) <= $pageContent["programsamplenumber"]) {
-
-									if ($filterArray[7]) {
-
-										$badge = $badge . "<span hidden='hidden'>!</span><span class='glyphicon glyphicon-pencil'></span>";
-
-										$pageContent["ammountofeditedresults"] = $pageContent["ammountofeditedresults"] + 1;
-
-										$notificaciones_muestra[$y]["revalorado"] = $notificaciones_muestra[$y]["revalorado"] + 1;
+									if ($pageContent["labconfigurationitemsforthewholeround"]["editado"][$itemCounterLocal][$indiceOriginalMuestra] == 1 && ($indiceOriginalMuestra + 1) <= $pageContent["programsamplenumber"]) {
+										if ($filterArray[7]) {
+											$badge = $badge . "<span hidden='hidden'>!</span><span class='glyphicon glyphicon-pencil'></span>";
+											$pageContent["ammountofeditedresults"] = $pageContent["ammountofeditedresults"] + 1;
+											$notificaciones_muestra[$indiceOriginalMuestra]["revalorado"] = $notificaciones_muestra[$indiceOriginalMuestra]["revalorado"] + 1;
+										}
 									}
-								}
 
-
-
-								// Indicadores de los Zscore (Zscore WWR)
-		
-								if ($pageContent["labconfigurationitemsforthewholeround"]["zscore"][$itemCounter][$y] === "" || $pageContent["labconfigurationitemsforthewholeround"]["resultado"][$itemCounter][$y] == "") {
-
-									$alertColor = "";
-
-									$alertIcon = "";
-								} else {
-
-
-
-									if ($pageContent["labconfigurationitemsforthewholeround"]["zscoreperformance"][$itemCounter][$y] == 1) {
-
-										$alertColor = "#afffaf"; // Verde
-		
-										$alertIcon = "<span class='glyphicon glyphicon-thumbs-up'></span>";
-									} else if ($pageContent["labconfigurationitemsforthewholeround"]["zscoreperformance"][$itemCounter][$y] == 2) {
-
-										$alertColor = "#ffff7d"; // Rojo
-		
-										$alertIcon = "<span class='glyphicon glyphicon-thumbs-up'></span>";
-									} else if ($pageContent["labconfigurationitemsforthewholeround"]["zscoreperformance"][$itemCounter][$y] == 3) {
-
-										$alertColor = "#ff7d7d"; // Amarillo
-		
-										$alertIcon = "<span class='glyphicon glyphicon-thumbs-down'></span>";
-									} else if ($pageContent["labconfigurationitemsforthewholeround"]["zscoreperformance"][$itemCounter][$y] === null) {
-
+									// Indicadores de los Zscore (Zscore WWR)
+									if ($pageContent["labconfigurationitemsforthewholeround"]["zscore"][$itemCounterLocal][$indiceOriginalMuestra] === "" || $pageContent["labconfigurationitemsforthewholeround"]["resultado"][$itemCounterLocal][$indiceOriginalMuestra] == "") {
 										$alertColor = "";
-
 										$alertIcon = "";
-									}
-								}
-
-
-
-								// Zscore de participantes
-		
-								if (
-
-									$pageContent["labconfigurationitemsforthewholeround"]["tipo_media_comparacion"][$itemCounter][$y] != 4 &&
-
-									$calculoAnalitoMuestra["n"] < 4
-
-
-
-								) {
-
-									$alertColor3 = "";
-								} else {
-
-									$indicador = $controllerMediaDeComparacionTodosLosParticipantes->getIndicadorAnalitoMuestraUnidad(
-										$configurationids["id_analito"][$itemCounter],
-										$pageContent["labconfigurationitemsforthewholeround"]["id_muestra"][$itemCounter][$y],
-										$configurationids["id_metodologia"][$itemCounter],
-										$configurationids["id_unidad"][$itemCounter],
-										$configurationids["id_analizador"][$itemCounter]
-									);
-
-									if ($indicador == 1) {
-
-										$alertColor3 = "#afffaf"; // Verde
-									} else if ($indicador == 0) {
-										$alertColor3 = "#ffff7d"; // Amarillo
 									} else {
-
-										$alertColor3 = "#ff7d7d"; // Rojo
+										if ($pageContent["labconfigurationitemsforthewholeround"]["zscoreperformance"][$itemCounterLocal][$indiceOriginalMuestra] == 1) {
+											$alertColor = "#afffaf"; // Verde
+											$alertIcon = "<span class='glyphicon glyphicon-thumbs-up'></span>";
+										} else if ($pageContent["labconfigurationitemsforthewholeround"]["zscoreperformance"][$itemCounterLocal][$indiceOriginalMuestra] == 2) {
+											$alertColor = "#ffff7d"; // Rojo
+											$alertIcon = "<span class='glyphicon glyphicon-thumbs-up'></span>";
+										} else if ($pageContent["labconfigurationitemsforthewholeround"]["zscoreperformance"][$itemCounterLocal][$indiceOriginalMuestra] == 3) {
+											$alertColor = "#ff7d7d"; // Amarillo
+											$alertIcon = "<span class='glyphicon glyphicon-thumbs-down'></span>";
+										} else if ($pageContent["labconfigurationitemsforthewholeround"]["zscoreperformance"][$itemCounterLocal][$indiceOriginalMuestra] === null) {
+											$alertColor = "";
+											$alertIcon = "";
+										}
 									}
-									/*							 
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															  //color para el zscore de todos los participantes
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								   if ($calculoAnalitoMuestra["zscore"] >= -2 && $calculoAnalitoMuestra["zscore"] < 2) {
 
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															   $alertColor3 = "#afffaf"; // Verde
+									// Zscore de participantes
+									if (
+										$pageContent["labconfigurationitemsforthewholeround"]["tipo_media_comparacion"][$itemCounterLocal][$indiceOriginalMuestra] != 4 &&
+										$calculoAnalitoMuestra["n"] < 4
+									) {
+										$alertColor3 = "";
+									} else {
+										$indicador = $controllerMediaDeComparacionTodosLosParticipantes->getIndicadorAnalitoMuestraUnidad(
+											$configurationids["id_analito"][$itemCounterLocal],
+											$pageContent["labconfigurationitemsforthewholeround"]["id_muestra"][$itemCounterLocal][$indiceOriginalMuestra],
+											$configurationids["id_metodologia"][$itemCounterLocal],
+											$configurationids["id_unidad"][$itemCounterLocal],
+											$configurationids["id_analizador"][$itemCounterLocal]
+										);
 
+										if ($indicador == 1) {
+											$alertColor3 = "#afffaf"; // Verde
+										} else if ($indicador == 0) {
+											$alertColor3 = "#ffff7d"; // Amarillo
+										} else {
+											$alertColor3 = "#ff7d7d"; // Rojo
+										}
+									}
 
+									// Zscore de JCTLM
+									if ($pageContent["labconfigurationitemsforthewholeround"]["sampleperformancereference"][$itemCounterLocal][$indiceOriginalMuestra] === null) {
+										$alertColor2 = "";
+										$alertIcon2 = "";
+									} else {
+										if ($pageContent["labconfigurationitemsforthewholeround"]["sampleperformancereference"][$itemCounterLocal][$indiceOriginalMuestra] === 0) {
+											$alertColor2 = "#ff7d7d"; // Rojo
+											$alertIcon2 = "<span class='glyphicon glyphicon-thumbs-down'></span>";
+										} else if ($pageContent["labconfigurationitemsforthewholeround"]["sampleperformancereference"][$itemCounterLocal][$indiceOriginalMuestra] == 1) {
+											$alertColor2 = "#afffaf"; // Verde
+											$alertIcon2 = "<span class='glyphicon glyphicon-thumbs-up'></span>";
+										} else if ($pageContent["labconfigurationitemsforthewholeround"]["sampleperformancereference"][$itemCounterLocal][$indiceOriginalMuestra] === null) {
+											$alertColor2 = "";
+											$alertIcon2 = "";
+										}
+									}
 
+									// Impresión de los valores
+									// 6. Resumen de ronda participantes QAP
+									// zscore 6.
+									echo "<td style='" . $pageContent["tablestyle_text_center"] . ";background-color:" . $alertColor2 . ";'>" . (($pageContent["labconfigurationitemsforthewholeround"]["deviationpercentagereference"][$itemCounterLocal][$indiceOriginalMuestra] === "") ? "N/A" : $pageContent["labconfigurationitemsforthewholeround"]["deviationpercentagereference"][$itemCounterLocal][$indiceOriginalMuestra]) . "</td>";
+									echo "<td style='" . $pageContent["tablestyle_text_center"] . ";background-color:" . $alertColor . ";'>" . (($pageContent["labconfigurationitemsforthewholeround"]["zscore"][$itemCounterLocal][$indiceOriginalMuestra] === "") ? "N/A" : $pageContent["labconfigurationitemsforthewholeround"]["zscore"][$itemCounterLocal][$indiceOriginalMuestra]) . "</td>";
+									echo "<td style='" . (($y + 1) == sizeof($muestrasActuales) ? $pageContent["tablestyle_border_right"] : "") . $pageContent["tablestyle_text_center"] . ";background-color:" . $calculoAnalitoMuestra["color"] . ";'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["zscore"], 2)) . "</td>";
 
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																else {
-
-
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															  }	
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								   */
-
-								}
-
-
-
-								// Zscore de JCTLM
-		
-								if ($pageContent["labconfigurationitemsforthewholeround"]["sampleperformancereference"][$itemCounter][$y] === null) {
-
+									$badge = "";
+									$alertColor = "";
+									$alertIcon = "";
 									$alertColor2 = "";
-
 									$alertIcon2 = "";
 								} else {
-
-									if ($pageContent["labconfigurationitemsforthewholeround"]["sampleperformancereference"][$itemCounter][$y] === 0) {
-
-										$alertColor2 = "#ff7d7d"; // Rojo
-		
-										$alertIcon2 = "<span class='glyphicon glyphicon-thumbs-down'></span>";
-									} else if ($pageContent["labconfigurationitemsforthewholeround"]["sampleperformancereference"][$itemCounter][$y] == 1) {
-
-										$alertColor2 = "#afffaf"; // Verde
-		
-										$alertIcon2 = "<span class='glyphicon glyphicon-thumbs-up'></span>";
-									} else if ($pageContent["labconfigurationitemsforthewholeround"]["sampleperformancereference"][$itemCounter][$y] === null) {
-
-										$alertColor2 = "";
-
-										$alertIcon2 = "";
-									}
+									echo "<td style='" . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
+									echo "<td style='" . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
+									echo "<td style='" . (($y + 1) == sizeof($muestrasActuales) ? $pageContent["tablestyle_border_right"] : "") . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
 								}
 
-
-
-								// Impresión de los valores
-								// 6. Resumen de ronda participantes QAP
-								// zscore 6.
-		
-								echo "<td style='" . $pageContent["tablestyle_text_center"] . ";background-color:" . $alertColor2 . ";'>" . (($pageContent["labconfigurationitemsforthewholeround"]["deviationpercentagereference"][$itemCounter][$y] === "") ? "N/A" : $pageContent["labconfigurationitemsforthewholeround"]["deviationpercentagereference"][$itemCounter][$y]) . "</td>";
-
-								echo "<td style='" . $pageContent["tablestyle_text_center"] . ";background-color:" . $alertColor . ";'>" . (($pageContent["labconfigurationitemsforthewholeround"]["zscore"][$itemCounter][$y] === "") ? "N/A" : $pageContent["labconfigurationitemsforthewholeround"]["zscore"][$itemCounter][$y]) . "</td>";
-
-								echo "<td style='" . (($y + 1) == sizeof($pageContent["labconfigurationitemsforthewholeround"]["resultado"][$itemCounter]) ? $pageContent["tablestyle_border_right"] : "") . $pageContent["tablestyle_text_center"] . ";background-color:" . $alertColor3 . ";'>" . (($calculoAnalitoMuestra["n"] < 4) ? "N/A" : round($calculoAnalitoMuestra["zscore"], 2)) . "</td>";
-
-
-
-								$badge = "";
-
-								$alertColor = "";
-
-								$alertIcon = "";
-
-								$alertColor2 = "";
-
-								$alertIcon2 = "";
-							} else { // En dado caso que se imprima la muestra 1. Imprimir hasta esa muestra y el resto dejarlo en blanco
-		
-								echo "<td style='" . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
-
-								echo "<td style='" . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
-
-								echo "<td style='" . (($y + 1) == sizeof($pageContent["labconfigurationitemsforthewholeround"]["resultado"][$itemCounter]) ? $pageContent["tablestyle_border_right"] : "") . $pageContent["tablestyle_text_center"] . "'>&nbsp;</td>";
 							}
+							echo "</tr>";
+						}
+						$itemCounterLocal++;
+					}
+
+					// Impresión de valores de notificaciones
+					echo "<tr style='font-size:8px; text-align:center'>";
+					echo "<td colspan='3' style='font-size:7px; border: 1px solid #ccc; border-left: 1px solid #333;'><strong>Notificaciones<strong></td>";
+
+					for ($num_muestra = 0; $num_muestra < sizeof($muestrasActuales); $num_muestra++) {
+						$indiceOriginalNotif = $offsetMuestra + $num_muestra;
+						$border_ultimo = "";
+
+						if (($num_muestra + 1) == sizeof($muestrasActuales)) {
+							$border_ultimo = "border-right:1px solid #333;";
 						}
 
-
-
-						echo "</tr>";
+						echo (
+							"<td colspan='3' style='border: 1px solid #ccc;" . $border_ultimo . "'>" .
+							"<span style='font-family:Wingdings;'><span hidden='hidden'>6</span><span class='glyphicon glyphicon-hourglass'></span></span>" .
+							" " .
+							(isset($notificaciones_muestra[$indiceOriginalNotif]["tardio"]) ? $notificaciones_muestra[$indiceOriginalNotif]["tardio"] : 0) .
+							" " .
+							"<span style='font-family:Wingdings;'><span hidden='hidden'>x</span><span class='glyphicon glyphicon-remove'></span></span>" .
+							" " .
+							(isset($notificaciones_muestra[$indiceOriginalNotif]["ausente"]) ? $notificaciones_muestra[$indiceOriginalNotif]["ausente"] : 0) .
+							" " .
+							"<span style='font-family:Wingdings;'><span hidden='hidden'>!</span><span class='glyphicon glyphicon-pencil'></span></span>" .
+							" " .
+							(isset($notificaciones_muestra[$indiceOriginalNotif]["revalorado"]) ? $notificaciones_muestra[$indiceOriginalNotif]["revalorado"] : 0) .
+							"</td>"
+						);
 					}
+					echo "</tr>";
 
+					echo "</tbody>";
+					echo "</table>";
+					tablePrinter('tableend', 'null');
+					tablePrinter('br', 'no_border');
+					tablePrinter('tablenotifications', 'notification2');
+					tablePrinter('br', 'no_border');
+					echo "</div>";
 
-
-					$itemCounter++;
 				}
 
-
-
-
-
-
-
-				// Impresion de valores de notificaciones
-		
-				echo "<tr style='font-size:8px; text-align:center'>";
-
-				echo "<td colspan='3' style='font-size:7px; border: 1px solid #ccc; border-left: 1px solid #333;'><strong>Notificaciones<strong></td>";
-
-
-
-				// for($num_muestra=0; $num_muestra<sizeof(); $num_muestra++;){ // Por cada muestra que existe
-		
-				for ($num_muestra = 0; $num_muestra < sizeof($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0]); $num_muestra++) {
-
-
-
-					$border_ultimo = "";
-
-
-
-					if (($num_muestra + 1) == sizeof($pageContent["labconfigurationitemsforthewholeround"]["muestra"][0])) {
-
-						$border_ultimo = "border-right:1px solid #333;";
-					}
-
-
-
-					echo (
-
-						"<td colspan='3' style='border: 1px solid #ccc;" . $border_ultimo . "'>" .
-
-
-
-						"<span style='font-family:Wingdings;'><span hidden='hidden'>6</span><span class='glyphicon glyphicon-hourglass'></span></span>" .
-
-						" " .
-
-						$notificaciones_muestra[$num_muestra]["tardio"] .
-
-
-
-						" " .
-
-
-
-						"<span style='font-family:Wingdings;'><span hidden='hidden'>x</span><span class='glyphicon glyphicon-remove'></span></span>" .
-
-						" " .
-
-						$notificaciones_muestra[$num_muestra]["ausente"] .
-
-
-
-						" " .
-
-
-
-						"<span style='font-family:Wingdings;'><span hidden='hidden'>!</span><span class='glyphicon glyphicon-pencil'></span></span>" .
-
-						" " .
-
-						$notificaciones_muestra[$num_muestra]["revalorado"] .
-
-
-
-						"</td>"
-
-					);
-				}
-
-				echo "</tr>";
-
-
-
-				echo "</tbody>";
-
-				echo "</table>";
-
-				tablePrinter('tableend', 'null');
-
-				tablePrinter('br', 'no_border');
-
-				tablePrinter('tablenotifications', 'notification2');
-
-				tablePrinter('br', 'no_border');
-
-				echo "</div>";
-
+				// Reiniciar el contador principal
+				$itemCounter = sizeof($configurationids["id_analito"]);
 				echo "<!-- sheet separator -->";
 
-
-
 				break;
-
 			case 2:
 
 
@@ -7497,6 +6849,19 @@ switch ($header) {
 
 				break;
 		}
+		// Crea una instancia del controlador para acceder al método de cálculo
+		$mediaController = new MediaDeComparacionController();
+
+		// Recalcula los porcentajes con el método y tu array de resultados modificado
+		$nuevosIndicadores = $mediaController->calcularPorcentajesDesdeArraySimple($arrayCalculosModificados);
+
+		// Sobrescribe los porcentajes de la variable global
+		$indicadoresGenerales["porcentaje"]["satisfactorio"] = $nuevosIndicadores["porcentaje"]["satisfactorio"];
+		$indicadoresGenerales["porcentaje"]["alarma"] = $nuevosIndicadores["porcentaje"]["alarma"];
+		$indicadoresGenerales["porcentaje"]["no_satisfactorio"] = $nuevosIndicadores["porcentaje"]["no_satisfactorio"];
+		$indicadoresGenerales["resultados"]["satisfactorio"] = $nuevosIndicadores["resultados"]["satisfactorio"];
+		$indicadoresGenerales["resultados"]["alarma"] = $nuevosIndicadores["resultados"]["alarma"];
+		$indicadoresGenerales["resultados"]["no_satisfactorio"] = $nuevosIndicadores["resultados"]["no_satisfactorio"];
 
 
 
@@ -7730,7 +7095,7 @@ switch ($header) {
 
 				echo "<tr>";
 
-				echo "<td style='" . $pageContent["tablestyle_text_bold"] . $pageContent["tablestyle_text_center"] . "'></br>-- Final de reporte --</br></br></br></br></br></br></br>Aprobado por:</br>CoordinadorQAP</br>Programas QAP</br>
+				echo "<td style='" . $pageContent["tablestyle_text_bold"] . $pageContent["tablestyle_text_center"] . "'></br>-- Final de reporte --</br></br></br></br></br></br></br></br>Aprobado por:</br>Coordinador Programas QAP</br>
 				
 				<div style='text-align: right; margin-top: 20px;'>
                                             Coordinador QAP:</br>

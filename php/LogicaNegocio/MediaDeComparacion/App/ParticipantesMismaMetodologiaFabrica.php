@@ -28,6 +28,10 @@ class ParticipantesMismaMetodologiaFabrica extends ResultadosParticipantesFabric
             $idConfigConsensoActual = $configAnalito['id_configuracion'];
         }
 
+        $idMuestraActual = isset($muestra['id_muestra']) ? $muestra['id_muestra'] : null; // Obtener id_muestra
+        $fechaSeleccionActual = $nueva_fecha; // La fecha de corte es la fecha de seleccion
+
+
 
         $estrategia = new ObResultadosParticipantesMismaMetodogiaEstrategia(
             $idPrograma,
@@ -36,7 +40,9 @@ class ParticipantesMismaMetodologiaFabrica extends ResultadosParticipantesFabric
             $configAnalito['id_analito'],
             $configAnalito['id_metodologia'],
             $nueva_fecha,
-            $idConfigConsensoActual
+            $idConfigConsensoActual,
+            $idMuestraActual,
+            $fechaSeleccionActual
         );
         $estrategia->setRepository($this->resultadosRepository);
         return $estrategia;

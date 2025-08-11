@@ -17,8 +17,9 @@ function initialize() {
 		transition: 'fade'
 	});
 	*/
-	var timer_1 = setInterval(function(){
-		
+	
+		var timer_1 = setInterval(function(){
+					
 		$.ajax({
 			contentType: "application/x-www-form-urlencoded",
 			url:"php/verifica_estado_sesion.php",

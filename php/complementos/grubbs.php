@@ -302,6 +302,9 @@ class Grubbs
         $n = count($valores);
         $media = $this->stats_average($valores);
         $de = $this->stats_standard_deviation($valores, true);
+        $cv_robusto = (($this->get_iqr() / 1.349) / $this->get_q2()) * 100;
+        $iqr = $this->get_q3() - $this->get_q1();
+        $s = $iqr / 1.349; // Factor de corrección para IQR
         $cv = ($media != 0) ? ($de / $media) * 100 : 0;
 
         // Calcular cuartiles
@@ -312,13 +315,13 @@ class Grubbs
             "media" => $media,
             "de" => $de,
             "cv" => $cv,
-            "cv_robusto" => (($this->get_iqr() / 1.349) / $this->get_q2()) * 100,
+            "cv_robusto" => $cv_robusto,
             "n" => $n,
             "mediana" => $this->get_q2(),
             "q1" => $this->get_q1(),
             "q3" => $this->get_q3(),
-            "iqr" => $this->get_iqr(),
-            "s" => $this->get_iqr() / 1.349 // Factor de corrección para IQR;
+            "iqr" => $iqr,
+            "s" => $s
         ];
     }
 

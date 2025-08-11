@@ -204,7 +204,7 @@ actionRestriction_102();
 						<table class="table table-condensed table-bordered" id="table23">
 							<thead>
 								<tr>
-									<th colspan="12"><input type="text" class="form-control input-sm"
+									<th colspan="27"><input type="text" class="form-control input-sm"
 											data-search-input="true" placeholder="Buscar..."
 											onkeyup="functionHandler('tableSearch',this);" /></th>
 								</tr>
@@ -216,26 +216,26 @@ actionRestriction_102();
 									<th class="center-text" rowspan="2">Reactivo</th>
 									<th class="center-text" rowspan="2">Unidad</th>
 									<th class="center-text" rowspan="2">Gen VITROS</th>
-									<th class="center-text" rowspan="1" colspan="4" data-lvl="1" style="display: none;">
+									<th class="center-text" rowspan="1" colspan="6" data-lvl="1" style="display: none;">
 										<span>Nivel 1 </span><button id="table23Input1" type="button"
 											class="pull-right hidden" title="Ocultar" data-status="1"
 											data-btn-lvl="1"><span
 												class="glyphicon glyphicon-triangle-left"></span></button>
 									</th>
-									<th class="center-text" rowspan="1" colspan="4" data-lvl="2" style="display: none;">
+									<th class="center-text" rowspan="1" colspan="6" data-lvl="2" style="display: none;">
 										<span>Nivel 2 </span><button id="table23Input2" type="button"
 											class="pull-right hidden" title="Ocultar" data-status="1"
 											data-btn-lvl="2"><span
 												class="glyphicon glyphicon-triangle-left"></span></button>
 									</th>
-									<th class="center-text" rowspan="1" colspan="4" data-lvl="3" style="display: none;">
+									<th class="center-text" rowspan="1" colspan="6" data-lvl="3" style="display: none;">
 										<span>Nivel 3 </span><button id="table23Input3" type="button"
 											class="pull-right hidden" title="Ocultar" data-status="1"
 											data-btn-lvl="3"><span
 												class="glyphicon glyphicon-triangle-left"></span></button>
 									</th>
-									<th class="center-text" rowspan="1" colspan="4" data-lvl="0" style="display: none;">
-										<span>&nbsp;</span><button id="table23Input4" type="button"
+									<th class="center-text" rowspan="1" colspan="1" data-lvl="0" style="display: none;">
+										<span>Nivel 0 </span><button id="table23Input4" type="button"
 											class="pull-right hidden" title="Ocultar" data-status="1"
 											data-btn-lvl="0"><span
 												class="glyphicon glyphicon-triangle-left"></span></button>
@@ -243,19 +243,25 @@ actionRestriction_102();
 									<th class="center-text" rowspan="2">Consenso</th>
 								</tr>
 								<tr>
+									<th class="center-text" data-lvl="1" style="display: none;"><span>P25</span></th>
 									<th class="center-text" data-lvl="1" style="display: none;"><span>ME</span></th>
+									<th class="center-text" data-lvl="1" style="display: none;"><span>P75</span></th>
 									<th class="center-text" data-lvl="1" style="display: none;"><span>DE</span></th>
 									<th class="center-text" data-lvl="1" style="display: none;"><span>CV %</span></th>
 									<th class="center-text" data-lvl="1" style="display: none;"><span>N</span></th>
+									<th class="center-text" data-lvl="2" style="display: none;"><span>P25</span></th>
 									<th class="center-text" data-lvl="2" style="display: none;"><span>ME</span></th>
+									<th class="center-text" data-lvl="2" style="display: none;"><span>P75</span></th>
 									<th class="center-text" data-lvl="2" style="display: none;"><span>DE</span></th>
 									<th class="center-text" data-lvl="2" style="display: none;"><span>CV %</span></th>
 									<th class="center-text" data-lvl="2" style="display: none;"><span>N</span></th>
+									<th class="center-text" data-lvl="3" style="display: none;"><span>P25</span></th>
 									<th class="center-text" data-lvl="3" style="display: none;"><span>ME</span></th>
+									<th class="center-text" data-lvl="3" style="display: none;"><span>P75</span></th>
 									<th class="center-text" data-lvl="3" style="display: none;"><span>DE</span></th>
 									<th class="center-text" data-lvl="3" style="display: none;"><span>CV %</span></th>
 									<th class="center-text" data-lvl="3" style="display: none;"><span>N</span></th>
-									<th class="center-text" data-lvl="0" style="display: none;" colspan="4">
+									<th class="center-text" data-lvl="0" style="display: none;">
 										<span>Resultado de referencia</span>
 									</th>
 								</tr>

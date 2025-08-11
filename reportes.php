@@ -79,7 +79,7 @@
 							
 							<div class="form-group">
 
-								<label for="">Ciclo</label>
+								<label for="">Ronda</label>
 
 								<select class="form-control input-sm" id="form1input3"></select>
 

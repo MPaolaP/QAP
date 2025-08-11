@@ -290,17 +290,30 @@ class GrubbsV2
             ($this->resultados[$high] - $this->resultados[$low]);
     }
 
-    public function getPromediosNormales()
+    public function getPromediosNormales($columna)
     {
-        $datos = !empty($this->new_array_resultados) ?
-            $this->new_array_resultados :
-            $this->resultados;
+        // Usar los datos ya filtrados por exclusionAtipicos (guardados en new_array_resultados)
+        if (empty($this->new_array_resultados)) {
+            return [
+                "media" => 0,
+                "de" => 0,
+                "cv" => 0,
+                "n" => 0,
+                "mediana" => 0,
+                "q1" => 0,
+                "q3" => 0
+            ];
+        }
 
-        $n = count($datos);
-        $media = $this->stats_average($datos);
-        $de = $this->stats_standard_deviation($datos, true);
+        $valores = array_column($this->new_array_resultados, $columna);
+        $n = count($valores);
+        $media = $this->stats_average($valores);
+        $de = $this->stats_standard_deviation($valores, true);
         $cv = ($media != 0) ? ($de / $media) * 100 : 0;
 
+        // Calcular cuartiles
+        $this->resultados = $valores;
+        $this->calcularCuartiles();
 
         return [
             "media" => $media,
@@ -309,8 +322,7 @@ class GrubbsV2
             "n" => $n,
             "mediana" => $this->get_q2(),
             "q1" => $this->get_q1(),
-            "q3" => $this->get_q3(),
-            "iqr" => $this->get_iqr()
+            "q3" => $this->get_q3()
         ];
     }
 

@@ -85,7 +85,7 @@ function initialize() {
 
 		callsHandler("showResults", $("#form1input2").val() + "|" + $("#form1input1").val() + "|" + $("#form1input4").val() + "|" + $('#form1').find("[type=radio]:checked").val() + "|" + $("#form1input3").val() + "|" + checkbox1 + "|" + checkbox2 + "|" + checkbox3 + "|" + checkbox4 + "|" + checkbox5 + "|" + $("#form1input15").val() + "|" + fechas_corte, "id_array");
 	});
-		$("#form1input10general").bind("mouseup", function (event) {
+	$("#form1input10general").bind("mouseup", function (event) {
 
 		var checkbox1 = 0;
 		var checkbox2 = 0;
@@ -383,8 +383,8 @@ function responseHandler(val, val2, val3, val4, val5) {
 				}
 
 				break;
-			
-				case "deleteTempFiles":
+
+			case "deleteTempFiles":
 				var answer = parseInt(response.textContent, 10);
 
 				var boxType = "success";
@@ -423,242 +423,175 @@ function responseHandler(val, val2, val3, val4, val5) {
 				tbody.innerHTML = "";
 
 				var returnValues_1 = response.getElementsByTagName("returnvalues1")[0].textContent.split("|");
-				var returnValues_2 = response.getElementsByTagName("returnvalues2")[0].textContent.split("|");
-				var returnValues_3 = response.getElementsByTagName("returnvalues3")[0].textContent.split("|");
-				var returnValues_4 = response.getElementsByTagName("returnvalues4")[0].textContent.split("|");
-				var returnValues_5 = response.getElementsByTagName("returnvalues5")[0].textContent.split("|");
-				var returnValues_6 = response.getElementsByTagName("returnvalues6")[0].textContent.split("|");
-				var returnValues_7 = response.getElementsByTagName("returnvalues7")[0].textContent.split("|");
-				var returnValues_9lvl0 = response.getElementsByTagName("returnvalues9lvl0")[0].textContent.split("|");
-				var returnValues_9lvl1 = response.getElementsByTagName("returnvalues9lvl1")[0].textContent.split("|");
-				var returnValues_9lvl2 = response.getElementsByTagName("returnvalues9lvl2")[0].textContent.split("|");
-				var returnValues_9lvl3 = response.getElementsByTagName("returnvalues9lvl3")[0].textContent.split("|");
-				var returnValues_10 = response.getElementsByTagName("returnvalues10")[0].textContent.split("|");
-				var returnValues_11 = parseInt(response.getElementsByTagName("returnvalues11")[0].textContent, 10);
+				var returnValues_2 = response.getElementsByTagName("returnvalues2")[0].textContent.split("|"); // Nombre de programa
+				var returnValues_3 = response.getElementsByTagName("returnvalues3")[0].textContent.split("|"); // Mensurando
+				var returnValues_4 = response.getElementsByTagName("returnvalues4")[0].textContent.split("|"); // Analizador
+				var returnValues_5 = response.getElementsByTagName("returnvalues5")[0].textContent.split("|"); // Metodología
+				var returnValues_6 = response.getElementsByTagName("returnvalues6")[0].textContent.split("|"); // Reactivo
+				var returnValues_7 = response.getElementsByTagName("returnvalues7")[0].textContent.split("|"); // Unidad
+				var returnValues_9lvl0 = response.getElementsByTagName("returnvalues9lvl0")[0].textContent.split("|"); // Datos Nivel 0 (Cualitativo: desc_resultado_reporte_cualitativo)
+				var returnValues_9lvl1 = response.getElementsByTagName("returnvalues9lvl1")[0].textContent.split("|"); // Datos Nivel 1 (P25, ME, P75, DE, CV%, N)
+				var returnValues_9lvl2 = response.getElementsByTagName("returnvalues9lvl2")[0].textContent.split("|"); // Datos Nivel 2 (P25, ME, P75, DE, CV%, N)
+				var returnValues_9lvl3 = response.getElementsByTagName("returnvalues9lvl3")[0].textContent.split("|"); // Datos Nivel 3 (P25, ME, P75, DE, CV%, N)
+				var returnValues_10 = response.getElementsByTagName("returnvalues10")[0].textContent.split("|"); // Consenso
+				var returnValues_11 = parseInt(response.getElementsByTagName("returnvalues11")[0].textContent, 10); // Lógica de visibilidad de columnas
 
-				var level0Counter = 0;
-				var level1Counter = 0;
+				var level0Counter = 0; // Para el nivel cualitativo (incrementa de 1 en 1)
+				var level1Counter = 0; // Para los niveles cuantitativos (incrementa de 6 en 6)
 				var level2Counter = 0;
 				var level3Counter = 0;
+
+				// Esto nos ayudará a crear los TD e Inputs de forma más organizada para los niveles CUANTITATIVOS
+				const quantitativeLevelColumns = [
+					{ name: "P25", dataCol: "p25", isReadOnly: false, isCalculated: false },
+					{ name: "ME", dataCol: "me", isReadOnly: false, isCalculated: false },
+					{ name: "P75", dataCol: "p75", isReadOnly: false, isCalculated: false },
+					{ name: "DE", dataCol: "de", isReadOnly: false, isCalculated: false },
+					{ name: "CV%", dataCol: "cv", isReadOnly: true, isCalculated: true }, // CV% es calculado y readonly
+					{ name: "N", dataCol: "n", isReadOnly: false, isCalculated: false }
+				];
 
 				if (returnValues_1 != "") {
 
 					for (var x = 0; x < returnValues_1.length; x++) {
 
 						var tr = document.createElement("tr");
+						tr.dataset.id = returnValues_1[x]; // Asigna el ID de la fila
 
-						var td1 = document.createElement("td");
-						var td2 = document.createElement("td");
-						var td3 = document.createElement("td");
-						var td4 = document.createElement("td");
-						var td5 = document.createElement("td");
-						var td6 = document.createElement("td");
-						var td7 = document.createElement("td");
-						var td8 = document.createElement("td");
-						var td9 = document.createElement("td");
-						var td10 = document.createElement("td");
-						var td11 = document.createElement("td");
-						var td12 = document.createElement("td");
-						var td13 = document.createElement("td");
-						var td14 = document.createElement("td");
-						var td15 = document.createElement("td");
-						var td16 = document.createElement("td");
-						var td17 = document.createElement("td");
-						var td18 = document.createElement("td");
-						var td19 = document.createElement("td");
-						var td20 = document.createElement("td");
+						// Columnas de información estática (no input)
+						var td1 = document.createElement("td"); td1.setAttribute('class', 'unselectable center-text'); td1.innerHTML = returnValues_2[x]; tr.appendChild(td1);
+						var td2 = document.createElement("td"); td2.setAttribute('class', 'unselectable center-text'); td2.innerHTML = returnValues_3[x]; tr.appendChild(td2);
+						var td3 = document.createElement("td"); td3.setAttribute('class', 'unselectable center-text'); td3.innerHTML = returnValues_4[x]; tr.appendChild(td3);
+						var td4 = document.createElement("td"); td4.setAttribute('class', 'unselectable center-text'); td4.innerHTML = returnValues_5[x]; tr.appendChild(td4);
+						var td5 = document.createElement("td"); td5.setAttribute('class', 'unselectable center-text'); td5.innerHTML = returnValues_6[x]; tr.appendChild(td5);
+						var td6 = document.createElement("td"); td6.setAttribute('class', 'unselectable center-text'); td6.innerHTML = returnValues_7[x]; tr.appendChild(td6);
+						// Columna "Gen VITROS"
+						var tdGenVitros = document.createElement("td"); tdGenVitros.setAttribute('class', 'unselectable center-text'); tdGenVitros.innerHTML = returnValues_10[x]; tr.appendChild(tdGenVitros);
+
+
+						// Función auxiliar para crear y configurar una celda con input para datos CUANTITATIVOS
+						function createInputCell(level, dataColName, value, isReadOnly, isCalculated) {
+							var td = document.createElement("td");
+							td.setAttribute('class', 'unselectable center-text');
+							td.dataset.lvl = level;
+							td.dataset.col = dataColName; // Nuevo atributo para identificar la columna (p25, me, p75, de, cv, n)
+
+							var input = document.createElement("input");
+							input.setAttribute("type", "text"); // o "number" si solo se permiten números
+							input.setAttribute("class", "form-control input-sm");
+							input.setAttribute("style", "width: 70px; padding-left: 5px !important;");
+							input.value = (value !== undefined && value !== null && value !== '') ? value : 0; // Asigna el valor o 0 si está vacío
+
+							if (isReadOnly) {
+								input.setAttribute("readonly", "readonly");
+								// Solo para campos calculados (CV%) permitir doble click para editar temporalmente
+								if (isCalculated) {
+									input.addEventListener("dblclick", function () { $(this).removeAttr("readonly"); });
+									input.addEventListener("blur", function () { $(this).attr("readonly", "readonly"); });
+									$(input).keypress(function (event) { if (event.keyCode == 13) { $(this).attr("readonly", "readonly"); } else { $(this).parent().parent().get(0).dataset.edited = "true"; } });
+								}
+							}
+
+							// Eventos de focus/blur para limpiar/rellenar 0
+							$(input).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
+							$(input).bind("blur", function () { if (this.value == "") { this.value = 0; } });
+
+							// Valida y formatea a número (asumiendo que numericInput es un plugin jQuery)
+							$(input).numericInput({ allowFloat: true, allowNegative: true });
+
+							// Eventos de Keyup para marcar como editado y reemplazar comas por puntos
+							input.addEventListener("keyup", function () {
+								$(this).parent().parent().get(0).dataset.edited = "true";
+								var tempValue = this.value + '';
+								this.value = tempValue.replace(",", ".");
+							});
+
+							td.appendChild(input);
+							return td;
+						}
+
+						// Construir las celdas para Nivel 1 (CUANTITATIVO)
+						quantitativeLevelColumns.forEach((col, idx) => {
+							const value = returnValues_9lvl1[level1Counter + idx];
+							const cell = createInputCell("1", col.dataCol, value, col.isReadOnly, col.isCalculated);
+							// Añadir listeners específicos para ME y DE para calcular CV%
+							if (col.dataCol === "me" || col.dataCol === "de") {
+								$(cell).find("input").on("keyup", function () {
+									const $row = $(this).closest('tr');
+									const meValue = parseFloat($row.find('td[data-lvl="1"][data-col="me"] input').val().replace(",", ".")) || 0;
+									const deValue = parseFloat($row.find('td[data-lvl="1"][data-col="de"] input').val().replace(",", ".")) || 0;
+									const cvInput = $row.find('td[data-lvl="1"][data-col="cv"] input');
+									cvInput.val(functionHandler("cvCalculator", deValue, meValue)); // (DE, ME)
+									$row.get(0).dataset.edited = "true";
+								});
+							}
+							tr.appendChild(cell);
+						});
+						level1Counter += 6;
+
+
+						// Construir las celdas para Nivel 2 (CUANTITATIVO)
+						quantitativeLevelColumns.forEach((col, idx) => {
+							const value = returnValues_9lvl2[level2Counter + idx];
+							const cell = createInputCell("2", col.dataCol, value, col.isReadOnly, col.isCalculated);
+							if (col.dataCol === "me" || col.dataCol === "de") {
+								$(cell).find("input").on("keyup", function () {
+									const $row = $(this).closest('tr');
+									const meValue = parseFloat($row.find('td[data-lvl="2"][data-col="me"] input').val().replace(",", ".")) || 0;
+									const deValue = parseFloat($row.find('td[data-lvl="2"][data-col="de"] input').val().replace(",", ".")) || 0;
+									const cvInput = $row.find('td[data-lvl="2"][data-col="cv"] input');
+									cvInput.val(functionHandler("cvCalculator", deValue, meValue));
+									$row.get(0).dataset.edited = "true";
+								});
+							}
+							tr.appendChild(cell);
+						});
+						level2Counter += 6;
+
+						// Construir las celdas para Nivel 3 (CUANTITATIVO)
+						quantitativeLevelColumns.forEach((col, idx) => {
+							const value = returnValues_9lvl3[level3Counter + idx];
+							const cell = createInputCell("3", col.dataCol, value, col.isReadOnly, col.isCalculated);
+							if (col.dataCol === "me" || col.dataCol === "de") {
+								$(cell).find("input").on("keyup", function () {
+									const $row = $(this).closest('tr');
+									const meValue = parseFloat($row.find('td[data-lvl="3"][data-col="me"] input').val().replace(",", ".")) || 0;
+									const deValue = parseFloat($row.find('td[data-lvl="3"][data-col="de"] input').val().replace(",", ".")) || 0;
+									const cvInput = $row.find('td[data-lvl="3"][data-col="cv"] input');
+									cvInput.val(functionHandler("cvCalculator", deValue, meValue));
+									$row.get(0).dataset.edited = "true";
+								});
+							}
+							tr.appendChild(cell);
+						});
+						level3Counter += 6;
+
+
+						// Construir la celda para Nivel 0 (CUALITATIVO)
+						var tdQualitative = document.createElement("td");
+						tdQualitative.setAttribute('class', 'unselectable center-text');
+						tdQualitative.dataset.lvl = "0"; // Identificador de nivel
+						tdQualitative.dataset.col = "cualitativo"; // Identificador de columna cualitativa
+
+						var inputQualitative = document.createElement("input");
+						inputQualitative.setAttribute("type", "text");
+						inputQualitative.setAttribute("class", "form-control input-sm");
+						inputQualitative.setAttribute("style", "width: 100px; padding-left: 5px !important;"); // Ajusta el ancho si es necesario
+						inputQualitative.value = (returnValues_9lvl0[level0Counter] !== undefined && returnValues_9lvl0[level0Counter] !== null && returnValues_9lvl0[level0Counter] !== '') ? returnValues_9lvl0[level0Counter] : "N/A";
+
+						inputQualitative.addEventListener("keyup", function () {
+							$(this).parent().parent().get(0).dataset.edited = "true";
+						});
+
+						tdQualitative.appendChild(inputQualitative);
+						tr.appendChild(tdQualitative);
+						level0Counter++; // Incrementa en 1 para el valor cualitativo
+
+
+						// Columnas de Consenso y Botones
 						var tdButtonConsenso = document.createElement("td");
-
-						var input1 = document.createElement("input");
-						var input2 = document.createElement("input");
-						var input3 = document.createElement("input");
-						var input4 = document.createElement("input");
-						var input5 = document.createElement("input");
-						var input6 = document.createElement("input");
-						var input7 = document.createElement("input");
-						var input8 = document.createElement("input");
-						var input9 = document.createElement("input");
-						var input10 = document.createElement("input");
-						var input11 = document.createElement("input");
-						var input12 = document.createElement("input");
-
-						input1.setAttribute("class", "form-control input-sm");
-						input2.setAttribute("class", "form-control input-sm");
-						input3.setAttribute("class", "form-control input-sm");
-						input4.setAttribute("class", "form-control input-sm");
-						input5.setAttribute("class", "form-control input-sm");
-						input6.setAttribute("class", "form-control input-sm");
-						input7.setAttribute("class", "form-control input-sm");
-						input8.setAttribute("class", "form-control input-sm");
-						input9.setAttribute("class", "form-control input-sm");
-						input10.setAttribute("class", "form-control input-sm");
-						input11.setAttribute("class", "form-control input-sm");
-						input12.setAttribute("class", "form-control input-sm");
-
-						input1.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input2.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input3.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input4.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input5.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input6.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input7.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input8.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input9.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input10.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input11.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-						input12.setAttribute("style", "width: 70px; padding-left: 5px !important;");
-
-						input3.setAttribute("readonly", "readonly");
-						input6.setAttribute("readonly", "readonly");
-						input9.setAttribute("readonly", "readonly");
-
-						input3.addEventListener("dblclick", function () { $(this).removeAttr("readonly"); });
-						input6.addEventListener("dblclick", function () { $(this).removeAttr("readonly"); });
-						input9.addEventListener("dblclick", function () { $(this).removeAttr("readonly"); });
-
-						input3.addEventListener("blur", function () { $(this).attr("readonly", "readonly"); });
-						input9.addEventListener("blur", function () { $(this).attr("readonly", "readonly"); });
-						input6.addEventListener("blur", function () { $(this).attr("readonly", "readonly"); });
-
-						$(input3).keypress(function (event) { if (event.keyCode == 13) { $(this).attr("readonly", "readonly"); } else { $(this).parent().parent().get(0).dataset.edited = "true"; } });
-						$(input9).keypress(function (event) { if (event.keyCode == 13) { $(this).attr("readonly", "readonly"); } else { $(this).parent().parent().get(0).dataset.edited = "true"; } });
-						$(input6).keypress(function (event) { if (event.keyCode == 13) { $(this).attr("readonly", "readonly"); } else { $(this).parent().parent().get(0).dataset.edited = "true"; } });
-
-						input1.addEventListener("keyup", function () { $(this).parent().next().next().find("input").val(functionHandler("cvCalculator", this.value, $(this).parent().next().find("input").val())); $(this).parent().parent().get(0).dataset.edited = "true"; var tempValue = this.value + ''; this.value = tempValue.replace(",", ".") });
-						input2.addEventListener("keyup", function () { $(this).parent().next().find("input").val(functionHandler("cvCalculator", $(this).parent().prev().find("input").val(), this.value)); $(this).parent().parent().get(0).dataset.edited = "true"; var tempValue = this.value + ''; this.value = tempValue.replace(",", ".") });
-						input4.addEventListener("keyup", function () { $(this).parent().next().next().find("input").val(functionHandler("cvCalculator", this.value, $(this).parent().next().find("input").val())); $(this).parent().parent().get(0).dataset.edited = "true"; var tempValue = this.value + ''; this.value = tempValue.replace(",", ".") });
-						input5.addEventListener("keyup", function () { $(this).parent().next().find("input").val(functionHandler("cvCalculator", $(this).parent().prev().find("input").val(), this.value)); $(this).parent().parent().get(0).dataset.edited = "true"; var tempValue = this.value + ''; this.value = tempValue.replace(",", ".") });
-						input7.addEventListener("keyup", function () { $(this).parent().next().next().find("input").val(functionHandler("cvCalculator", this.value, $(this).parent().next().find("input").val())); $(this).parent().parent().get(0).dataset.edited = "true"; var tempValue = this.value + ''; this.value = tempValue.replace(",", ".") });
-						input8.addEventListener("keyup", function () { $(this).parent().next().find("input").val(functionHandler("cvCalculator", $(this).parent().prev().find("input").val(), this.value)); $(this).parent().parent().get(0).dataset.edited = "true"; var tempValue = this.value + ''; this.value = tempValue.replace(",", ".") });
-
-						input10.addEventListener("keyup", function () { $(this).parent().parent().get(0).dataset.edited = "true"; var tempValue = this.value + ''; this.value = tempValue.replace(",", ".") });
-						input11.addEventListener("keyup", function () { $(this).parent().parent().get(0).dataset.edited = "true"; var tempValue = this.value + ''; this.value = tempValue.replace(",", ".") });
-						input12.addEventListener("keyup", function () { $(this).parent().parent().get(0).dataset.edited = "true"; var tempValue = this.value + ''; this.value = tempValue.replace(",", ".") });
-
-						$(input1).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input2).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input3).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input4).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input5).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input6).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input7).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input8).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input9).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input10).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input11).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-						$(input12).bind("focus", function () { if (this.value == '0') { this.value = ""; } });
-
-						$(input1).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input2).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input3).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input4).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input5).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input6).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input7).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input8).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input9).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input10).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input11).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-						$(input12).bind("blur", function () { if (this.value == "") { this.value = 0; } });
-
-						$(input1).numericInput({ allowFloat: true, allowNegative: true });
-						$(input2).numericInput({ allowFloat: true, allowNegative: true });
-						$(input3).numericInput({ allowFloat: true, allowNegative: true });
-						$(input4).numericInput({ allowFloat: true, allowNegative: true });
-						$(input5).numericInput({ allowFloat: true, allowNegative: true });
-						$(input6).numericInput({ allowFloat: true, allowNegative: true });
-						$(input7).numericInput({ allowFloat: true, allowNegative: true });
-						$(input8).numericInput({ allowFloat: true, allowNegative: true });
-						$(input9).numericInput({ allowFloat: true, allowNegative: true });
-						$(input10).numericInput({ allowFloat: true, allowNegative: true });
-						$(input11).numericInput({ allowFloat: true, allowNegative: true });
-						$(input12).numericInput({ allowFloat: true, allowNegative: true });
-
-						td1.setAttribute('class', 'unselectable center-text');
-						td2.setAttribute('class', 'unselectable center-text');
-						td3.setAttribute('class', 'unselectable center-text');
-						td4.setAttribute('class', 'unselectable center-text');
-						td5.setAttribute('class', 'unselectable center-text');
-						td6.setAttribute('class', 'unselectable center-text');
-						td7.setAttribute('class', 'unselectable center-text');
-						td8.setAttribute('class', 'unselectable center-text');
-						td9.setAttribute('class', 'unselectable center-text');
-						td10.setAttribute('class', 'unselectable center-text');
-						td11.setAttribute('class', 'unselectable center-text');
-						td12.setAttribute('class', 'unselectable center-text');
-						td13.setAttribute('class', 'unselectable center-text');
-						td14.setAttribute('class', 'unselectable center-text');
-						td15.setAttribute('class', 'unselectable center-text');
-						td16.setAttribute('class', 'unselectable center-text');
-						td17.setAttribute('class', 'unselectable center-text');
-						td18.setAttribute('class', 'unselectable center-text');
-						td19.setAttribute('class', 'unselectable center-text');
-						td20.setAttribute('class', 'unselectable center-text');
-						td20.setAttribute("colspan", "4");
-						td7.setAttribute("style", "border-left-width: 3px;");
-						td10.setAttribute("style", "border-left-width: 3px;");
-						td13.setAttribute("style", "border-left-width: 3px;");
-						td16.setAttribute("style", "border-right-width: 3px;");
-						td17.setAttribute("style", "border-right-width: 3px;");
-						td18.setAttribute("style", "border-right-width: 3px;");
-						td20.setAttribute("style", "width: 30vw;");
-
-						td7.dataset.lvl = "1";
-						td8.dataset.lvl = "1";
-						td9.dataset.lvl = "1";
-						td16.dataset.lvl = "1";
-						td10.dataset.lvl = "2";
-						td11.dataset.lvl = "2";
-						td12.dataset.lvl = "2";
-						td17.dataset.lvl = "2";
-						td13.dataset.lvl = "3";
-						td14.dataset.lvl = "3";
-						td15.dataset.lvl = "3";
-						td18.dataset.lvl = "3";
-						td20.dataset.lvl = "0";
-
-						td7.dataset.item = "1";
-						td8.dataset.item = "2";
-						td9.dataset.item = "3";
-						td16.dataset.item = "4";
-						td10.dataset.item = "1";
-						td11.dataset.item = "2";
-						td12.dataset.item = "3";
-						td17.dataset.item = "4";
-						td13.dataset.item = "1";
-						td14.dataset.item = "2";
-						td15.dataset.item = "3";
-						td18.dataset.item = "4";
-						td20.dataset.item = "1";
-
-						td20.dataset.id = "1";
-
-						input1.value = returnValues_9lvl1[level1Counter];
-						input2.value = returnValues_9lvl1[(level1Counter + 1)];
-						input3.value = returnValues_9lvl1[(level1Counter + 2)];
-						input10.value = returnValues_9lvl1[(level1Counter + 3)];
-
-						input4.value = returnValues_9lvl2[level2Counter];
-						input5.value = returnValues_9lvl2[(level2Counter + 1)];
-						input6.value = returnValues_9lvl2[(level2Counter + 2)];
-						input11.value = returnValues_9lvl2[(level2Counter + 3)];
-
-						input7.value = returnValues_9lvl3[level3Counter];
-						input8.value = returnValues_9lvl3[(level3Counter + 1)];
-						input9.value = returnValues_9lvl3[(level3Counter + 2)];
-						input12.value = returnValues_9lvl3[(level3Counter + 3)];
-
-						td20.innerHTML = returnValues_9lvl0[level0Counter];
-
-						td20.addEventListener("dblclick", function () { table23Editor(this) });
-
-						td1.innerHTML = returnValues_2[x];
-						td2.innerHTML = returnValues_3[x];
-						td3.innerHTML = returnValues_4[x];
-						td4.innerHTML = returnValues_5[x];
-						td5.innerHTML = returnValues_6[x];
-						td6.innerHTML = returnValues_7[x];
-						td19.innerHTML = returnValues_10[x];
+						tdButtonConsenso.style.display = "flex";
+						tdButtonConsenso.style.gap = "5px";
 
 						var button = document.createElement("button");
 						button.innerHTML = "<span class='glyphicon glyphicon-indent-left'></span>";
@@ -668,104 +601,51 @@ function responseHandler(val, val2, val3, val4, val5) {
 						});
 						tdButtonConsenso.appendChild(button);
 
-						// Nuevo botón
 						var nuevoBoton = document.createElement("button");
 						nuevoBoton.innerHTML = "<span class='glyphicon glyphicon-th-list'></span>";
 						nuevoBoton.setAttribute("class", "btn btn-info btn-sm");
 						nuevoBoton.title = "Seleccionar Resultados de Laboratorio para Consenso";
-
 						nuevoBoton.addEventListener("mouseup", function () {
 							var idConfigConsenso = this.parentNode.parentNode.getAttribute("data-id");
 							cargarResultadosParaVentanaConsenso(idConfigConsenso);
 							functionHandler('windowHandler', 'open', 'miVentanaResultadosConsenso');
 						});
 						tdButtonConsenso.appendChild(nuevoBoton);
-
-						tdButtonConsenso.style.display = "flex";
-						tdButtonConsenso.style.gap = "5px";
-
-						td7.appendChild(input1);
-						td8.appendChild(input2);
-						td9.appendChild(input3);
-						td10.appendChild(input4);
-						td11.appendChild(input5);
-						td12.appendChild(input6);
-						td13.appendChild(input7);
-						td14.appendChild(input8);
-						td15.appendChild(input9);
-						td16.appendChild(input10);
-						td17.appendChild(input11);
-						td18.appendChild(input12);
-
-						tr.appendChild(td1);
-						tr.appendChild(td2);
-						tr.appendChild(td3);
-						tr.appendChild(td4);
-						tr.appendChild(td5);
-						tr.appendChild(td6);
-						tr.appendChild(td19);
-						tr.appendChild(td7);
-						tr.appendChild(td8);
-						tr.appendChild(td9);
-						tr.appendChild(td16);
-						tr.appendChild(td10);
-						tr.appendChild(td11);
-						tr.appendChild(td12);
-						tr.appendChild(td17);
-						tr.appendChild(td13);
-						tr.appendChild(td14);
-						tr.appendChild(td15);
-						tr.appendChild(td18);
-						tr.appendChild(td20);
 						tr.appendChild(tdButtonConsenso);
 
-						var tempInputArrya = $(tr).find("input").get();
-
-						for (var y = 0; y < tempInputArrya.length; y++) {
-							if (tempInputArrya[y].value == 'undefined' || tempInputArrya[y].value == '') {
-								tempInputArrya[y].value = 0;
-							}
-						}
-
-						tr.dataset.id = returnValues_1[x];
-
 						tbody.appendChild(tr);
-
-						level0Counter++;
-						level1Counter = (level1Counter + 4);
-						level2Counter = (level2Counter + 4);
-						level3Counter = (level3Counter + 4);
-
 					}
 				}
 
 				$("#table23").find("thead").find("input[data-search-input=true]").keyup();
 
+				// Lógica para ocultar/mostrar columnas según returnValues_11 (nivel del lote)
 				switch (returnValues_11) {
-					case 0:
-						functionHandler("hideColumn", "table23Input1", "table23", "1");
-						functionHandler("hideColumn", "table23Input2", "table23", "1");
-						functionHandler("hideColumn", "table23Input3", "table23", "1");
-						functionHandler("hideColumn", "table23Input4", "table23", "0");
+					case 0: // Asumo que el caso 0 oculta todos los cuantitativos y solo deja el cualitativo
+						functionHandler("hideColumn", "table23Input1", "table23", "1"); // Nivel 1
+						functionHandler("hideColumn", "table23Input2", "table23", "1"); // Nivel 2
+						functionHandler("hideColumn", "table23Input3", "table23", "1"); // Nivel 3
+						functionHandler("hideColumn", "table23Input4", "table23", "0"); // Nivel 0 (cualitativo)
 						break;
-					case 1:
+					case 1: // Asumo que el caso 1 muestra Nivel 1 y oculta los demás
 						functionHandler("hideColumn", "table23Input1", "table23", "0");
 						functionHandler("hideColumn", "table23Input2", "table23", "1");
 						functionHandler("hideColumn", "table23Input3", "table23", "1");
 						functionHandler("hideColumn", "table23Input4", "table23", "1");
 						break;
-					case 2:
+					case 2: // Asumo que el caso 2 muestra Nivel 2 y oculta los demás
 						functionHandler("hideColumn", "table23Input1", "table23", "1");
 						functionHandler("hideColumn", "table23Input2", "table23", "0");
 						functionHandler("hideColumn", "table23Input3", "table23", "1");
 						functionHandler("hideColumn", "table23Input4", "table23", "1");
 						break;
-					case 3:
+					case 3: // Asumo que el caso 3 muestra Nivel 3 y oculta los demás
 						functionHandler("hideColumn", "table23Input1", "table23", "1");
 						functionHandler("hideColumn", "table23Input2", "table23", "1");
 						functionHandler("hideColumn", "table23Input3", "table23", "0");
 						functionHandler("hideColumn", "table23Input4", "table23", "1");
 						break;
+
 				}
 
 				break;
@@ -988,7 +868,7 @@ function callsHandler(val, val2, val3, val4, val5) {
 
 			break;
 
-			case "showResultsGeneral":
+		case "showResultsGeneral":
 
 			if (typeof (val2) == 'undefined') {
 				var values = "header=" + id;
@@ -1160,24 +1040,40 @@ function dataChangeHandler(val, val2, val3, val4, val5) {
 			var delvl3 = new Array();
 			var cvlvl3 = new Array();
 			var nlvl3 = new Array();
+			var p25lvl1 = new Array();
+			var p75lvl1 = new Array();
+			var p25lvl2 = new Array();
+			var p75lvl2 = new Array();
+			var p25lvl3 = new Array();
+			var p75lvl3 = new Array();
 
 			var trArray = $(val3).find("tbody").find("tr[data-edited=true]").get();
 
 			if (trArray.length > 0) {
 				for (x = 0; x < trArray.length; x++) {
 					idArray[x] = trArray[x].getAttribute("data-id");
-					melvl1[x] = $(trArray[x]).find("td[data-lvl=1]").find("input").get(0).value;
-					delvl1[x] = $(trArray[x]).find("td[data-lvl=1]").find("input").get(1).value;
-					cvlvl1[x] = $(trArray[x]).find("td[data-lvl=1]").find("input").get(2).value;
-					nlvl1[x] = $(trArray[x]).find("td[data-lvl=1]").find("input").get(3).value;
-					melvl2[x] = $(trArray[x]).find("td[data-lvl=2]").find("input").get(0).value;
-					delvl2[x] = $(trArray[x]).find("td[data-lvl=2]").find("input").get(1).value;
-					cvlvl2[x] = $(trArray[x]).find("td[data-lvl=2]").find("input").get(2).value;
-					nlvl2[x] = $(trArray[x]).find("td[data-lvl=2]").find("input").get(3).value;
-					melvl3[x] = $(trArray[x]).find("td[data-lvl=3]").find("input").get(0).value;
-					delvl3[x] = $(trArray[x]).find("td[data-lvl=3]").find("input").get(1).value;
-					cvlvl3[x] = $(trArray[x]).find("td[data-lvl=3]").find("input").get(2).value;
-					nlvl3[x] = $(trArray[x]).find("td[data-lvl=3]").find("input").get(3).value;
+
+					p25lvl1[x] = $(trArray[x]).find("td[data-lvl=1][data-col=p25] input").val();
+					melvl1[x] = $(trArray[x]).find("td[data-lvl=1][data-col=me] input").val();
+					p75lvl1[x] = $(trArray[x]).find("td[data-lvl=1][data-col=p75] input").val();
+					delvl1[x] = $(trArray[x]).find("td[data-lvl=1][data-col=de] input").val();
+					cvlvl1[x] = $(trArray[x]).find("td[data-lvl=1][data-col=cv] input").val();
+					nlvl1[x] = $(trArray[x]).find("td[data-lvl=1][data-col=n] input").val();
+
+					p25lvl2[x] = $(trArray[x]).find("td[data-lvl=2][data-col=p25] input").val();
+					melvl2[x] = $(trArray[x]).find("td[data-lvl=2][data-col=me] input").val();
+					p75lvl2[x] = $(trArray[x]).find("td[data-lvl=2][data-col=p75] input").val();
+					delvl2[x] = $(trArray[x]).find("td[data-lvl=2][data-col=de] input").val();
+					cvlvl2[x] = $(trArray[x]).find("td[data-lvl=2][data-col=cv] input").val();
+					nlvl2[x] = $(trArray[x]).find("td[data-lvl=2][data-col=n] input").val();
+
+					p25lvl3[x] = $(trArray[x]).find("td[data-lvl=3][data-col=p25] input").val();
+					melvl3[x] = $(trArray[x]).find("td[data-lvl=3][data-col=me] input").val();
+					p75lvl3[x] = $(trArray[x]).find("td[data-lvl=3][data-col=p75] input").val();
+					delvl3[x] = $(trArray[x]).find("td[data-lvl=3][data-col=de] input").val();
+					cvlvl3[x] = $(trArray[x]).find("td[data-lvl=3][data-col=cv] input").val();
+					nlvl3[x] = $(trArray[x]).find("td[data-lvl=3][data-col=n] input").val();
+
 				}
 
 				if ($("#form21input12").get(0).checked) {
@@ -1185,22 +1081,77 @@ function dataChangeHandler(val, val2, val3, val4, val5) {
 				} else {
 					var labId = "NULL";
 				}
+				console.log("Datos nivel 1:");
+				console.log("P25:", p25lvl1);
+				console.log("ME:", melvl1);
+				console.log("P75:", p75lvl1);
+				console.log("DE:", delvl1);
+				console.log("CV:", cvlvl1);
+				console.log("N:", nlvl1);
+
+				console.log("Datos nivel 2:");
+				console.log("P25:", p25lvl2);
+				console.log("ME:", melvl2);
+				console.log("P75:", p75lvl2);
+				console.log("DE:", delvl2);
+				console.log("CV:", cvlvl2);
+				console.log("N:", nlvl2);
+
+				console.log("Datos nivel 3:");
+				console.log("P25:", p25lvl3);
+				console.log("ME:", melvl3);
+				console.log("P75:", p75lvl3);
+				console.log("DE:", delvl3);
+				console.log("CV:", cvlvl3);
+				console.log("N:", nlvl3);
+
+				// Unir los arrays en cadenas separadas por "|"
 
 				idArray = idArray.join("|");
+				p25lvl1 = p25lvl1.join("|");
 				melvl1 = melvl1.join("|");
+				p75lvl1 = p75lvl1.join("|");
 				delvl1 = delvl1.join("|");
 				cvlvl1 = cvlvl1.join("|");
 				nlvl1 = nlvl1.join("|");
+				p25lvl2 = p25lvl2.join("|");
 				melvl2 = melvl2.join("|");
+				p75lvl2 = p75lvl2.join("|");
 				delvl2 = delvl2.join("|");
 				cvlvl2 = cvlvl2.join("|");
 				nlvl2 = nlvl2.join("|");
+				p25lvl3 = p25lvl3.join("|");
 				melvl3 = melvl3.join("|");
+				p75lvl3 = p75lvl3.join("|");
 				delvl3 = delvl3.join("|");
 				cvlvl3 = cvlvl3.join("|");
 				nlvl3 = nlvl3.join("|");
 
-				var values = "header=" + id + "&programid=" + $("#form1input2").val() + "&programtypeid=" + $("#form21input20").val() + "&sampleid=" + $("#form1input4").val() + "&ids=" + idArray + "&labid=" + labId + "&savemethod=" + $("#form21input21").val() + "&melvl1=" + melvl1 + "&delvl1=" + delvl1 + "&cvlvl1=" + cvlvl1 + "&melvl2=" + melvl2 + "&delvl2=" + delvl2 + "&cvlvl2=" + cvlvl2 + "&melvl3=" + melvl3 + "&delvl3=" + delvl3 + "&cvlvl3=" + cvlvl3 + "&nlvl1=" + nlvl1 + "&nlvl2=" + nlvl2 + "&nlvl3=" + nlvl3;
+				var values = "header=" + id +
+					"&programid=" + $("#form1input2").val() +
+					"&programtypeid=" + $("#form21input20").val() +
+					"&sampleid=" + $("#form1input4").val() +
+					"&ids=" + idArray +
+					"&labid=" + labId +
+					"&savemethod=" + $("#form21input21").val() +
+					"&p25lvl1=" + p25lvl1 +
+					"&melvl1=" + melvl1 +
+					"&p75lvl1=" + p75lvl1 +
+					"&delvl1=" + delvl1 +
+					"&cvlvl1=" + cvlvl1 +
+					"&nlvl1=" + nlvl1 +
+					"&p25lvl2=" + p25lvl2 +
+					"&melvl2=" + melvl2 +
+					"&p75lvl2=" + p75lvl2 +
+					"&delvl2=" + delvl2 +
+					"&cvlvl2=" + cvlvl2 +
+					"&nlvl2=" + nlvl2 +
+					"&p25lvl3=" + p25lvl3 +
+					"&melvl3=" + melvl3 +
+					"&p75lvl3=" + p75lvl3 +
+					"&delvl3=" + delvl3 +
+					"&cvlvl3=" + cvlvl3 +
+					"&nlvl3=" + nlvl3;
 
 				statusBox('loading', 'NULL', 'NULL', 'add', 'NULL');
 
@@ -2046,25 +1997,37 @@ function setupVentanaResultadosConsenso() {
 			var idConfigElement = document.getElementById('infoIdConfigConsenso');
 			var idConfigConsensoActual = idConfigElement ? idConfigElement.textContent : null;
 
+			var fechaCorteSeleccionada = $("#fecha-corte").val();
+			var idMuestraSeleccionada = $("#form1input4").val(); 
+			// ************************************************************
+
 			if (!idConfigConsensoActual || idConfigConsensoActual === 'N/A') {
 				alert("Error: No se pudo identificar la configuración de consenso actual.");
 				return;
 			}
 
+			// *** Añadir validación para los nuevos parámetros ***
+			if (!idMuestraSeleccionada || !fechaCorteSeleccionada) {
+				alert("Error: La información de Muestra o Fecha de Corte no está disponible. No se pueden guardar las selecciones.");
+				return;
+			}
+			// ****************************************************
+
 			if (seleccionados_ids.length > 0) {
-				// Enviar selecciones al servidor para guardarlas en la sesión
+				// Enviar selecciones al servidor para guardarlas en la base de datos
 				$.ajax({
-					url: 'php/guardar_selecciones_consenso.php', // Nuevo script PHP
+					url: 'php/guardar_selecciones_consenso.php',
 					type: 'POST',
 					data: {
 						id_config_consenso: idConfigConsensoActual,
-						ids_resultados_seleccionados: seleccionados_ids // Enviar como array
+						id_muestra: idMuestraSeleccionada,
+						fecha_corte: fechaCorteSeleccionada,
+						ids_resultados_seleccionados: seleccionados_ids
 					},
 					dataType: 'json',
 					success: function (response) {
 						if (response && response.status === 'success') {
-							statusBox('success', 'NULL', response.message || 'Selecciones guardadas temporalmente.', 'add', '3000');
-
+							statusBox('success', 'NULL', response.message || 'Selecciones guardadas', 'add', '3000');
 							functionHandler('windowHandler', 'close', modalId);
 						} else {
 							statusBox('warning', 'NULL', response.message || 'Error al guardar las selecciones.', 'add', 'NULL');
@@ -2075,17 +2038,23 @@ function setupVentanaResultadosConsenso() {
 					}
 				});
 			} else {
-				// Si no se seleccionó nada, podríamos querer limpiar selecciones previas para este idConfigConsenso
+				// Si no se seleccionó nada, enviar array vacío para limpiar selecciones previas para este idConfigConsenso, idMuestra, fechaCorte
 				$.ajax({
 					url: 'php/guardar_selecciones_consenso.php',
 					type: 'POST',
 					data: {
 						id_config_consenso: idConfigConsensoActual,
-						ids_resultados_seleccionados: []
+						id_muestra: idMuestraSeleccionada,
+						fecha_corte: fechaCorteSeleccionada,
+						ids_resultados_seleccionados: [] // Enviar array vacío para indicar limpieza
 					},
 					dataType: 'json',
 					success: function (response) {
-						statusBox('info', 'NULL', 'No se seleccionaron resultados. Se limpiaron selecciones previas si existían.', 'add', '3000');
+						statusBox('info', 'NULL', response.message || 'No se seleccionaron resultados. Se limpiaron selecciones previas si existían.', 'add', '3000');
+						functionHandler('windowHandler', 'close', modalId);
+					},
+					error: function () {
+						statusBox('error', 'NULL', 'Error de comunicación al limpiar selecciones.', 'add', 'NULL');
 					}
 				});
 			}
@@ -2127,17 +2096,17 @@ function cargarResultadosParaVentanaConsenso(idConfigConsenso) {
 	var idMuestraSeleccionada = $("#form1input4").val();
 	console.log("Muestra seleccionada:", idMuestraSeleccionada);
 
-	// ---- DEBUGGING JAVASCRIPT ----
-	console.log("JS: Enviando a PHP -> id_config_consenso:", idConfigConsenso);
-	console.log("JS: Enviando a PHP -> fecha_corte:", fechaCorteSeleccionada);
-	console.log("JS: Enviando a PHP -> id_muestra:", idMuestraSeleccionada);
-	// ---- FIN DEBUGGING JAVASCRIPT ----
+
+	
+	var urlCompleta = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'php/obtener_resultados_lab_consenso.php';
 
 	if (!fechaCorteSeleccionada) {
 		console.warn("Advertencia: No se encontró un valor para #fecha-corte. La consulta podría fallar o usar un default en PHP.");
 	}
 
 	statusBox('loading', 'NULL', 'Cargando datos para consenso...', 'add', 'NULL');
+
+
 
 	$.ajax({
 		url: 'php/obtener_resultados_lab_consenso.php',
@@ -2174,7 +2143,7 @@ function cargarResultadosParaVentanaConsenso(idConfigConsenso) {
 					tdCheckbox.appendChild(checkbox);
 					tr.appendChild(tdCheckbox);
 
-					// Celda "IT" - Ahora es una secuencia simple: 1, 2, 3, ...
+					// Celda "IT" - Es una secuencia simple: 1, 2, 3, ...
 					var tdIt = document.createElement('td');
 					tdIt.textContent = index + 1;
 					tr.appendChild(tdIt);

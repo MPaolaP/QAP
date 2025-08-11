@@ -57,7 +57,7 @@
 
                 for($i=0; $i<sizeof($datos_digitacion); $i++){
                     $fila_actual = $datos_digitacion[$i];
-                   $tipo = $fila_actual->tipo;
+                    $tipo = $fila_actual->tipo;
                     $analito = $fila_actual->analito;
                     $analizador = $fila_actual->analizador;
                     $reactivo = $fila_actual->reactivo;

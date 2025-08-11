@@ -136,40 +136,21 @@ class Intercuartil
 
 
 
-        // Busca valores atípicos
+       if ($estado == true) {
 
-        // if ($estado == true) {
+            foreach ($array_resultados as $row_result) {
 
+                if ($row_result[$columna] > $this->limite_inf && $row_result[$columna] < $this->limite_sup) {
+                    array_push($this->new_array_resultados, $row_result);
 
+                }
+            }
+        } else {
 
-        //     foreach ($array_resultados as $row_result) {
+            foreach ($array_resultados as $row_result) {
+                array_push($this->new_array_resultados, $row_result);
 
-        //         if ($row_result[$columna] <= $this->limite_inf || $row_result[$columna] >= $this->limite_sup) {
-
-        //             array_push($this->new_array_resultados, $row_result);
-
-        //         }
-
-        //     }
-
-
-
-        // } else {
-
-
-
-
-
-        foreach ($array_resultados as $row_result) {
-
-            // if ($row_result[$columna] > $this->limite_inf && $row_result[$columna] < $this->limite_sup) {
-
-            array_push($this->new_array_resultados, $row_result);
-
-            //     }
-
-            // }
-
+            }
         }
 
         return $this->new_array_resultados;

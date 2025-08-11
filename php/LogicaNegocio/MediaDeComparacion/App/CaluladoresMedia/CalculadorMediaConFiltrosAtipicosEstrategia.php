@@ -48,13 +48,12 @@ class CalculadorMediaConFiltrosAtipicosEstrategia
         // Estructura base con valores por defecto
         $resultadoDefault = [
             "media" => 0,
-            "de" => 0,
             "n" => 0,
             "cv" => 0,
             "mediana" => 0,
             "q1" => 0,
             "q3" => 0,
-            "iqr" => 0
+            "s" => 0
         ];
 
         if (count($resultadosParticipantes) === 0) {
@@ -64,7 +63,8 @@ class CalculadorMediaConFiltrosAtipicosEstrategia
         $valoresParticipantes = array_filter(
             array_column($resultadosParticipantes, "valor_resultado"),
             function ($v) {
-                return is_numeric($v); }
+                return is_numeric($v);
+            }
         );
 
         // Si no hay valores numéricos válidos
@@ -77,6 +77,8 @@ class CalculadorMediaConFiltrosAtipicosEstrategia
         $resultado = $filtroAtipicos->getPromediosNormales();
 
         // Asegurar que todos los campos existan (previene undefined index)
+
+       
         return array_merge($resultadoDefault, $resultado);
     }
 }

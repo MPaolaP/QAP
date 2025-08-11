@@ -18,7 +18,10 @@ class ObResultadosParticipantesMismaMetodogiaEstrategia implements ObtenedorResu
     private $idMetodologia;
     private $fechaCorte;
     private $idConfigConsensoActual;
-    public function __construct($idPrograma, $idUnidad, $idLote, $idAnalito, $idMetodologia, $fechaCorte, $idConfigConsensoActual = null)
+    private $idMuestraConsenso;
+    private $fechaSeleccionConsenso;
+
+    public function __construct($idPrograma, $idUnidad, $idLote, $idAnalito, $idMetodologia, $fechaCorte, $idConfigConsensoActual = null, $idMuestraConsenso = null, $fechaSeleccionConsenso = null)
     {
         $this->idPrograma = $idPrograma;
         $this->idUnidad = $idUnidad;
@@ -27,6 +30,8 @@ class ObResultadosParticipantesMismaMetodogiaEstrategia implements ObtenedorResu
         $this->idMetodologia = $idMetodologia;
         $this->fechaCorte = $fechaCorte;
         $this->idConfigConsensoActual = $idConfigConsensoActual;
+        $this->idMuestraConsenso = $idMuestraConsenso;
+        $this->fechaSeleccionConsenso = $fechaSeleccionConsenso;
     }
 
 
@@ -44,7 +49,9 @@ class ObResultadosParticipantesMismaMetodogiaEstrategia implements ObtenedorResu
             $this->idAnalito,
             $this->idMetodologia,
             $this->fechaCorte,
-            $this->idConfigConsensoActual
+            $this->idConfigConsensoActual,
+            $this->idMuestraConsenso,
+            $this->fechaSeleccionConsenso
         );
     }
 }

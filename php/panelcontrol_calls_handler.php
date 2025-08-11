@@ -1,318 +1,318 @@
 <?php
 
-	session_start();
+session_start();
 
-	include_once"verifica_sesion.php";
-
-	
-
-	actionRestriction_102();	
-
-	
-
-	header('Content-Type: text/xml');
-
-	echo "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>";
-
-	
-
-	$header = $_POST['header'];
-
-	
-
-	if (!isset($_POST['filter'])) {
-
-		$_POST['filter'] = '';
-
-	}
-
-	
-
-	if (!isset($_POST['filterid'])) {
-
-		$_POST['filterid'] = '';
-
-	}
-
-	
-
-	$filter = $_POST['filter'];
-
-	$filterid = $_POST['filterid'];
-
-	
-
-	if ($filter == "") {
-
-		$filter = "NULL";
-
-	}
-
-	if ($filterid == "") {
-
-		$filterid = "NULL";
-
-	}
-
-	
-
-	switch($header) {
-
-		case 'showCat':
+include_once "verifica_sesion.php";
 
 
 
-			switch ($filterid) {
+actionRestriction_102();
 
-				case 'id_distribuidor':
 
-					$filterQry = "WHERE $tbl_distribuidor.id_distribuidor = ".$filter;
 
-				break;
+header('Content-Type: text/xml');
 
-				default:
+echo "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>";
 
-					$filterQry = '';
+
+
+$header = $_POST['header'];
+
+
+
+if (!isset($_POST['filter'])) {
+
+	$_POST['filter'] = '';
+
+}
+
+
+
+if (!isset($_POST['filterid'])) {
+
+	$_POST['filterid'] = '';
+
+}
+
+
+
+$filter = $_POST['filter'];
+
+$filterid = $_POST['filterid'];
+
+
+
+if ($filter == "") {
+
+	$filter = "NULL";
+
+}
+
+if ($filterid == "") {
+
+	$filterid = "NULL";
+
+}
+
+
+
+switch ($header) {
+
+	case 'showCat':
+
+
+
+		switch ($filterid) {
+
+			case 'id_distribuidor':
+
+				$filterQry = "WHERE $tbl_distribuidor.id_distribuidor = " . $filter;
 
 				break;
 
-			}
+			default:
 
-			
+				$filterQry = '';
 
-			$qry = "SELECT id_catalogo,nombre_catalogo,nombre_distribuidor FROM $tbl_catalogo INNER JOIN $tbl_distribuidor ON $tbl_catalogo.id_distribuidor = $tbl_distribuidor.id_distribuidor ".$filterQry." ORDER BY nombre_distribuidor ASC, nombre_catalogo ASC";
+				break;
 
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01".$qry);
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_catalogo'];
-
-				$returnValue_2[$x] = $qryData['nombre_distribuidor'];
-
-				$returnValue_3[$x] = $qryData['nombre_catalogo'];
+		}
 
 
 
-				$x++;
+		$qry = "SELECT id_catalogo,nombre_catalogo,nombre_distribuidor FROM $tbl_catalogo INNER JOIN $tbl_distribuidor ON $tbl_catalogo.id_distribuidor = $tbl_distribuidor.id_distribuidor " . $filterQry . " ORDER BY nombre_distribuidor ASC, nombre_catalogo ASC";
 
-			}
 
-			
 
-			echo '<response code="1">';
+		$qryArray = mysql_query($qry);
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		mysqlException(mysql_error(), $header . "_01" . $qry);
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo '</response>';		
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_catalogo'];
+
+			$returnValue_2[$x] = $qryData['nombre_distribuidor'];
+
+			$returnValue_3[$x] = $qryData['nombre_catalogo'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showLot':
+	case 'showLot':
 
-				
 
-			switch ($filterid) {
 
-				case 'id_catalogo':
+		switch ($filterid) {
 
-					$filterQry = "WHERE $tbl_catalogo.id_catalogo = $filter AND estado_lote = 1";
+			case 'id_catalogo':
 
-				break;
-
-				case 'estado_lote':
-
-					$filterQry = "WHERE estado_lote = $filter";
-
-				break;				
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_catalogo.id_catalogo = $filter AND estado_lote = 1";
 
 				break;
 
-			}
+			case 'estado_lote':
 
-				
+				$filterQry = "WHERE estado_lote = $filter";
 
-			$qry = "SELECT $tbl_lote.id_lote,$tbl_catalogo.nombre_catalogo,nombre_lote,fecha_vencimiento,nivel_lote FROM $tbl_lote INNER JOIN $tbl_catalogo ON $tbl_catalogo.id_catalogo = $tbl_lote.id_catalogo ".$filterQry." ORDER BY $tbl_catalogo.nombre_catalogo ASC,nivel_lote ASC, nombre_lote ASC";
+				break;
 
-			
+			default:
 
-			$qryArray = mysql_query($qry);
+				$filterQry = '';
 
-			mysqlException(mysql_error(),$header."_01");			
+				break;
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_lote'];
-
-				$returnValue_2[$x] = $qryData['nombre_catalogo'];
-
-				$returnValue_3[$x] = $qryData['nombre_lote'];
-
-				$returnValue_4[$x] = $qryData['fecha_vencimiento'];
-
-				$returnValue_5[$x] = $qryData['nivel_lote'];
+		}
 
 
 
-				$x++;
+		$qry = "SELECT $tbl_lote.id_lote,$tbl_catalogo.nombre_catalogo,nombre_lote,fecha_vencimiento,nivel_lote FROM $tbl_lote INNER JOIN $tbl_catalogo ON $tbl_catalogo.id_catalogo = $tbl_lote.id_catalogo " . $filterQry . " ORDER BY $tbl_catalogo.nombre_catalogo ASC,nivel_lote ASC, nombre_lote ASC";
 
-			}
 
-			
 
-			echo '<response code="1">';
+		$qryArray = mysql_query($qry);
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		mysqlException(mysql_error(), $header . "_01");
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo'<returnvalues4 selectomit="1">'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
+		$returnValue_2 = array();
 
-			echo '</response>';		
+		$returnValue_3 = array();
+
+		$returnValue_4 = array();
+
+		$returnValue_5 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_lote'];
+
+			$returnValue_2[$x] = $qryData['nombre_catalogo'];
+
+			$returnValue_3[$x] = $qryData['nombre_lote'];
+
+			$returnValue_4[$x] = $qryData['fecha_vencimiento'];
+
+			$returnValue_5[$x] = $qryData['nivel_lote'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4 selectomit="1">' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAllLots':
+	case 'showAllLots':
 
-				
 
-			switch ($filterid) {
 
-				case 'id_catalogo':
+		switch ($filterid) {
 
-					$filterQry = "WHERE $tbl_catalogo.id_catalogo = ".$filter;
+			case 'id_catalogo':
 
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_catalogo.id_catalogo = " . $filter;
 
 				break;
 
-			}
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT $tbl_lote.id_lote,$tbl_catalogo.nombre_catalogo,nombre_lote,estado_lote,nivel_lote FROM $tbl_lote INNER JOIN $tbl_catalogo ON $tbl_catalogo.id_catalogo = $tbl_lote.id_catalogo ".$filterQry." ORDER BY estado_lote ASC, $tbl_catalogo.nombre_catalogo ASC, nivel_lote ASC, nombre_lote ASC";
-
-		
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_lote'];
-
-				$returnValue_2[$x] = $qryData['nombre_catalogo'];
-
-				$returnValue_3[$x] = $qryData['nombre_lote'];
-
-				$returnValue_4[$x] = $qryData['nivel_lote'];
-
-				$returnValue_5[$x] = $qryData['estado_lote'];
+		$qry = "SELECT $tbl_lote.id_lote,$tbl_catalogo.nombre_catalogo,nombre_lote,estado_lote,nivel_lote FROM $tbl_lote INNER JOIN $tbl_catalogo ON $tbl_catalogo.id_catalogo = $tbl_lote.id_catalogo " . $filterQry . " ORDER BY estado_lote ASC, $tbl_catalogo.nombre_catalogo ASC, nivel_lote ASC, nombre_lote ASC";
 
 
 
-				$x++;
 
-			}
 
-			
+		$qryArray = mysql_query($qry);
 
-			echo '<response code="1">';
+		mysqlException(mysql_error(), $header . "_01");
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_2 = array();
 
-			echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
+		$returnValue_3 = array();
 
-			echo '</response>';		
+		$returnValue_4 = array();
+
+		$returnValue_5 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_lote'];
+
+			$returnValue_2[$x] = $qryData['nombre_catalogo'];
+
+			$returnValue_3[$x] = $qryData['nombre_lote'];
+
+			$returnValue_4[$x] = $qryData['nivel_lote'];
+
+			$returnValue_5[$x] = $qryData['estado_lote'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '</response>';
 
 		break;
 
 
 
-		case "showProgramPAT":
+	case "showProgramPAT":
 
-			
 
-			$qry = "SELECT 
+
+		$qry = "SELECT 
 
 						$tbl_programa_pat.id_programa as 'id_programa_pat',
 
@@ -326,57 +326,57 @@
 
 						$tbl_programa_pat.nombre";
 
-				
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_2501489");			
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_programa_pat'];
-
-				$returnValue_2[$x] = $qryData['nombre_programa_pat'];
-
-				$x++;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-				echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '</response>';	
+		mysqlException(mysql_error(), $header . "_2501489");
 
 
 
-			break;
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_programa_pat'];
+
+			$returnValue_2[$x] = $qryData['nombre_programa_pat'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
+
+
+
+		break;
 
 
 
 
 
-		case "showLotePAT":
+	case "showLotePAT":
 
-			
 
-			$qry = "SELECT 
+
+		$qry = "SELECT 
 
 						id_lote_pat as 'id_lote_pat',
 
@@ -390,79 +390,79 @@
 
 						nombre";
 
-				
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_2501488");			
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_lote_pat'];
-
-				$returnValue_2[$x] = $qryData['nombre_lote_pat'];
-
-				$x++;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-				echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '</response>';
+		mysqlException(mysql_error(), $header . "_2501488");
 
 
 
-			break;
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
 
 
 
-		case "showRetoPAT":
+		$x = 0;
 
 
 
-			switch ($filterid) {
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				case 'activos':
+			$returnValue_1[$x] = $qryData['id_lote_pat'];
 
-					$filterQry = "WHERE reto.estado = 1";
+			$returnValue_2[$x] = $qryData['nombre_lote_pat'];
 
-				break;
+			$x++;
 
-				case 'id_programa_pat':
+		}
 
-					$filterQry = "WHERE programa_pat.id_programa = ".$filter;
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
+
+
+
+		break;
+
+
+
+	case "showRetoPAT":
+
+
+
+		switch ($filterid) {
+
+			case 'activos':
+
+				$filterQry = "WHERE reto.estado = 1";
 
 				break;
 
-				default:
+			case 'id_programa_pat':
 
-					$filterQry = '';
+				$filterQry = "WHERE programa_pat.id_programa = " . $filter;
 
 				break;
 
-			}
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 						$tbl_reto.id_reto,
 
@@ -488,107 +488,107 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_245687");			
-
-
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
+		mysqlException(mysql_error(), $header . "_245687");
 
 
 
-			$x = 0;
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
+
+		$returnValue_4 = array();
+
+		$returnValue_5 = array();
 
 
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_reto'];
-
-				$returnValue_2[$x] = $qryData['nombre_programa_pat'];
-
-				$returnValue_3[$x] = $qryData['nombre_reto'];
-
-				$returnValue_4[$x] = $qryData['nombre_lote_pat'];
-
-				$returnValue_5[$x] = $qryData['estado'];
-
-				$x++;
-
-			}
+		$x = 0;
 
 
 
-			echo '<response code="1">';
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			$returnValue_1[$x] = $qryData['id_reto'];
 
-				echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+			$returnValue_2[$x] = $qryData['nombre_programa_pat'];
 
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+			$returnValue_3[$x] = $qryData['nombre_reto'];
 
-				echo'<returnvalues4 selectomit="1">'.implode("|",$returnValue_4).'</returnvalues4>';
+			$returnValue_4[$x] = $qryData['nombre_lote_pat'];
 
-				echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
+			$returnValue_5[$x] = $qryData['estado'];
 
-				
+			$x++;
 
-			echo '</response>';	
-
-
-
-			break;
-
-			
-
-		case "showCasoClinicoPAT":
+		}
 
 
 
-			switch ($filterid) {
+		echo '<response code="1">';
 
-				/*
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
-				case 'activos':
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
 
-					$filterQry = "WHERE reto.estado = 1";
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
 
-					break;
+		echo '<returnvalues4 selectomit="1">' . implode("|", $returnValue_4) . '</returnvalues4>';
 
-					*/
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
 
-				case 'id_reto_pat':
 
-					$filterQry = "WHERE reto.id_reto = ".$filter;
+
+		echo '</response>';
+
+
+
+		break;
+
+
+
+	case "showCasoClinicoPAT":
+
+
+
+		switch ($filterid) {
+
+			/*
+
+			case 'activos':
+
+				$filterQry = "WHERE reto.estado = 1";
 
 				break;
 
-				case 'id_reto_pat_and_activo':
+				*/
 
-					$filterQry = "WHERE caso_clinico.estado = 1 AND reto.id_reto = ".$filter;
+			case 'id_reto_pat':
 
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE reto.id_reto = " . $filter;
 
 				break;
 
-			}
+			case 'id_reto_pat_and_activo':
+
+				$filterQry = "WHERE caso_clinico.estado = 1 AND reto.id_reto = " . $filter;
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 						caso_clinico.id_caso_clinico as 'id_caso_clinico', 
 
@@ -626,135 +626,135 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_2456814");			
-
-
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			$returnValue_7 = array();
-
-			$returnValue_8 = array();
-
-			$returnValue_9 = array();
-
-			$returnValue_10 = array();
-
-			$returnValue_11 = array();
-
-			$x = 0;
+		mysqlException(mysql_error(), $header . "_2456814");
 
 
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
+		$returnValue_1 = array();
 
-				$returnValue_1[$x] = $qryData['id_caso_clinico'];
+		$returnValue_2 = array();
 
-				$returnValue_2[$x] = $qryData['reto_id_reto'];
+		$returnValue_3 = array();
 
-				$returnValue_3[$x] = $qryData['codigo'];
+		$returnValue_4 = array();
 
-				$returnValue_4[$x] = $qryData['nombre_caso_clinico'];
+		$returnValue_5 = array();
 
-				$returnValue_5[$x] = $qryData['enunciado'];
+		$returnValue_6 = array();
 
-				$returnValue_6[$x] = $qryData['revision'];
+		$returnValue_7 = array();
 
-				$returnValue_7[$x] = $qryData['tejido'];
+		$returnValue_8 = array();
 
-				$returnValue_8[$x] = $qryData['celulas_objetivo'];
+		$returnValue_9 = array();
 
-				$returnValue_9[$x] = $qryData['estado'];
+		$returnValue_10 = array();
 
-				$returnValue_10[$x] = $qryData['nombre_programa_pat'];
+		$returnValue_11 = array();
 
-				$returnValue_11[$x] = $qryData['nombre_reto_pat'];
-
-				$x++;
-
-			}
+		$x = 0;
 
 
 
-			echo '<response code="1">';
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			$returnValue_1[$x] = $qryData['id_caso_clinico'];
 
-				echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
+			$returnValue_2[$x] = $qryData['reto_id_reto'];
 
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+			$returnValue_3[$x] = $qryData['codigo'];
 
-				echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+			$returnValue_4[$x] = $qryData['nombre_caso_clinico'];
 
-				echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
+			$returnValue_5[$x] = $qryData['enunciado'];
 
-				echo'<returnvalues6 selectomit="1">'.implode("|",$returnValue_6).'</returnvalues6>';
+			$returnValue_6[$x] = $qryData['revision'];
 
-				echo'<returnvalues7 selectomit="1">'.implode("|",$returnValue_7).'</returnvalues7>';
+			$returnValue_7[$x] = $qryData['tejido'];
 
-				echo'<returnvalues8 selectomit="1">'.implode("|",$returnValue_8).'</returnvalues8>';
+			$returnValue_8[$x] = $qryData['celulas_objetivo'];
 
-				echo'<returnvalues9 selectomit="1">'.implode("|",$returnValue_9).'</returnvalues9>';
+			$returnValue_9[$x] = $qryData['estado'];
 
-				echo'<returnvalues10 selectomit="1">'.implode("|",$returnValue_10).'</returnvalues10>';
+			$returnValue_10[$x] = $qryData['nombre_programa_pat'];
 
-				echo'<returnvalues11 selectomit="1">'.implode("|",$returnValue_11).'</returnvalues11>';
+			$returnValue_11[$x] = $qryData['nombre_reto_pat'];
 
-			echo '</response>';
+			$x++;
 
-			break;
-
-
-
-		
+		}
 
 
 
-		case 'showProgram':
+		echo '<response code="1">';
 
-		
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
-			switch ($filterid) {
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
 
-				case 'id_laboratorio':
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
 
-					$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = ".$filter;
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
 
-				break;
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
 
-				case 'id_tipo_programa':
+		echo '<returnvalues6 selectomit="1">' . implode("|", $returnValue_6) . '</returnvalues6>';
 
-					$filterQry = "WHERE $tbl_tipo_programa.id_tipo_programa = ".$filter;
+		echo '<returnvalues7 selectomit="1">' . implode("|", $returnValue_7) . '</returnvalues7>';
 
-				break;				
+		echo '<returnvalues8 selectomit="1">' . implode("|", $returnValue_8) . '</returnvalues8>';
 
-				default:
+		echo '<returnvalues9 selectomit="1">' . implode("|", $returnValue_9) . '</returnvalues9>';
 
-					$filterQry = '';
+		echo '<returnvalues10 selectomit="1">' . implode("|", $returnValue_10) . '</returnvalues10>';
+
+		echo '<returnvalues11 selectomit="1">' . implode("|", $returnValue_11) . '</returnvalues11>';
+
+		echo '</response>';
+
+		break;
+
+
+
+
+
+
+
+	case 'showProgram':
+
+
+
+		switch ($filterid) {
+
+			case 'id_laboratorio':
+
+				$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = " . $filter;
 
 				break;
 
-			}									
+			case 'id_tipo_programa':
 
-				
+				$filterQry = "WHERE $tbl_tipo_programa.id_tipo_programa = " . $filter;
 
-			// $qry = "SELECT $tbl_programa.id_programa,nombre_programa,sigla_programa,no_muestras,tipo_muestra,modalidad_muestra,$tbl_tipo_programa.desc_tipo_programa FROM $tbl_programa LEFT OUTER JOIN $tbl_programa_laboratorio ON $tbl_programa.id_programa = $tbl_programa_laboratorio.id_programa INNER JOIN $tbl_tipo_programa ON $tbl_programa.id_tipo_programa = $tbl_tipo_programa.id_tipo_programa LEFT OUTER JOIN $tbl_laboratorio ON $tbl_programa_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio ".$filterQry." GROUP BY $tbl_programa.nombre_programa ORDER BY $tbl_tipo_programa.id_tipo_programa ASC, nombre_programa ASC";
+				break;
 
-			// Se actualiza la sentencia de group by
+			default:
 
-			$qry = "SELECT DISTINCT 
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		// $qry = "SELECT $tbl_programa.id_programa,nombre_programa,sigla_programa,no_muestras,tipo_muestra,modalidad_muestra,$tbl_tipo_programa.desc_tipo_programa FROM $tbl_programa LEFT OUTER JOIN $tbl_programa_laboratorio ON $tbl_programa.id_programa = $tbl_programa_laboratorio.id_programa INNER JOIN $tbl_tipo_programa ON $tbl_programa.id_tipo_programa = $tbl_tipo_programa.id_tipo_programa LEFT OUTER JOIN $tbl_laboratorio ON $tbl_programa_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio ".$filterQry." GROUP BY $tbl_programa.nombre_programa ORDER BY $tbl_tipo_programa.id_tipo_programa ASC, nombre_programa ASC";
+
+		// Se actualiza la sentencia de group by
+
+		$qry = "SELECT DISTINCT 
 
 			            $tbl_programa.id_programa,
 
@@ -778,105 +778,105 @@
 
 			 INNER JOIN $tbl_tipo_programa ON $tbl_programa.id_tipo_programa = $tbl_tipo_programa.id_tipo_programa 
 
-			 LEFT OUTER JOIN $tbl_laboratorio ON $tbl_programa_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio ".$filterQry." 
+			 LEFT OUTER JOIN $tbl_laboratorio ON $tbl_programa_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio " . $filterQry . " 
 
 			 ORDER BY $tbl_tipo_programa.id_tipo_programa ASC, nombre_programa ASC";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			$returnValue_7 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_programa'];
-
-				$returnValue_2[$x] = $qryData['nombre_programa'];
-
-				$returnValue_3[$x] = $qryData['sigla_programa'];
-
-				$returnValue_4[$x] = $qryData['no_muestras'];
-
-				$returnValue_5[$x] = $qryData['tipo_muestra'];
-
-				$returnValue_6[$x] = $qryData['modalidad_muestra'];
-
-				$returnValue_7[$x] = $qryData['desc_tipo_programa'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
+		$returnValue_3 = array();
 
-			echo '<response code="1">';
+		$returnValue_4 = array();
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_5 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_6 = array();
 
-			echo'<returnvalues3 selectomit="1">'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_7 = array();
 
-			echo'<returnvalues4 selectomit="1">'.implode("|",$returnValue_4).'</returnvalues4>';
 
-			echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
 
-			echo'<returnvalues6 selectomit="1">'.implode("|",$returnValue_6).'</returnvalues6>';
+		$x = 0;
 
-			echo'<returnvalues7 selectomit="1">'.implode("|",$returnValue_7).'</returnvalues7>';
 
-			echo '</response>';		
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_programa'];
+
+			$returnValue_2[$x] = $qryData['nombre_programa'];
+
+			$returnValue_3[$x] = $qryData['sigla_programa'];
+
+			$returnValue_4[$x] = $qryData['no_muestras'];
+
+			$returnValue_5[$x] = $qryData['tipo_muestra'];
+
+			$returnValue_6[$x] = $qryData['modalidad_muestra'];
+
+			$returnValue_7[$x] = $qryData['desc_tipo_programa'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 selectomit="1">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4 selectomit="1">' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6 selectomit="1">' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '<returnvalues7 selectomit="1">' . implode("|", $returnValue_7) . '</returnvalues7>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAnalit':
+	case 'showAnalit':
 
-				
 
-			switch ($filterid) {
 
-				case 'id_programa':
+		switch ($filterid) {
 
-					$filterQry = "WHERE $tbl_programa.id_programa = ".$filter;
+			case 'id_programa':
 
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_programa.id_programa = " . $filter;
 
 				break;
 
-			}			
+			default:
 
-				
+				$filterQry = '';
 
-			$qry = "SELECT 
+				break;
+
+		}
+
+
+
+		$qry = "SELECT 
 
 						$tbl_programa_analito.id_conexion,
 
@@ -892,97 +892,97 @@
 
 						INNER JOIN $tbl_programa_analito ON $tbl_analito.id_analito = $tbl_programa_analito.id_analito 
 
-						INNER JOIN $tbl_programa ON $tbl_programa.id_programa = $tbl_programa_analito.id_programa ".$filterQry." 
+						INNER JOIN $tbl_programa ON $tbl_programa.id_programa = $tbl_programa_analito.id_programa " . $filterQry . " 
 
-					ORDER BY $tbl_programa.nombre_programa ASC, $tbl_analito.nombre_analito ASC";		
+					ORDER BY $tbl_programa.nombre_programa ASC, $tbl_analito.nombre_analito ASC";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
+		$qryArray = mysql_query($qry);
 
-			
+		mysqlException(mysql_error(), $header . "_01");
 
-			$returnValue_1 = array();
 
-			$returnValue_2 = array();
 
-			$returnValue_3 = array();
+		$returnValue_1 = array();
 
-			$returnValue_4 = array();
+		$returnValue_2 = array();
 
-			$returnValue_5 = array();
+		$returnValue_3 = array();
 
-			
+		$returnValue_4 = array();
 
-			$x = 0;
+		$returnValue_5 = array();
 
-			
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_1[$x] = $qryData['id_conexion'];
+		$x = 0;
 
-				$returnValue_2[$x] = $qryData['nombre_programa'];
 
-				$returnValue_3[$x] = $qryData['id_analito'];
 
-				$returnValue_4[$x] = $qryData['nombre_analito'];
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_5[$x] = $qryData['cod_analito'];
+			$returnValue_1[$x] = $qryData['id_conexion'];
 
-				$x++;
+			$returnValue_2[$x] = $qryData['nombre_programa'];
 
-			}
+			$returnValue_3[$x] = $qryData['id_analito'];
 
-			
+			$returnValue_4[$x] = $qryData['nombre_analito'];
 
-			echo '<response code="1">';
+			$returnValue_5[$x] = $qryData['cod_analito'];
 
-			echo'<returnvalues1 selectomit="1" content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			$x++;
 
-			echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
+		}
 
-			echo'<returnvalues3 content="id">'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
 
-			echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
+		echo '<response code="1">';
 
-			echo '</response>';		
+		echo '<returnvalues1 selectomit="1" content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 content="id">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showSample':
+	case 'showSample':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_programa':
+			case 'id_programa':
 
-					$filterQry = "WHERE $tbl_programa.id_programa = ".$filter;
-
-				break;
-
-				case 'fecha':
-
-					$filterQry = "WHERE $tbl_programa.id_programa = $filter AND DATE('$logDate') <= $tbl_muestra_programa.fecha_vencimiento";
-
-				break;					
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_programa.id_programa = " . $filter;
 
 				break;
 
-			}			
+			case 'fecha':
 
-				
+				$filterQry = "WHERE $tbl_programa.id_programa = $filter AND DATE('$logDate') <= $tbl_muestra_programa.fecha_vencimiento";
 
-			$qry = "SELECT 
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT 
 
 					$tbl_muestra.id_muestra,
 
@@ -1006,403 +1006,403 @@
 
 					$tbl_contador_muestra.no_contador 
 
-				FROM $tbl_muestra_programa INNER JOIN $tbl_muestra ON $tbl_muestra_programa.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_lote ON $tbl_muestra_programa.id_lote = $tbl_lote.id_lote INNER JOIN $tbl_catalogo ON $tbl_lote.id_catalogo = $tbl_catalogo.id_catalogo INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa INNER JOIN $tbl_contador_muestra ON $tbl_contador_muestra.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_ronda ON $tbl_contador_muestra.id_ronda = $tbl_ronda.id_ronda ".$filterQry." ORDER BY $tbl_ronda.no_ronda DESC, $tbl_contador_muestra.no_contador ASC";		
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			$returnValue_7 = array();
-
-			$returnValue_8 = array();
-
-			$returnValue_9 = array();
-
-			$returnValue_10 = array();
-
-			$returnValue_11 = array();
-
-			$returnValue_12 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_muestra_programa'];
-
-				$returnValue_2[$x] = $qryData['codigo_muestra'];
-
-				$returnValue_3[$x] = $qryData['nombre_programa'];
-
-				$returnValue_4[$x] = $qryData['nombre_lote_qap'];
-
-				$returnValue_5[$x] = $qryData['fecha_muestra'];
-
-				$returnValue_6[$x] = $qryData['nombre_catalogo'];
-
-				$returnValue_7[$x] = $qryData['nombre_lote'];
-
-				$returnValue_8[$x] = $qryData['nivel_lote'];
-
-				$returnValue_9[$x] = $qryData['fecha_lote'];
-
-				$returnValue_10[$x] = $qryData['no_contador'];
-
-				$returnValue_11[$x] = $qryData['no_ronda'];
-
-				$returnValue_12[$x] = $qryData['id_muestra'];
+				FROM $tbl_muestra_programa INNER JOIN $tbl_muestra ON $tbl_muestra_programa.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_lote ON $tbl_muestra_programa.id_lote = $tbl_lote.id_lote INNER JOIN $tbl_catalogo ON $tbl_lote.id_catalogo = $tbl_catalogo.id_catalogo INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa INNER JOIN $tbl_contador_muestra ON $tbl_contador_muestra.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_ronda ON $tbl_contador_muestra.id_ronda = $tbl_ronda.id_ronda " . $filterQry . " ORDER BY $tbl_ronda.no_ronda DESC, $tbl_contador_muestra.no_contador ASC";
 
 
 
-				$x++;
+		$qryArray = mysql_query($qry);
 
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 selectomit="1" content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_2 = array();
 
-			echo'<returnvalues3 selectomit="1">'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_3 = array();
 
-			echo'<returnvalues4 selectomit="1">'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_4 = array();
 
-			echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
+		$returnValue_5 = array();
 
-			echo'<returnvalues6 selectomit="1">'.implode("|",$returnValue_6).'</returnvalues6>';
+		$returnValue_6 = array();
 
-			echo'<returnvalues7 selectomit="1">'.implode("|",$returnValue_7).'</returnvalues7>';
+		$returnValue_7 = array();
 
-			echo'<returnvalues8 selectomit="1">'.implode("|",$returnValue_8).'</returnvalues8>';
+		$returnValue_8 = array();
 
-			echo'<returnvalues9 selectomit="1">'.implode("|",$returnValue_9).'</returnvalues9>';
+		$returnValue_9 = array();
 
-			echo'<returnvalues10 selectomit="1">'.implode("|",$returnValue_10).'</returnvalues10>';
+		$returnValue_10 = array();
 
-			echo'<returnvalues11 selectomit="1">'.implode("|",$returnValue_11).'</returnvalues11>';
+		$returnValue_11 = array();
 
-			echo'<returnvalues12 content="id">'.implode("|",$returnValue_12).'</returnvalues12>';
+		$returnValue_12 = array();
 
-			echo '</response>';		
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_muestra_programa'];
+
+			$returnValue_2[$x] = $qryData['codigo_muestra'];
+
+			$returnValue_3[$x] = $qryData['nombre_programa'];
+
+			$returnValue_4[$x] = $qryData['nombre_lote_qap'];
+
+			$returnValue_5[$x] = $qryData['fecha_muestra'];
+
+			$returnValue_6[$x] = $qryData['nombre_catalogo'];
+
+			$returnValue_7[$x] = $qryData['nombre_lote'];
+
+			$returnValue_8[$x] = $qryData['nivel_lote'];
+
+			$returnValue_9[$x] = $qryData['fecha_lote'];
+
+			$returnValue_10[$x] = $qryData['no_contador'];
+
+			$returnValue_11[$x] = $qryData['no_ronda'];
+
+			$returnValue_12[$x] = $qryData['id_muestra'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 selectomit="1" content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 selectomit="1">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4 selectomit="1">' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6 selectomit="1">' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '<returnvalues7 selectomit="1">' . implode("|", $returnValue_7) . '</returnvalues7>';
+
+		echo '<returnvalues8 selectomit="1">' . implode("|", $returnValue_8) . '</returnvalues8>';
+
+		echo '<returnvalues9 selectomit="1">' . implode("|", $returnValue_9) . '</returnvalues9>';
+
+		echo '<returnvalues10 selectomit="1">' . implode("|", $returnValue_10) . '</returnvalues10>';
+
+		echo '<returnvalues11 selectomit="1">' . implode("|", $returnValue_11) . '</returnvalues11>';
+
+		echo '<returnvalues12 content="id">' . implode("|", $returnValue_12) . '</returnvalues12>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showSampleSimple':
+	case 'showSampleSimple':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_programa':
+			case 'id_programa':
 
-					$filterQry = "WHERE $tbl_muestra_programa.id_programa = ".$filter;
-
-				break;
-
-				case 'fecha':
-
-					$filterQry = "WHERE $tbl_muestra_programa.id_programa = $filter AND DATE('$logDate') <= $tbl_muestra_programa.fecha_vencimiento";
-
-				break;					
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_muestra_programa.id_programa = " . $filter;
 
 				break;
 
-			}
+			case 'fecha':
 
-				
-
-			$qry = "SELECT $tbl_muestra.id_muestra,codigo_muestra,$tbl_ronda.no_ronda FROM $tbl_muestra INNER JOIN $tbl_muestra_programa ON $tbl_muestra.id_muestra = $tbl_muestra_programa.id_muestra INNER JOIN $tbl_contador_muestra ON $tbl_contador_muestra.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_ronda ON $tbl_contador_muestra.id_ronda = $tbl_ronda.id_ronda ".$filterQry." ORDER BY $tbl_ronda.no_ronda DESC, $tbl_muestra.codigo_muestra ASC";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_muestra'];
-
-				$returnValue_2[$x] = $qryData['no_ronda'];
-
-				$returnValue_3[$x] = $qryData['codigo_muestra'];
-
-
-
-				$x++;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
-
-			echo '</response>';		
-
-		break;		
-
-		case 'showAnalyzer':
-
-
-
-			switch ($filterid) {
-
-				case 'id_analito':
-
-					// Pertenecia al modulo de programa por lo cual se deshabilita
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_muestra_programa.id_programa = $filter AND DATE('$logDate') <= $tbl_muestra_programa.fecha_vencimiento";
 
 				break;
 
-				default:
+			default:
 
-					$filterQry = '';
+				$filterQry = '';
 
 				break;
 
-			}
+		}
 
-				
 
-			$qry = "SELECT id_analizador,cod_analizador,nombre_analizador FROM $tbl_analizador ".$filterQry." ORDER BY nombre_analizador ASC";
 
-				
+		$qry = "SELECT $tbl_muestra.id_muestra,codigo_muestra,$tbl_ronda.no_ronda FROM $tbl_muestra INNER JOIN $tbl_muestra_programa ON $tbl_muestra.id_muestra = $tbl_muestra_programa.id_muestra INNER JOIN $tbl_contador_muestra ON $tbl_contador_muestra.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_ronda ON $tbl_contador_muestra.id_ronda = $tbl_ronda.id_ronda " . $filterQry . " ORDER BY $tbl_ronda.no_ronda DESC, $tbl_muestra.codigo_muestra ASC";
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
 
-			
+		$qryArray = mysql_query($qry);
 
-			$returnValue_1 = array();
+		mysqlException(mysql_error(), $header . "_01");
 
-			$returnValue_2 = array();
 
-			$returnValue_3 = array();
 
-			
+		$returnValue_1 = array();
 
-			$x = 0;
+		$returnValue_2 = array();
 
-			
+		$returnValue_3 = array();
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_1[$x] = $qryData['id_analizador'];
 
-				$returnValue_2[$x] = $qryData['cod_analizador'];
+		$x = 0;
 
-				$returnValue_3[$x] = $qryData['nombre_analizador'];
 
-				$x++;
 
-			}
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-			
+			$returnValue_1[$x] = $qryData['id_muestra'];
 
-			echo '<response code="1">';
+			$returnValue_2[$x] = $qryData['no_ronda'];
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			$returnValue_3[$x] = $qryData['codigo_muestra'];
 
-				echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
 
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo '</response>';	
+			$x++;
 
-				
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
 
 		break;
 
+	case 'showAnalyzer':
 
 
-		case 'showMetodologia':
 
-		
+		switch ($filterid) {
 
-			switch ($filterid) {
+			case 'id_analito':
 
-				case 'id_analito':
+				// Pertenecia al modulo de programa por lo cual se deshabilita
 
-					// Linea de codigo deshabilitada
-
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = '';
 
 				break;
 
-			}
+			default:
 
-				
+				$filterQry = '';
 
-			$qry = "SELECT id_metodologia,cod_metodologia,nombre_metodologia FROM $tbl_metodologia ".$filterQry." ORDER BY nombre_metodologia ASC";
+				break;
 
-				
+		}
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
 
-			
+		$qry = "SELECT id_analizador,cod_analizador,nombre_analizador FROM $tbl_analizador " . $filterQry . " ORDER BY nombre_analizador ASC";
 
-			$returnValue_1 = array();
 
-			$returnValue_2 = array();
 
-			$returnValue_3 = array();
+		$qryArray = mysql_query($qry);
 
-			
+		mysqlException(mysql_error(), $header . "_01");
 
-			$x = 0;
 
-			
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
+		$returnValue_1 = array();
 
-				$returnValue_1[$x] = $qryData['id_metodologia'];
+		$returnValue_2 = array();
 
-				$returnValue_2[$x] = $qryData['cod_metodologia'];
+		$returnValue_3 = array();
 
-				$returnValue_3[$x] = $qryData['nombre_metodologia'];
 
-				$x++;
 
-			}
+		$x = 0;
 
-			
 
-			echo '<response code="1">';
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
+			$returnValue_1[$x] = $qryData['id_analizador'];
 
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+			$returnValue_2[$x] = $qryData['cod_analizador'];
 
-			echo '</response>';		
+			$returnValue_3[$x] = $qryData['nombre_analizador'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
+
+
 
 		break;
 
 
 
-		case 'showMagnitud':
+	case 'showMetodologia':
 
-		
 
-			switch ($filterid) {
 
-				case 'id_analito':
+		switch ($filterid) {
 
-					// Linea de codigo deshabilitada
+			case 'id_analito':
 
-				break;
-
-				default:
-
-					$filterQry = '';
+				// Linea de codigo deshabilitada
 
 				break;
 
-			}
+			default:
 
-				
+				$filterQry = '';
 
-			$qry = "SELECT id_analito,cod_analito,nombre_analito FROM $tbl_analito ".$filterQry." ORDER BY nombre_analito ASC";
+				break;
 
-				
+		}
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
 
-			
+		$qry = "SELECT id_metodologia,cod_metodologia,nombre_metodologia FROM $tbl_metodologia " . $filterQry . " ORDER BY nombre_metodologia ASC";
 
-			$returnValue_1 = array();
 
-			$returnValue_2 = array();
 
-			$returnValue_3 = array();
+		$qryArray = mysql_query($qry);
 
-			
+		mysqlException(mysql_error(), $header . "_01");
 
-			$x = 0;
 
-			
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
+		$returnValue_1 = array();
 
-				$returnValue_1[$x] = $qryData['id_analito'];
+		$returnValue_2 = array();
 
-				$returnValue_2[$x] = $qryData['cod_analito'];
+		$returnValue_3 = array();
 
-				$returnValue_3[$x] = $qryData['nombre_analito'];
 
-				$x++;
 
-			}
+		$x = 0;
 
-			
 
-			echo '<response code="1">';
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
+			$returnValue_1[$x] = $qryData['id_metodologia'];
 
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+			$returnValue_2[$x] = $qryData['cod_metodologia'];
 
-			echo '</response>';		
+			$returnValue_3[$x] = $qryData['nombre_metodologia'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
+
+		break;
+
+
+
+	case 'showMagnitud':
+
+
+
+		switch ($filterid) {
+
+			case 'id_analito':
+
+				// Linea de codigo deshabilitada
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT id_analito,cod_analito,nombre_analito FROM $tbl_analito " . $filterQry . " ORDER BY nombre_analito ASC";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_analito'];
+
+			$returnValue_2[$x] = $qryData['cod_analito'];
+
+			$returnValue_3[$x] = $qryData['nombre_analito'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
 
 		break;
 
@@ -1410,131 +1410,131 @@
 
 
 
-		case 'showUnidad':
+	case 'showUnidad':
 
-		
 
-			switch ($filterid) {
 
-				case 'id_analito':
+		switch ($filterid) {
 
-					// Linea de codigo deshabilitada
+			case 'id_analito':
 
-				break;
-
-				default:
-
-					$filterQry = '';
+				// Linea de codigo deshabilitada
 
 				break;
 
-			}
+			default:
 
-				
+				$filterQry = '';
 
-			$qry = "SELECT id_unidad,cod_unidad,nombre_unidad FROM $tbl_unidad ".$filterQry." ORDER BY nombre_unidad ASC";
+				break;
 
-				
+		}
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
 
-			
+		$qry = "SELECT id_unidad,cod_unidad,nombre_unidad FROM $tbl_unidad " . $filterQry . " ORDER BY nombre_unidad ASC";
 
-			$returnValue_1 = array();
 
-			$returnValue_2 = array();
 
-			$returnValue_3 = array();
+		$qryArray = mysql_query($qry);
 
-			
+		mysqlException(mysql_error(), $header . "_01");
 
-			$x = 0;
 
-			
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
+		$returnValue_1 = array();
 
-				$returnValue_1[$x] = $qryData['id_unidad'];
+		$returnValue_2 = array();
 
-				$returnValue_2[$x] = $qryData['cod_unidad'];
+		$returnValue_3 = array();
 
-				$returnValue_3[$x] = $qryData['nombre_unidad'];
 
-				$x++;
 
-			}
+		$x = 0;
 
-			
 
-		
 
-			echo '<response code="1">';
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			$returnValue_1[$x] = $qryData['id_unidad'];
 
-				echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
+			$returnValue_2[$x] = $qryData['cod_unidad'];
 
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+			$returnValue_3[$x] = $qryData['nombre_unidad'];
 
-			echo '</response>';		
+			$x++;
+
+		}
+
+
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
 
 		break;
 
 
 
-		case 'showMethod':
+	case 'showMethod':
 
-				
 
-			switch ($filterid) {
 
-				case 'id_analizador':
+		switch ($filterid) {
 
-					$filterQry = "WHERE $tbl_analizador.id_analizador = ".$filter;
+			case 'id_analizador':
 
-				break;
-
-				case 'id_analito':
-
-				
-
-					$filterArray = explode("|",$filter);
-
-					
-
-					for ($x = 0; $x < sizeof($filterArray); $x++) {
-
-						if ($filterArray[$x] == "") {
-
-							$filterArray[$x] = "NULL";
-
-						}
-
-					}			
-
-				
-
-					// $filterQry = "WHERE $tbl_metodologia.id_metodologia IN (SELECT id_metodologia FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1]) GROUP BY nombre_metodologia";
-
-					// Se actualiza la sentencia de group by
-
-					$filterQry = "WHERE $tbl_metodologia.id_metodologia IN (SELECT id_metodologia FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1])";
-
-				break;					
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_analizador.id_analizador = " . $filter;
 
 				break;
 
-			}			
+			case 'id_analito':
 
-				
 
-			$qry = "SELECT DISTINCT
+
+				$filterArray = explode("|", $filter);
+
+
+
+				for ($x = 0; $x < sizeof($filterArray); $x++) {
+
+					if ($filterArray[$x] == "") {
+
+						$filterArray[$x] = "NULL";
+
+					}
+
+				}
+
+
+
+				// $filterQry = "WHERE $tbl_metodologia.id_metodologia IN (SELECT id_metodologia FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1]) GROUP BY nombre_metodologia";
+
+				// Se actualiza la sentencia de group by
+
+				$filterQry = "WHERE $tbl_metodologia.id_metodologia IN (SELECT id_metodologia FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1])";
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT DISTINCT
 
 			            $tbl_metodologia_analizador.id_conexion,
 
@@ -1550,189 +1550,189 @@
 
 			    INNER JOIN $tbl_analizador ON $tbl_analizador.id_analizador = $tbl_metodologia_analizador.id_analizador 
 
-			    ".$filterQry." 
+			    " . $filterQry . " 
 
 			    ORDER BY $tbl_analizador.nombre_analizador ASC, $tbl_metodologia.nombre_metodologia ASC";
 
-		
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_conexion'];
-
-				$returnValue_2[$x] = $qryData['nombre_analizador'];
-
-				$returnValue_3[$x] = $qryData['id_metodologia'];
-
-				$returnValue_4[$x] = $qryData['nombre_metodologia'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
+		$returnValue_3 = array();
 
-			echo '<response code="1">';
+		$returnValue_4 = array();
 
-			echo'<returnvalues1 selectomit="1" content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
 
-			echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3 content="id">'.implode("|",$returnValue_3).'</returnvalues3>';
+		$x = 0;
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
 
-			echo '</response>';		
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_conexion'];
+
+			$returnValue_2[$x] = $qryData['nombre_analizador'];
+
+			$returnValue_3[$x] = $qryData['id_metodologia'];
+
+			$returnValue_4[$x] = $qryData['nombre_metodologia'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 selectomit="1" content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 content="id">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showReactive':
+	case 'showReactive':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_analito':
+			case 'id_analito':
 
-					// Se deshabilita
+				// Se deshabilita
 
-					// Linea de codigo deshabilitada
-
-				break;
-
-				default:
-
-					$filterQry = '';
+				// Linea de codigo deshabilitada
 
 				break;
 
-			}
+			default:
 
-		
+				$filterQry = '';
 
-			$qry = "SELECT id_reactivo,nombre_reactivo,cod_reactivo FROM $tbl_reactivo ".$filterQry." ORDER BY nombre_reactivo ASC";
+				break;
 
-
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			
-
-			$x = 0;
+		}
 
 
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
+		$qry = "SELECT id_reactivo,nombre_reactivo,cod_reactivo FROM $tbl_reactivo " . $filterQry . " ORDER BY nombre_reactivo ASC";
 
-				$returnValue_1[$x] = $qryData['id_reactivo'];
 
-				$returnValue_2[$x] = $qryData['cod_reactivo'];
 
-				$returnValue_3[$x] = $qryData['nombre_reactivo'];
+		$qryArray = mysql_query($qry);
 
-				$x++;
+		mysqlException(mysql_error(), $header . "_01");
 
-			}
 
-			
 
-			echo '<response code="1">';
+		$returnValue_1 = array();
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_2 = array();
 
-			echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_3 = array();
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo '</response>';		
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_reactivo'];
+
+			$returnValue_2[$x] = $qryData['cod_reactivo'];
+
+			$returnValue_3[$x] = $qryData['nombre_reactivo'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showUnit':
+	case 'showUnit':
 
-				
 
-			switch ($filterid) {
 
-				case 'id_analizador':
+		switch ($filterid) {
 
-					$filterQry = "WHERE $tbl_analizador.id_analizador = ".$filter;
+			case 'id_analizador':
 
-				break;
-
-				case 'id_analito':
-
-			
-
-					$filterArray = explode("|",$filter);
-
-					
-
-					for ($x = 0; $x < sizeof($filterArray); $x++) {
-
-						if ($filterArray[$x] == "") {
-
-							$filterArray[$x] = "NULL";
-
-						}
-
-					}			
-
-				
-
-					// $filterQry = "WHERE $tbl_unidad.id_unidad IN (SELECT id_unidad FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1]) GROUP BY nombre_unidad";
-
-					// Se actualiza la sentencia group by
-
-					$filterQry = "WHERE $tbl_unidad.id_unidad IN (SELECT id_unidad FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1])";
-
-			
+				$filterQry = "WHERE $tbl_analizador.id_analizador = " . $filter;
 
 				break;
 
-				default:
+			case 'id_analito':
 
-					$filterQry = '';
+
+
+				$filterArray = explode("|", $filter);
+
+
+
+				for ($x = 0; $x < sizeof($filterArray); $x++) {
+
+					if ($filterArray[$x] == "") {
+
+						$filterArray[$x] = "NULL";
+
+					}
+
+				}
+
+
+
+				// $filterQry = "WHERE $tbl_unidad.id_unidad IN (SELECT id_unidad FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1]) GROUP BY nombre_unidad";
+
+				// Se actualiza la sentencia group by
+
+				$filterQry = "WHERE $tbl_unidad.id_unidad IN (SELECT id_unidad FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1])";
+
+
 
 				break;
 
-			}
+			default:
 
-				
+				$filterQry = '';
 
-			$qry = "SELECT DISTINCT 
+				break;
+
+		}
+
+
+
+		$qry = "SELECT DISTINCT 
 
 						$tbl_unidad_analizador.id_conexion,
 
@@ -1742,345 +1742,345 @@
 
 			            $tbl_analizador.nombre_analizador 
 
-			     FROM $tbl_unidad INNER JOIN $tbl_unidad_analizador ON $tbl_unidad.id_unidad = $tbl_unidad_analizador.id_unidad INNER JOIN $tbl_analizador ON $tbl_analizador.id_analizador = $tbl_unidad_analizador.id_analizador ".$filterQry." ORDER BY $tbl_analizador.nombre_analizador ASC, $tbl_unidad.nombre_unidad ASC";
+			     FROM $tbl_unidad INNER JOIN $tbl_unidad_analizador ON $tbl_unidad.id_unidad = $tbl_unidad_analizador.id_unidad INNER JOIN $tbl_analizador ON $tbl_analizador.id_analizador = $tbl_unidad_analizador.id_analizador " . $filterQry . " ORDER BY $tbl_analizador.nombre_analizador ASC, $tbl_unidad.nombre_unidad ASC";
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_conexion'];
-
-				$returnValue_2[$x] = $qryData['nombre_analizador'];
-
-				$returnValue_3[$x] = $qryData['id_unidad'];
-
-				$returnValue_4[$x] = $qryData['nombre_unidad'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
+		$returnValue_3 = array();
 
-			echo '<response code="1">';
+		$returnValue_4 = array();
 
-			echo'<returnvalues1 content="id" selectomit="1">'.implode("|",$returnValue_1).'</returnvalues1>';
 
-			echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3 content="id">'.implode("|",$returnValue_3).'</returnvalues3>';
+		$x = 0;
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
 
-			echo '</response>';		
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_conexion'];
+
+			$returnValue_2[$x] = $qryData['nombre_analizador'];
+
+			$returnValue_3[$x] = $qryData['id_unidad'];
+
+			$returnValue_4[$x] = $qryData['nombre_unidad'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id" selectomit="1">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 content="id">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showVitrosGen':
+	case 'showVitrosGen':
 
-				
 
-			switch ($filterid) {
 
-				case 'id_analito':
+		switch ($filterid) {
 
-			
+			case 'id_analito':
 
-					$filterArray = explode("|",$filter);
 
-					
 
-					for ($x = 0; $x < sizeof($filterArray); $x++) {
+				$filterArray = explode("|", $filter);
 
-						if ($filterArray[$x] == "") {
 
-							$filterArray[$x] = "NULL";
 
-						}
+				for ($x = 0; $x < sizeof($filterArray); $x++) {
 
-					}			
+					if ($filterArray[$x] == "") {
 
-				
+						$filterArray[$x] = "NULL";
 
-					// $filterQry = "WHERE $tbl_gen_vitros.id_gen_vitros IN (SELECT id_gen_vitros FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1]) GROUP BY valor_gen_vitros";
+					}
 
-					// Se actualiza group by
+				}
 
-					$filterQry = "WHERE $tbl_gen_vitros.id_gen_vitros IN (SELECT id_gen_vitros FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1])";
 
-			
+
+				// $filterQry = "WHERE $tbl_gen_vitros.id_gen_vitros IN (SELECT id_gen_vitros FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1]) GROUP BY valor_gen_vitros";
+
+				// Se actualiza group by
+
+				$filterQry = "WHERE $tbl_gen_vitros.id_gen_vitros IN (SELECT id_gen_vitros FROM $tbl_configuracion_laboratorio_analito WHERE id_analizador = $filterArray[0] AND id_analito = $filterArray[1])";
+
+
 
 				break;
 
-				default:
+			default:
 
-					$filterQry = '';
-
-				break;
-
-			}
-
-				
-
-			$qry = "SELECT DISTINCT id_gen_vitros,valor_gen_vitros FROM $tbl_gen_vitros ".$filterQry." ORDER BY valor_gen_vitros ASC";			
-
-
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_gen_vitros'];
-
-				$returnValue_2[$x] = $qryData['valor_gen_vitros'];
-
-
-
-				$x++;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '</response>';		
-
-		break;		
-
-		case 'showLab':
-
-		
-
-			switch ($filterid) {
-
-				case "patologia":
-
-					$filterQry = 'where no_laboratorio like "200%"';
-
-					break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = '';
 
 				break;
 
-			}			
+		}
 
 
 
-			$qry = "SELECT id_laboratorio,no_laboratorio,nombre_laboratorio,direccion_laboratorio,telefono_laboratorio,correo_laboratorio,contacto_laboratorio,nombre_ciudad 
+		$qry = "SELECT DISTINCT id_gen_vitros,valor_gen_vitros FROM $tbl_gen_vitros " . $filterQry . " ORDER BY valor_gen_vitros ASC";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_gen_vitros'];
+
+			$returnValue_2[$x] = $qryData['valor_gen_vitros'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
+
+		break;
+
+	case 'showLab':
+
+
+
+		switch ($filterid) {
+
+			case "patologia":
+
+				$filterQry = 'where no_laboratorio like "200%"';
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT id_laboratorio,no_laboratorio,nombre_laboratorio,direccion_laboratorio,telefono_laboratorio,correo_laboratorio,contacto_laboratorio,nombre_ciudad 
 
 					FROM $tbl_laboratorio INNER JOIN $tbl_ciudad ON $tbl_laboratorio.id_ciudad = $tbl_ciudad.id_ciudad $filterQry 
 
 					ORDER BY no_laboratorio ASC";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			$returnValue_7 = array();
-
-			$returnValue_8 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_laboratorio'];
-
-				$returnValue_2[$x] = $qryData['no_laboratorio'];
-
-				$returnValue_3[$x] = $qryData['nombre_laboratorio'];
-
-				$returnValue_4[$x] = $qryData['contacto_laboratorio'];
-
-				$returnValue_5[$x] = $qryData['direccion_laboratorio'];
-
-				$returnValue_6[$x] = $qryData['nombre_ciudad'];
-
-				$returnValue_7[$x] = $qryData['telefono_laboratorio'];
-
-				$returnValue_8[$x] = $qryData['correo_laboratorio'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
+		$returnValue_3 = array();
 
-			echo '<response code="1">';
+		$returnValue_4 = array();
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_5 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_6 = array();
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_7 = array();
 
-			echo'<returnvalues4 selectomit="1">'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_8 = array();
 
-			echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
 
-			echo'<returnvalues6 selectomit="1">'.implode("|",$returnValue_6).'</returnvalues6>';
 
-			echo'<returnvalues7 selectomit="1">'.implode("|",$returnValue_7).'</returnvalues7>';
+		$x = 0;
 
-			echo'<returnvalues8 selectomit="1">'.implode("|",$returnValue_8).'</returnvalues8>';
 
-			echo '</response>';		
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_laboratorio'];
+
+			$returnValue_2[$x] = $qryData['no_laboratorio'];
+
+			$returnValue_3[$x] = $qryData['nombre_laboratorio'];
+
+			$returnValue_4[$x] = $qryData['contacto_laboratorio'];
+
+			$returnValue_5[$x] = $qryData['direccion_laboratorio'];
+
+			$returnValue_6[$x] = $qryData['nombre_ciudad'];
+
+			$returnValue_7[$x] = $qryData['telefono_laboratorio'];
+
+			$returnValue_8[$x] = $qryData['correo_laboratorio'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4 selectomit="1">' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6 selectomit="1">' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '<returnvalues7 selectomit="1">' . implode("|", $returnValue_7) . '</returnvalues7>';
+
+		echo '<returnvalues8 selectomit="1">' . implode("|", $returnValue_8) . '</returnvalues8>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAssignedLabProgram':
+	case 'showAssignedLabProgram':
 
-		
 
-			switch ($filterid) {
 
-				case 'id_laboratorio':
+		switch ($filterid) {
 
-					$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = ".$filter;
+			case 'id_laboratorio':
 
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = " . $filter;
 
 				break;
 
-			}			
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT id_conexion,$tbl_programa.nombre_programa,$tbl_laboratorio.no_laboratorio,$tbl_laboratorio.nombre_laboratorio,$tbl_programa.id_programa,$tbl_programa_laboratorio.activo FROM $tbl_programa INNER JOIN $tbl_programa_laboratorio ON $tbl_programa.id_programa = $tbl_programa_laboratorio.id_programa INNER JOIN $tbl_laboratorio ON $tbl_programa_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio $filterQry ORDER BY $tbl_programa.nombre_programa ASC, $tbl_laboratorio.nombre_laboratorio ASC";
-
-		
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_conexion'];
-
-				$returnValue_2[$x] = $qryData['no_laboratorio'];
-
-				$returnValue_3[$x] = $qryData['nombre_laboratorio'];
-
-				$returnValue_4[$x] = $qryData['nombre_programa'];
-
-				$returnValue_5[$x] = $qryData['id_programa'];
-
-				$returnValue_6[$x] = $qryData['activo'];
+		$qry = "SELECT id_conexion,$tbl_programa.nombre_programa,$tbl_laboratorio.no_laboratorio,$tbl_laboratorio.nombre_laboratorio,$tbl_programa.id_programa,$tbl_programa_laboratorio.activo FROM $tbl_programa INNER JOIN $tbl_programa_laboratorio ON $tbl_programa.id_programa = $tbl_programa_laboratorio.id_programa INNER JOIN $tbl_laboratorio ON $tbl_programa_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio $filterQry ORDER BY $tbl_programa.nombre_programa ASC, $tbl_laboratorio.nombre_laboratorio ASC";
 
 
 
-				$x++;
+		$qryArray = mysql_query($qry);
 
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 selectomit="1" content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_2 = array();
 
-			echo'<returnvalues3 selectomit="1">'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_3 = array();
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_4 = array();
 
-			echo'<returnvalues5 content="id">'.implode("|",$returnValue_5).'</returnvalues5>';
+		$returnValue_5 = array();
 
-			echo'<returnvalues6 selectomit="1">'.implode("|",$returnValue_6).'</returnvalues6>';
+		$returnValue_6 = array();
 
-			echo '</response>';		
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_conexion'];
+
+			$returnValue_2[$x] = $qryData['no_laboratorio'];
+
+			$returnValue_3[$x] = $qryData['nombre_laboratorio'];
+
+			$returnValue_4[$x] = $qryData['nombre_programa'];
+
+			$returnValue_5[$x] = $qryData['id_programa'];
+
+			$returnValue_6[$x] = $qryData['activo'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 selectomit="1" content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 selectomit="1">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 content="id">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6 selectomit="1">' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '</response>';
 
 		break;
 
@@ -2088,25 +2088,25 @@
 
 
 
-		case "showAssignedLabProgramGeneral":
-
-			
-
-			$qryLab = "SELECT no_laboratorio FROM laboratorio where id_laboratorio = ". $filter;
-
-			$qryLabArray = mysql_query($qryLab);
-
-			$qryDataLab = mysql_fetch_array($qryLabArray);
-
-			$no_laboratorio = $qryDataLab['no_laboratorio'];
+	case "showAssignedLabProgramGeneral":
 
 
 
-			if(strpos($no_laboratorio, "200") === 0){ // Si es un laboratorio de patologia anatomica
+		$qryLab = "SELECT no_laboratorio FROM laboratorio where id_laboratorio = " . $filter;
+
+		$qryLabArray = mysql_query($qryLab);
+
+		$qryDataLab = mysql_fetch_array($qryLabArray);
+
+		$no_laboratorio = $qryDataLab['no_laboratorio'];
 
 
 
-				$qry = "SELECT distinct
+		if (strpos($no_laboratorio, "200") === 0) { // Si es un laboratorio de patologia anatomica
+
+
+
+			$qry = "SELECT distinct
 
 						programa_pat.id_programa,
 
@@ -2118,143 +2118,143 @@
 
 						join reto_laboratorio on reto.id_reto = reto_laboratorio.reto_id_reto
 
-					where reto_laboratorio.laboratorio_id_laboratorio = '".$filter ."'
+					where reto_laboratorio.laboratorio_id_laboratorio = '" . $filter . "'
 
 					order by programa_pat.nombre";
 
-			
 
-				$qryArray = mysql_query($qry);
 
-				mysqlException(mysql_error(),$header."_01");			
+			$qryArray = mysql_query($qry);
 
-				
-
-				$returnValue_1 = array();
-
-				$returnValue_2 = array();
+			mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x = 0;
+			$returnValue_1 = array();
 
-				
-
-				while ($qryData = mysql_fetch_array($qryArray)) {
-
-					$returnValue_1[$x] = $qryData['id_programa'];
-
-					$returnValue_2[$x] = $qryData['nombre'];
-
-					$x++;
-
-				}
-
-				
-
-				echo '<response code="1">';
-
-					echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-					echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-				echo '</response>';	
-
-				
-
-			} else if(strpos($no_laboratorio, "100") === 0) { // Si es un laboratorio clinico
-
-	
-
-				$qry = "SELECT id_conexion,$tbl_programa.nombre_programa,$tbl_laboratorio.no_laboratorio,$tbl_laboratorio.nombre_laboratorio,$tbl_programa.id_programa,$tbl_programa_laboratorio.activo FROM $tbl_programa INNER JOIN $tbl_programa_laboratorio ON $tbl_programa.id_programa = $tbl_programa_laboratorio.id_programa INNER JOIN $tbl_laboratorio ON $tbl_programa_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio WHERE $tbl_laboratorio.id_laboratorio = ".$filter." ORDER BY $tbl_programa.nombre_programa ASC, $tbl_laboratorio.nombre_laboratorio ASC";
-
-			
-
-				$qryArray = mysql_query($qry);
-
-				mysqlException(mysql_error(),$header."_01");			
-
-				
-
-				$returnValue_1 = array();
-
-				$returnValue_2 = array();
+			$returnValue_2 = array();
 
 
 
-				$x = 0;
-
-				
-
-				while ($qryData = mysql_fetch_array($qryArray)) {
-
-					$returnValue_1[$x] = $qryData['nombre_programa'];
-
-					$returnValue_2[$x] = $qryData['id_programa'];
-
-					$x++;
-
-				}
-
-				
-
-				echo '<response code="1">';
-
-					echo'<returnvalues1>'.implode("|",$returnValue_1).'</returnvalues1>';
-
-					echo'<returnvalues2 content="id">'.implode("|",$returnValue_2).'</returnvalues2>';
-
-				echo '</response>';	
-
-			}
-
-		
-
-			break;
+			$x = 0;
 
 
 
-		case 'showAssignedCiclosProgram':
+			while ($qryData = mysql_fetch_array($qryArray)) {
 
-			
+				$returnValue_1[$x] = $qryData['id_programa'];
 
-			$filterArray = explode("|",$filter);
+				$returnValue_2[$x] = $qryData['nombre'];
 
-					
-
-			for ($x = 0; $x < sizeof($filterArray); $x++) {
-
-				if ($filterArray[$x] == "") {
-
-					$filterArray[$x] = "NULL";
-
-				}
+				$x++;
 
 			}
 
 
 
-			$id_programa = $filterArray[0];
+			echo '<response code="1">';
 
-			$id_laboratorio = $filterArray[1]; 
+			echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
+			echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
 
-
-			$qryLab = "SELECT no_laboratorio FROM laboratorio where id_laboratorio = ". $id_laboratorio;
-
-			$qryLabArray = mysql_query($qryLab);
-
-			$qryDataLab = mysql_fetch_array($qryLabArray);
-
-			$no_laboratorio = $qryDataLab['no_laboratorio'];
+			echo '</response>';
 
 
 
-			if(strpos($no_laboratorio, "200") === 0){ // Si es un laboratorio de patologia anatomica
+		} else if (strpos($no_laboratorio, "100") === 0) { // Si es un laboratorio clinico
 
 
 
-				$qry = "SELECT distinct
+			$qry = "SELECT id_conexion,$tbl_programa.nombre_programa,$tbl_laboratorio.no_laboratorio,$tbl_laboratorio.nombre_laboratorio,$tbl_programa.id_programa,$tbl_programa_laboratorio.activo FROM $tbl_programa INNER JOIN $tbl_programa_laboratorio ON $tbl_programa.id_programa = $tbl_programa_laboratorio.id_programa INNER JOIN $tbl_laboratorio ON $tbl_programa_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio WHERE $tbl_laboratorio.id_laboratorio = " . $filter . " ORDER BY $tbl_programa.nombre_programa ASC, $tbl_laboratorio.nombre_laboratorio ASC";
+
+
+
+			$qryArray = mysql_query($qry);
+
+			mysqlException(mysql_error(), $header . "_01");
+
+
+
+			$returnValue_1 = array();
+
+			$returnValue_2 = array();
+
+
+
+			$x = 0;
+
+
+
+			while ($qryData = mysql_fetch_array($qryArray)) {
+
+				$returnValue_1[$x] = $qryData['nombre_programa'];
+
+				$returnValue_2[$x] = $qryData['id_programa'];
+
+				$x++;
+
+			}
+
+
+
+			echo '<response code="1">';
+
+			echo '<returnvalues1>' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+			echo '<returnvalues2 content="id">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+			echo '</response>';
+
+		}
+
+
+
+		break;
+
+
+
+	case 'showAssignedCiclosProgram':
+
+
+
+		$filterArray = explode("|", $filter);
+
+
+
+		for ($x = 0; $x < sizeof($filterArray); $x++) {
+
+			if ($filterArray[$x] == "") {
+
+				$filterArray[$x] = "NULL";
+
+			}
+
+		}
+
+
+
+		$id_programa = $filterArray[0];
+
+		$id_laboratorio = $filterArray[1];
+
+
+
+		$qryLab = "SELECT no_laboratorio FROM laboratorio where id_laboratorio = " . $id_laboratorio;
+
+		$qryLabArray = mysql_query($qryLab);
+
+		$qryDataLab = mysql_fetch_array($qryLabArray);
+
+		$no_laboratorio = $qryDataLab['no_laboratorio'];
+
+
+
+		if (strpos($no_laboratorio, "200") === 0) { // Si es un laboratorio de patologia anatomica
+
+
+
+			$qry = "SELECT distinct
 
 					reto.id_reto,
 
@@ -2266,53 +2266,53 @@
 
 					join reto_laboratorio on reto.id_reto = reto_laboratorio.reto_id_reto
 
-				where reto_laboratorio.laboratorio_id_laboratorio = '". $id_laboratorio ."' and programa_pat.id_programa = '". $id_programa ."'";
-
-			
-
-				$qryArray = mysql_query($qry);
-
-				mysqlException(mysql_error(),$header."_01");			
-
-				
-
-				$returnValue_1 = array();
-
-				$returnValue_2 = array();
+				where reto_laboratorio.laboratorio_id_laboratorio = '" . $id_laboratorio . "' and programa_pat.id_programa = '" . $id_programa . "'";
 
 
 
-				$x = 0;
+			$qryArray = mysql_query($qry);
 
-				
-
-				while ($qryData = mysql_fetch_array($qryArray)) {
-
-					$returnValue_1[$x] = $qryData['id_reto'];
-
-					$returnValue_2[$x] = $qryData['nombre'];
-
-					$x++;
-
-				}
-
-				
-
-				echo '<response code="1">';
-
-					echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-					echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-				echo '</response>';	
+			mysqlException(mysql_error(), $header . "_01");
 
 
 
-			} else if(strpos($no_laboratorio, "100") === 0) { // Si es un laboratorio clinico
+			$returnValue_1 = array();
 
-				
+			$returnValue_2 = array();
 
-				$qry = "SELECT DISTINCT
+
+
+			$x = 0;
+
+
+
+			while ($qryData = mysql_fetch_array($qryArray)) {
+
+				$returnValue_1[$x] = $qryData['id_reto'];
+
+				$returnValue_2[$x] = $qryData['nombre'];
+
+				$x++;
+
+			}
+
+
+
+			echo '<response code="1">';
+
+			echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+			echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+			echo '</response>';
+
+
+
+		} else if (strpos($no_laboratorio, "100") === 0) { // Si es un laboratorio clinico
+
+
+
+			$qry = "SELECT DISTINCT
 
 					$tbl_programa.nombre_programa,
 
@@ -2338,117 +2338,17 @@
 
 				ORDER BY $tbl_ronda.no_ronda DESC";
 
-			
-
-				$qryArray = mysql_query($qry);
-
-				mysqlException(mysql_error(),$header."_01");			
-
-				
-
-				$returnValue_1 = array();
-
-				$returnValue_2 = array();
-
-
-
-				$x = 0;
-
-				
-
-				while ($qryData = mysql_fetch_array($qryArray)) {
-
-					$returnValue_1[$x] = $qryData['id_ronda'];
-
-					$returnValue_2[$x] = $qryData['no_ronda'];
-
-					$x++;
-
-				}
-
-				
-
-				echo '<response code="1">';
-
-					echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-					echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-				echo '</response>';	
-
-			
-
-			}
-
-			break;
-
-
-
-		case "showDocuments":
-
-
-
-			$filterArray = explode("|",$filter);
-
-
-
-			for ($x = 0; $x < sizeof($filterArray); $x++) {
-
-				if ($filterArray[$x] == "") {
-
-					$filterArray[$x] = "NULL";
-
-				}
-
-			}
-
-
-
-			$qryLab = "SELECT no_laboratorio FROM laboratorio where id_laboratorio = ". $filterArray[0];
-
-			$qryLabArray = mysql_query($qryLab);
-
-			$qryDataLab = mysql_fetch_array($qryLabArray);
-
-			$no_laboratorio = $qryDataLab['no_laboratorio'];
-
-
-
-			if(strpos($no_laboratorio, "200") === 0){	
-
-				$filterQry = "WHERE archivo.id_laboratorio = '".mysql_real_escape_string(stripcslashes(clean($filterArray[0])))."' AND id_reto = ".mysql_real_escape_string(stripcslashes(clean($filterArray[1])));
-
-			} else if(strpos($no_laboratorio, "100") === 0) {
-
-				$filterQry = "WHERE archivo.id_laboratorio = '".mysql_real_escape_string(stripcslashes(clean($filterArray[0])))."' AND id_ronda = ".mysql_real_escape_string(stripcslashes(clean($filterArray[1])));
-
-			}
-
-
-
-			$qry = "SELECT id_archivo,nombre_archivo,extencion_archivo,index_archivo,activo,fecha_carga 
-
-			FROM archivo $filterQry ORDER BY fecha_carga DESC, activo DESC, nombre_archivo ASC";
-
 
 
 			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_0x01");
+			mysqlException(mysql_error(), $header . "_01");
 
 
 
 			$returnValue_1 = array();
 
 			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
 
 
 
@@ -2458,17 +2358,9 @@
 
 			while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_1[$x] = encryptControl('encrypt',$qryData['id_archivo'],$_SESSION['qap_token']);
+				$returnValue_1[$x] = $qryData['id_ronda'];
 
-				$returnValue_2[$x] = $qryData['nombre_archivo'];
-
-				$returnValue_3[$x] = $qryData['extencion_archivo'];
-
-				$returnValue_4[$x] = $qryData['index_archivo'];
-
-				$returnValue_5[$x] = $qryData['activo'];
-
-				$returnValue_6[$x] = $qryData['fecha_carga'];
+				$returnValue_2[$x] = $qryData['no_ronda'];
 
 				$x++;
 
@@ -2478,63 +2370,171 @@
 
 			echo '<response code="1">';
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
-				echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+			echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
 
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
-
-				echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
-
-				echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
-
-				echo'<returnvalues6>'.implode("|",$returnValue_6).'</returnvalues6>';
-
-			echo '</response>';	
+			echo '</response>';
 
 
 
-			break;
-
-
-
-		case 'showActiveStatusOptions':
-
-			echo '<response code="1">';
-
-			echo'<returnvalues1 content="id">0|1</returnvalues1>';
-
-			echo'<returnvalues2>No|Si</returnvalues2>';
-
-			echo '</response>';		
+		}
 
 		break;
 
 
 
-		case 'showAssignedLabReto':
+	case "showDocuments":
 
-		
 
-			switch ($filterid) {
 
-				case 'id_laboratorio':
+		$filterArray = explode("|", $filter);
 
-					$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = ".$filter;
+
+
+		for ($x = 0; $x < sizeof($filterArray); $x++) {
+
+			if ($filterArray[$x] == "") {
+
+				$filterArray[$x] = "NULL";
+
+			}
+
+		}
+
+
+
+		$qryLab = "SELECT no_laboratorio FROM laboratorio where id_laboratorio = " . $filterArray[0];
+
+		$qryLabArray = mysql_query($qryLab);
+
+		$qryDataLab = mysql_fetch_array($qryLabArray);
+
+		$no_laboratorio = $qryDataLab['no_laboratorio'];
+
+
+
+		if (strpos($no_laboratorio, "200") === 0) {
+
+			$filterQry = "WHERE archivo.id_laboratorio = '" . mysql_real_escape_string(stripcslashes(clean($filterArray[0]))) . "' AND id_reto = " . mysql_real_escape_string(stripcslashes(clean($filterArray[1])));
+
+		} else if (strpos($no_laboratorio, "100") === 0) {
+
+			$filterQry = "WHERE archivo.id_laboratorio = '" . mysql_real_escape_string(stripcslashes(clean($filterArray[0]))) . "' AND id_ronda = " . mysql_real_escape_string(stripcslashes(clean($filterArray[1])));
+
+		}
+
+
+
+		$qry = "SELECT id_archivo,nombre_archivo,extencion_archivo,index_archivo,activo,fecha_carga 
+
+			FROM archivo $filterQry ORDER BY fecha_carga DESC, activo DESC, nombre_archivo ASC";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_0x01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
+
+		$returnValue_4 = array();
+
+		$returnValue_5 = array();
+
+		$returnValue_6 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = encryptControl('encrypt', $qryData['id_archivo'], $_SESSION['qap_token']);
+
+			$returnValue_2[$x] = $qryData['nombre_archivo'];
+
+			$returnValue_3[$x] = $qryData['extencion_archivo'];
+
+			$returnValue_4[$x] = $qryData['index_archivo'];
+
+			$returnValue_5[$x] = $qryData['activo'];
+
+			$returnValue_6[$x] = $qryData['fecha_carga'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6>' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '</response>';
+
+
+
+		break;
+
+
+
+	case 'showActiveStatusOptions':
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">0|1</returnvalues1>';
+
+		echo '<returnvalues2>No|Si</returnvalues2>';
+
+		echo '</response>';
+
+		break;
+
+
+
+	case 'showAssignedLabReto':
+
+
+
+		switch ($filterid) {
+
+			case 'id_laboratorio':
+
+				$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = " . $filter;
 
 				break;
 
-				default:
+			default:
 
-					$filterQry = '';
+				$filterQry = '';
 
 				break;
 
-			}			
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 						$tbl_reto_laboratorio.id_reto_laboratorio,
 
@@ -2562,309 +2562,309 @@
 
 					ORDER BY $tbl_programa_pat.nombre ASC, $tbl_reto.nombre ASC";
 
-		
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			$returnValue_7 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_reto_laboratorio'];
-
-				$returnValue_2[$x] = $qryData['nombre_reto'];
-
-				$returnValue_3[$x] = $qryData['no_laboratorio'];
-
-				$returnValue_4[$x] = $qryData['nombre_laboratorio'];
-
-				$returnValue_5[$x] = $qryData['id_programa'];
-
-				$returnValue_6[$x] = $qryData['nombre_programa_pat'];
-
-				$returnValue_7[$x] = $qryData['envio'];
-
-				$x++;
-
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-			echo '<response code="1">';
+		$returnValue_1 = array();
 
-			echo 	'<returnvalues1 selectomit="1" content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_2 = array();
 
-			echo 	'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_3 = array();
 
-			echo 	'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_4 = array();
 
-			echo 	'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_5 = array();
 
-			echo 	'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
+		$returnValue_6 = array();
 
-			echo 	'<returnvalues6>'.implode("|",$returnValue_6).'</returnvalues6>';
+		$returnValue_7 = array();
 
-			echo 	'<returnvalues7>'.implode("|",$returnValue_7).'</returnvalues7>';
 
-			echo '</response>';		
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_reto_laboratorio'];
+
+			$returnValue_2[$x] = $qryData['nombre_reto'];
+
+			$returnValue_3[$x] = $qryData['no_laboratorio'];
+
+			$returnValue_4[$x] = $qryData['nombre_laboratorio'];
+
+			$returnValue_5[$x] = $qryData['id_programa'];
+
+			$returnValue_6[$x] = $qryData['nombre_programa_pat'];
+
+			$returnValue_7[$x] = $qryData['envio'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 selectomit="1" content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6>' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '<returnvalues7>' . implode("|", $returnValue_7) . '</returnvalues7>';
+
+		echo '</response>';
 
 		break;
 
 
 
-		case 'showAssignedLabAnalit':
+	case 'showAssignedLabAnalit':
 
-				
 
-			switch ($filterid) {
 
-				case 'id_array':
+		switch ($filterid) {
 
-					$filterArray = explode("|",$filter);
+			case 'id_array':
 
-					
+				$filterArray = explode("|", $filter);
 
-					for ($x = 0; $x < sizeof($filterArray); $x++) {
 
-						if ($filterArray[$x] == "") {
 
-							$filterArray[$x] = "NULL";
+				for ($x = 0; $x < sizeof($filterArray); $x++) {
 
-						}
+					if ($filterArray[$x] == "") {
+
+						$filterArray[$x] = "NULL";
 
 					}
 
+				}
 
 
-					$filterQry = "WHERE $tbl_programa.id_programa = $filterArray[1] AND $tbl_laboratorio.id_laboratorio = $filterArray[0]";
 
-					
+				$filterQry = "WHERE $tbl_programa.id_programa = $filterArray[1] AND $tbl_laboratorio.id_laboratorio = $filterArray[0]";
+
+
 
 				break;
 
-				case 'id_laboratorio':
+			case 'id_laboratorio':
 
-					$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = ".$filter;
-
-				break;				
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = " . $filter;
 
 				break;
 
-			}						
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT $tbl_configuracion_laboratorio_analito.id_configuracion,nombre_programa,nombre_analito,nombre_analizador,nombre_metodologia,nombre_reactivo,nombre_unidad,valor_gen_vitros,nombre_material,activo FROM $tbl_configuracion_laboratorio_analito INNER JOIN $tbl_programa ON $tbl_configuracion_laboratorio_analito.id_programa = $tbl_programa.id_programa INNER JOIN $tbl_laboratorio ON $tbl_configuracion_laboratorio_analito.id_laboratorio = $tbl_laboratorio.id_laboratorio INNER JOIN $tbl_analito ON $tbl_configuracion_laboratorio_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_analizador ON $tbl_configuracion_laboratorio_analito.id_analizador = $tbl_analizador.id_analizador INNER JOIN $tbl_metodologia ON $tbl_configuracion_laboratorio_analito.id_metodologia = $tbl_metodologia.id_metodologia INNER JOIN $tbl_reactivo ON $tbl_configuracion_laboratorio_analito.id_reactivo = $tbl_reactivo.id_reactivo INNER JOIN $tbl_unidad ON $tbl_configuracion_laboratorio_analito.id_unidad = $tbl_unidad.id_unidad INNER JOIN $tbl_gen_vitros ON $tbl_configuracion_laboratorio_analito.id_gen_vitros = $tbl_gen_vitros.id_gen_vitros LEFT JOIN $tbl_material ON $tbl_configuracion_laboratorio_analito.id_material = $tbl_material.id_material $filterQry ORDER BY nombre_programa ASC, nombre_analito ASC";	
+		$qry = "SELECT $tbl_configuracion_laboratorio_analito.id_configuracion,nombre_programa,nombre_analito,nombre_analizador,nombre_metodologia,nombre_reactivo,nombre_unidad,valor_gen_vitros,nombre_material,activo FROM $tbl_configuracion_laboratorio_analito INNER JOIN $tbl_programa ON $tbl_configuracion_laboratorio_analito.id_programa = $tbl_programa.id_programa INNER JOIN $tbl_laboratorio ON $tbl_configuracion_laboratorio_analito.id_laboratorio = $tbl_laboratorio.id_laboratorio INNER JOIN $tbl_analito ON $tbl_configuracion_laboratorio_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_analizador ON $tbl_configuracion_laboratorio_analito.id_analizador = $tbl_analizador.id_analizador INNER JOIN $tbl_metodologia ON $tbl_configuracion_laboratorio_analito.id_metodologia = $tbl_metodologia.id_metodologia INNER JOIN $tbl_reactivo ON $tbl_configuracion_laboratorio_analito.id_reactivo = $tbl_reactivo.id_reactivo INNER JOIN $tbl_unidad ON $tbl_configuracion_laboratorio_analito.id_unidad = $tbl_unidad.id_unidad INNER JOIN $tbl_gen_vitros ON $tbl_configuracion_laboratorio_analito.id_gen_vitros = $tbl_gen_vitros.id_gen_vitros LEFT JOIN $tbl_material ON $tbl_configuracion_laboratorio_analito.id_material = $tbl_material.id_material $filterQry ORDER BY nombre_programa ASC, nombre_analito ASC";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
+		$qryArray = mysql_query($qry);
 
-			
+		mysqlException(mysql_error(), $header . "_01");
 
-			$returnValue_1 = array();
 
-			$returnValue_2 = array();
 
-			$returnValue_3 = array();
+		$returnValue_1 = array();
 
-			$returnValue_4 = array();
+		$returnValue_2 = array();
 
-			$returnValue_5 = array();
+		$returnValue_3 = array();
 
-			$returnValue_6 = array();
+		$returnValue_4 = array();
 
-			$returnValue_7 = array();
+		$returnValue_5 = array();
 
-			$returnValue_8 = array();
+		$returnValue_6 = array();
 
-			$returnValue_9 = array();
+		$returnValue_7 = array();
 
-			$returnValue_10 = array();
+		$returnValue_8 = array();
 
-			
+		$returnValue_9 = array();
 
-			$x = 0;
+		$returnValue_10 = array();
 
-			
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_1[$x] = $qryData['id_configuracion'];
+		$x = 0;
 
-				$returnValue_2[$x] = $qryData['nombre_programa'];
 
-				$returnValue_3[$x] = $qryData['nombre_analito'];
 
-				$returnValue_4[$x] = $qryData['nombre_analizador'];
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_5[$x] = $qryData['nombre_metodologia'];
+			$returnValue_1[$x] = $qryData['id_configuracion'];
 
-				$returnValue_6[$x] = $qryData['nombre_reactivo'];
+			$returnValue_2[$x] = $qryData['nombre_programa'];
 
-				$returnValue_7[$x] = $qryData['nombre_unidad'];
+			$returnValue_3[$x] = $qryData['nombre_analito'];
 
-				$returnValue_8[$x] = $qryData['valor_gen_vitros'];
+			$returnValue_4[$x] = $qryData['nombre_analizador'];
 
-				$returnValue_9[$x] = $qryData['nombre_material'];
+			$returnValue_5[$x] = $qryData['nombre_metodologia'];
 
-				$returnValue_10[$x] = $qryData['activo'];
+			$returnValue_6[$x] = $qryData['nombre_reactivo'];
 
-				$x++;
+			$returnValue_7[$x] = $qryData['nombre_unidad'];
 
-			}
+			$returnValue_8[$x] = $qryData['valor_gen_vitros'];
 
-			
+			$returnValue_9[$x] = $qryData['nombre_material'];
 
-			echo '<response code="1">';
+			$returnValue_10[$x] = $qryData['activo'];
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			$x++;
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		}
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
 
-			echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
+		echo '<response code="1">';
 
-			echo'<returnvalues6>'.implode("|",$returnValue_6).'</returnvalues6>';
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
-			echo'<returnvalues7>'.implode("|",$returnValue_7).'</returnvalues7>';
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
 
-			echo'<returnvalues8>'.implode("|",$returnValue_8).'</returnvalues8>';
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
 
-			echo'<returnvalues9>'.implode("|",$returnValue_9).'</returnvalues9>';
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
 
-			echo'<returnvalues10>'.implode("|",$returnValue_10).'</returnvalues10>';
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
 
-			echo '</response>';
+		echo '<returnvalues6>' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '<returnvalues7>' . implode("|", $returnValue_7) . '</returnvalues7>';
+
+		echo '<returnvalues8>' . implode("|", $returnValue_8) . '</returnvalues8>';
+
+		echo '<returnvalues9>' . implode("|", $returnValue_9) . '</returnvalues9>';
+
+		echo '<returnvalues10>' . implode("|", $returnValue_10) . '</returnvalues10>';
+
+		echo '</response>';
 
 
 
 		break;
 
-		case 'showCountry':
+	case 'showCountry':
 
-		
 
-			switch ($filterid) {
 
-				default:
+		switch ($filterid) {
 
-					$filterQry = '';
+			default:
+
+				$filterQry = '';
 
 				break;
 
-			}			
+		}
 
 
 
-			$qry = "SELECT id_pais,nombre_pais FROM $tbl_pais $filterQry ORDER BY nombre_pais ASC";
+		$qry = "SELECT id_pais,nombre_pais FROM $tbl_pais $filterQry ORDER BY nombre_pais ASC";
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_pais'];
-
-				$returnValue_2[$x] = $qryData['nombre_pais'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$x = 0;
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo '</response>';		
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_pais'];
+
+			$returnValue_2[$x] = $qryData['nombre_pais'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAllUnits':
+	case 'showAllUnits':
 
-		
 
-			switch ($filterid) {
 
-				case "analitolaboratorio":
+		switch ($filterid) {
 
-					$id_configuracion_lab = $filter;
+			case "analitolaboratorio":
 
-					$qry = "SELECT id_analizador from $tbl_configuracion_laboratorio_analito where id_configuracion = $id_configuracion_lab";
+				$id_configuracion_lab = $filter;
 
-					$qryData = mysql_fetch_array(mysql_query($qry));
+				$qry = "SELECT id_analizador from $tbl_configuracion_laboratorio_analito where id_configuracion = $id_configuracion_lab";
 
-					mysqlException(mysql_error(),$header."_01");
+				$qryData = mysql_fetch_array(mysql_query($qry));
 
-					$id_analizador = $qryData["id_analizador"]; 
+				mysqlException(mysql_error(), $header . "_01");
 
-					$filterQry = " where analizador.id_analizador = $id_analizador";
+				$id_analizador = $qryData["id_analizador"];
 
-					break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = " where analizador.id_analizador = $id_analizador";
 
 				break;
 
-			}			
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 					$tbl_unidad.id_unidad,$tbl_unidad.nombre_unidad,$tbl_analizador.nombre_analizador 
 
@@ -2880,93 +2880,93 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_unidad'];
-
-				$returnValue_2[$x] = $qryData['nombre_analizador']." - ".$qryData['nombre_unidad'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$x = 0;
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo '</response>';		
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_unidad'];
+
+			$returnValue_2[$x] = $qryData['nombre_analizador'] . " - " . $qryData['nombre_unidad'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAllVitrosGen':
+	case 'showAllVitrosGen':
 
-		
 
-			switch ($filterid) {
 
-				case "analitolaboratorio":
+		switch ($filterid) {
 
-					$id_configuracion_lab = $filter;
+			case "analitolaboratorio":
 
-					$qry = "SELECT $tbl_analizador.nombre_analizador from $tbl_configuracion_laboratorio_analito join $tbl_analizador on $tbl_analizador.id_analizador = $tbl_configuracion_laboratorio_analito.id_analizador where id_configuracion = $id_configuracion_lab";
+				$id_configuracion_lab = $filter;
 
-					$qryData = mysql_fetch_array(mysql_query($qry));
+				$qry = "SELECT $tbl_analizador.nombre_analizador from $tbl_configuracion_laboratorio_analito join $tbl_analizador on $tbl_analizador.id_analizador = $tbl_configuracion_laboratorio_analito.id_analizador where id_configuracion = $id_configuracion_lab";
 
-					mysqlException(mysql_error(),$header."_01");
+				$qryData = mysql_fetch_array(mysql_query($qry));
 
-					$nombre_analizador = $qryData["nombre_analizador"];
+				mysqlException(mysql_error(), $header . "_01");
 
-					
+				$nombre_analizador = $qryData["nombre_analizador"];
 
-					// Saber si el nombre del analizador contiene la palabra VITROS
 
-					if(strpos(strtolower($nombre_analizador),"vitros") === false){
 
-						$filterQry = " where gen_vitros.valor_gen_vitros = 0"; // Como no contiene la palabra vitros, entonces muestra solo el cero
+				// Saber si el nombre del analizador contiene la palabra VITROS
 
-					} else {
+				if (strpos(strtolower($nombre_analizador), "vitros") === false) {
 
-						$filterQry = "";
+					$filterQry = " where gen_vitros.valor_gen_vitros = 0"; // Como no contiene la palabra vitros, entonces muestra solo el cero
 
-					}
+				} else {
+
+					$filterQry = "";
+
+				}
 
 
 
 				break;
 
-				default:
+			default:
 
-					$filterQry = '';
+				$filterQry = '';
 
 				break;
 
-			}			
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 					$tbl_gen_vitros.id_gen_vitros,
 
@@ -2980,81 +2980,81 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_gen_vitros'];
-
-				$returnValue_2[$x] = $qryData['valor_gen_vitros'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$x = 0;
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo '</response>';		
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_gen_vitros'];
+
+			$returnValue_2[$x] = $qryData['valor_gen_vitros'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		
 
-		case 'showAllMagnitudes':
 
-		
+	case 'showAllMagnitudes':
 
-			switch ($filterid) {
 
-				case "analitolaboratorio":
 
-					$id_configuracion_lab = $filter;
+		switch ($filterid) {
 
-					$qry = "SELECT id_programa from $tbl_configuracion_laboratorio_analito where id_configuracion = $id_configuracion_lab";
+			case "analitolaboratorio":
 
-					$qryData = mysql_fetch_array(mysql_query($qry));
+				$id_configuracion_lab = $filter;
 
-					mysqlException(mysql_error(),$header."_01");
+				$qry = "SELECT id_programa from $tbl_configuracion_laboratorio_analito where id_configuracion = $id_configuracion_lab";
 
-					$id_programa = $qryData["id_programa"]; 
+				$qryData = mysql_fetch_array(mysql_query($qry));
 
-					$filterQry = " where programa.id_programa = $id_programa";
+				mysqlException(mysql_error(), $header . "_01");
 
-				break;
+				$id_programa = $qryData["id_programa"];
 
-				default:
-
-					$filterQry = '';
+				$filterQry = " where programa.id_programa = $id_programa";
 
 				break;
 
-			}			
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 					$tbl_analito.id_analito,$tbl_analito.nombre_analito,$tbl_programa.nombre_programa 
 
@@ -3070,199 +3070,199 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_analito'];
-
-				$returnValue_2[$x] = $qryData['nombre_programa']." - ".$qryData['nombre_analito'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$x = 0;
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo '</response>';		
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_analito'];
+
+			$returnValue_2[$x] = $qryData['nombre_programa'] . " - " . $qryData['nombre_analito'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAllMaterials':
-
-		
-
-			switch ($filterid) {
-
-				default:
-
-					$filterQry = '';
-
-				break;
-
-			}			
+	case 'showAllMaterials':
 
 
 
-			$qry = "SELECT id_material,nombre_material FROM $tbl_material ORDER BY nombre_material ASC";
+		switch ($filterid) {
 
+			default:
 
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_material'];
-
-				$returnValue_2[$x] = $qryData['nombre_material'];
-
-
-
-				$x++;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '</response>';		
-
-		break;		
-
-		case 'showAllAnalyzers':
-
-		
-
-			switch ($filterid) {
-
-				default:
-
-					$filterQry = '';
+				$filterQry = '';
 
 				break;
 
-			}			
+		}
 
 
 
-			$qry = "SELECT id_analizador,nombre_analizador FROM $tbl_analizador ORDER BY nombre_analizador ASC";
+		$qry = "SELECT id_material,nombre_material FROM $tbl_material ORDER BY nombre_material ASC";
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_analizador'];
-
-				$returnValue_2[$x] = $qryData['nombre_analizador'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$x = 0;
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo '</response>';		
 
-		break;		
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-		case 'showAllMethods':
+			$returnValue_1[$x] = $qryData['id_material'];
 
-		
+			$returnValue_2[$x] = $qryData['nombre_material'];
 
-			switch ($filterid) {
 
-				case "analitolaboratorio":
 
-					$id_configuracion_lab = $filter;
+			$x++;
 
-					$qry = "SELECT id_analizador from $tbl_configuracion_laboratorio_analito where id_configuracion = $id_configuracion_lab";
+		}
 
-					$qryData = mysql_fetch_array(mysql_query($qry));
 
-					mysqlException(mysql_error(),$header."_01");
 
-					$id_analizador = $qryData["id_analizador"]; 
+		echo '<response code="1">';
 
-					$filterQry = " where analizador.id_analizador = $id_analizador";
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
-					break;
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
 
-				default:
+		echo '</response>';
 
-					$filterQry = '';
+		break;
+
+	case 'showAllAnalyzers':
+
+
+
+		switch ($filterid) {
+
+			default:
+
+				$filterQry = '';
 
 				break;
 
-			}			
+		}
 
 
 
-			$qry = "SELECT $tbl_metodologia.id_metodologia,$tbl_metodologia.nombre_metodologia,$tbl_analizador.nombre_analizador 
+		$qry = "SELECT id_analizador,nombre_analizador FROM $tbl_analizador ORDER BY nombre_analizador ASC";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_analizador'];
+
+			$returnValue_2[$x] = $qryData['nombre_analizador'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
+
+		break;
+
+	case 'showAllMethods':
+
+
+
+		switch ($filterid) {
+
+			case "analitolaboratorio":
+
+				$id_configuracion_lab = $filter;
+
+				$qry = "SELECT id_analizador from $tbl_configuracion_laboratorio_analito where id_configuracion = $id_configuracion_lab";
+
+				$qryData = mysql_fetch_array(mysql_query($qry));
+
+				mysqlException(mysql_error(), $header . "_01");
+
+				$id_analizador = $qryData["id_analizador"];
+
+				$filterQry = " where analizador.id_analizador = $id_analizador";
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT $tbl_metodologia.id_metodologia,$tbl_metodologia.nombre_metodologia,$tbl_analizador.nombre_analizador 
 
 					FROM $tbl_metodologia 
 
@@ -3274,337 +3274,337 @@
 
 					ORDER BY $tbl_analizador.nombre_analizador ASC, $tbl_metodologia.nombre_metodologia ASC";
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_metodologia'];
-
-				$returnValue_2[$x] = $qryData['nombre_analizador']." - ".$qryData['nombre_metodologia'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$x = 0;
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo '</response>';		
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_metodologia'];
+
+			$returnValue_2[$x] = $qryData['nombre_analizador'] . " - " . $qryData['nombre_metodologia'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAllReactives':
-
-		
-
-			switch ($filterid) {
-
-				default:
-
-					$filterQry = '';
-
-				break;
-
-			}			
+	case 'showAllReactives':
 
 
 
-			$qry = "SELECT id_reactivo,nombre_reactivo FROM $tbl_reactivo ORDER BY nombre_reactivo ASC";
+		switch ($filterid) {
 
+			default:
 
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_reactivo'];
-
-				$returnValue_2[$x] = $qryData['nombre_reactivo'];
-
-
-
-				$x++;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '</response>';		
-
-		break;		
-
-		case 'showCity':
-
-		
-
-			switch ($filterid) {
-
-				case 'id_pais':
-
-					$filterQry = "WHERE $tbl_pais.id_pais = ".$filter;
+				$filterQry = '';
 
 				break;
 
-				default:
-
-					$filterQry = '';
-
-				break;
-
-			}						
-
-				
-
-			$qry = "SELECT id_ciudad,nombre_ciudad,nombre_pais FROM $tbl_pais INNER JOIN $tbl_ciudad ON $tbl_ciudad.id_pais = $tbl_pais.id_pais ".$filterQry." ORDER BY nombre_pais ASC, nombre_ciudad ASC";				
+		}
 
 
 
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_ciudad'];
-
-				$returnValue_2[$x] = $qryData['nombre_pais'];
-
-				$returnValue_3[$x] = $qryData['nombre_ciudad'];
+		$qry = "SELECT id_reactivo,nombre_reactivo FROM $tbl_reactivo ORDER BY nombre_reactivo ASC";
 
 
 
-				$x++;
+		$qryArray = mysql_query($qry);
 
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_2 = array();
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo '</response>';
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_reactivo'];
+
+			$returnValue_2[$x] = $qryData['nombre_reactivo'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showUser':
+	case 'showCity':
 
-		
 
-			switch ($filterid) {
 
-				case 'tipo_usuario':
+		switch ($filterid) {
 
-					$filterQry = "WHERE usuario.estado=1 AND $tbl_usuario.tipo_usuario = ".$filter;
+			case 'id_pais':
 
-				break;
-
-				default:
-
-					$filterQry = 'WHERE usuario.estado=1 ';
+				$filterQry = "WHERE $tbl_pais.id_pais = " . $filter;
 
 				break;
 
-			}				
+			default:
 
-			
+				$filterQry = '';
 
-			$qry = "SELECT id_usuario,nombre_usuario,tipo_usuario,cod_usuario,nombre_completo,email_usuario FROM $tbl_usuario ".$filterQry." ORDER BY nombre_usuario ASC";
+				break;
 
-
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
+		}
 
 
 
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			$returnValue_8 = array();
-
-			$returnValue_7 = array();
-
-
-
-			$x = 0;
-
-
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_usuario'];
-
-				$returnValue_2[$x] = $qryData['nombre_usuario'];
-
-				$returnValue_3[$x] = "*****";
-
-				$returnValue_4[$x] = $qryData['tipo_usuario'];
-
-
-
-				if($qryData['cod_usuario'] == null){
-
-					$returnValue_5[$x] = "-";
-
-				} else {
-
-					$returnValue_5[$x] = $qryData['cod_usuario'];
-
-				}
-
-
-
-				if($qryData['nombre_completo'] == null){
-
-					$returnValue_6[$x] = "-";
-
-				} else {
-
-					$returnValue_6[$x] = $qryData['nombre_completo'];
-
-				}
+		$qry = "SELECT id_ciudad,nombre_ciudad,nombre_pais FROM $tbl_pais INNER JOIN $tbl_ciudad ON $tbl_ciudad.id_pais = $tbl_pais.id_pais " . $filterQry . " ORDER BY nombre_pais ASC, nombre_ciudad ASC";
 
 
 
 
 
-				if($qryData['email_usuario'] == null){
+		$qryArray = mysql_query($qry);
 
-					$returnValue_7[$x] = "-";
-
-				} else {
-
-					$returnValue_7[$x] = $qryData['email_usuario'];
-
-				}
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
 
 
-				$x++;
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_ciudad'];
+
+			$returnValue_2[$x] = $qryData['nombre_pais'];
+
+			$returnValue_3[$x] = $qryData['nombre_ciudad'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
+
+		break;
+
+	case 'showUser':
+
+
+
+		switch ($filterid) {
+
+			case 'tipo_usuario':
+
+				$filterQry = "WHERE usuario.estado=1 AND $tbl_usuario.tipo_usuario = " . $filter;
+
+				break;
+
+			default:
+
+				$filterQry = 'WHERE usuario.estado=1 ';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT id_usuario,nombre_usuario,tipo_usuario,cod_usuario,nombre_completo,email_usuario FROM $tbl_usuario " . $filterQry . " ORDER BY nombre_usuario ASC";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
+
+		$returnValue_4 = array();
+
+		$returnValue_5 = array();
+
+		$returnValue_6 = array();
+
+		$returnValue_8 = array();
+
+		$returnValue_7 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_usuario'];
+
+			$returnValue_2[$x] = $qryData['nombre_usuario'];
+
+			$returnValue_3[$x] = "*****";
+
+			$returnValue_4[$x] = $qryData['tipo_usuario'];
+
+
+
+			if ($qryData['cod_usuario'] == null) {
+
+				$returnValue_5[$x] = "-";
+
+			} else {
+
+				$returnValue_5[$x] = $qryData['cod_usuario'];
 
 			}
 
-			
 
-			echo '<response code="1">';
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			if ($qryData['nombre_completo'] == null) {
 
-				echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+				$returnValue_6[$x] = "-";
 
-				echo'<returnvalues3 selectomit="1">'.implode("|",$returnValue_3).'</returnvalues3>';
+			} else {
 
-				echo'<returnvalues4 selectomit="1">'.implode("|",$returnValue_4).'</returnvalues4>';
+				$returnValue_6[$x] = $qryData['nombre_completo'];
 
-				echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
+			}
 
-				echo'<returnvalues6 selectomit="1">'.implode("|",$returnValue_6).'</returnvalues6>';
 
-				echo'<returnvalues7 selectomit="1">'.implode("|",$returnValue_7).'</returnvalues7>';
 
-			echo '</response>';
+
+
+			if ($qryData['email_usuario'] == null) {
+
+				$returnValue_7[$x] = "-";
+
+			} else {
+
+				$returnValue_7[$x] = $qryData['email_usuario'];
+
+			}
+
+
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 selectomit="1">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4 selectomit="1">' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6 selectomit="1">' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '<returnvalues7 selectomit="1">' . implode("|", $returnValue_7) . '</returnvalues7>';
+
+		echo '</response>';
 
 		break;
 
 
 
-		case 'showIntentos':
+	case 'showIntentos':
 
-		
 
-			switch ($filterid) {
 
-				case 'id_reto':
+		switch ($filterid) {
 
-					$filterQry = "WHERE $tbl_intento.reto_id_reto = ".$filter;
+			case 'id_reto':
 
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_intento.reto_id_reto = " . $filter;
 
 				break;
 
-			}				
+			default:
 
-			
+				$filterQry = '';
 
-			$qry = "SELECT distinct
+				break;
+
+		}
+
+
+
+		$qry = "SELECT distinct
 
 						laboratorio.id_laboratorio as qry1_id_laboratorio,
 
@@ -3734,277 +3734,277 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
-
-			
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-			$qry1_id_laboratorio = array();
-
-			$no_laboratorio = array();
-
-			$nombre_laboratorio = array();
-
-			$qry1_id_reto = array();
-
-			$nombre_reto = array();
-
-			$nombre_programa = array();
-
-			$qry1_id_usuario = array();
-
-			$nombre_usuario = array();
-
-			$num_intentos = array();
-
-			$ultima_fecha = array();
-
-			$id_ultimo_intento = array();
-
-			$revaloracion = array();
 
 
+		$qry1_id_laboratorio = array();
 
-			$x=0;
+		$no_laboratorio = array();
+
+		$nombre_laboratorio = array();
+
+		$qry1_id_reto = array();
+
+		$nombre_reto = array();
+
+		$nombre_programa = array();
+
+		$qry1_id_usuario = array();
+
+		$nombre_usuario = array();
+
+		$num_intentos = array();
+
+		$ultima_fecha = array();
+
+		$id_ultimo_intento = array();
+
+		$revaloracion = array();
 
 
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$qry1_id_laboratorio[$x] = $qryData['qry1_id_laboratorio'];
-
-				$no_laboratorio[$x] = $qryData['no_laboratorio'];
-
-				$nombre_laboratorio[$x] = $qryData['nombre_laboratorio'];
-
-				$qry1_id_reto[$x] = $qryData['qry1_id_reto'];
-
-				$nombre_reto[$x] = $qryData['nombre_reto'];
-
-				$nombre_programa[$x] = $qryData['nombre_programa'];
-
-				$qry1_id_usuario[$x] = $qryData['qry1_id_usuario'];
-
-				$nombre_usuario[$x] = $qryData['nombre_usuario'];
-
-				$num_intentos[$x] = $qryData['num_intentos'];
-
-				$ultima_fecha[$x] = $qryData['ultima_fecha'];
-
-				$id_ultimo_intento[$x] = $qryData['id_ultimo_intento'];
-
-				$revaloracion[$x] = $qryData['revaloracion'];
-
-				$x++;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-				echo'<returnValues_1 selectomit="1">'.implode("|",$qry1_id_laboratorio).'</returnValues_1>';
-
-				echo'<returnValues_2 selectomit="1">'.implode("|",$no_laboratorio).'</returnValues_2>';
-
-				echo'<returnValues_3 selectomit="1">'.implode("|",$nombre_laboratorio).'</returnValues_3>';
-
-				echo'<returnValues_4 selectomit="1">'.implode("|",$qry1_id_reto).'</returnValues_4>';
-
-				echo'<returnValues_5 selectomit="1">'.implode("|",$nombre_reto).'</returnValues_5>';
-
-				echo'<returnValues_6 selectomit="1">'.implode("|",$nombre_programa).'</returnValues_6>';
-
-				echo'<returnValues_7 selectomit="1">'.implode("|",$qry1_id_usuario).'</returnValues_7>';
-
-				echo'<returnValues_8 selectomit="1">'.implode("|",$nombre_usuario).'</returnValues_8>';
-
-				echo'<returnValues_9 selectomit="1">'.implode("|",$num_intentos).'</returnValues_9>';
-
-				echo'<returnValues_10 selectomit="1">'.implode("|",$ultima_fecha).'</returnValues_10>';
-
-				echo'<returnValues_11 content="id">'.implode("|",$id_ultimo_intento).'</returnValues_11>';
-
-				echo'<returnValues_12 selectomit="1">'.implode("|",$revaloracion).'</returnValues_12>';
-
-				echo '</response>';
-
-			break;
+		$x = 0;
 
 
 
-		case 'showAssignedLabUser':
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-		
+			$qry1_id_laboratorio[$x] = $qryData['qry1_id_laboratorio'];
 
-			switch ($filterid) {
+			$no_laboratorio[$x] = $qryData['no_laboratorio'];
 
-				default:
+			$nombre_laboratorio[$x] = $qryData['nombre_laboratorio'];
 
-					$filterQry = '';
+			$qry1_id_reto[$x] = $qryData['qry1_id_reto'];
+
+			$nombre_reto[$x] = $qryData['nombre_reto'];
+
+			$nombre_programa[$x] = $qryData['nombre_programa'];
+
+			$qry1_id_usuario[$x] = $qryData['qry1_id_usuario'];
+
+			$nombre_usuario[$x] = $qryData['nombre_usuario'];
+
+			$num_intentos[$x] = $qryData['num_intentos'];
+
+			$ultima_fecha[$x] = $qryData['ultima_fecha'];
+
+			$id_ultimo_intento[$x] = $qryData['id_ultimo_intento'];
+
+			$revaloracion[$x] = $qryData['revaloracion'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnValues_1 selectomit="1">' . implode("|", $qry1_id_laboratorio) . '</returnValues_1>';
+
+		echo '<returnValues_2 selectomit="1">' . implode("|", $no_laboratorio) . '</returnValues_2>';
+
+		echo '<returnValues_3 selectomit="1">' . implode("|", $nombre_laboratorio) . '</returnValues_3>';
+
+		echo '<returnValues_4 selectomit="1">' . implode("|", $qry1_id_reto) . '</returnValues_4>';
+
+		echo '<returnValues_5 selectomit="1">' . implode("|", $nombre_reto) . '</returnValues_5>';
+
+		echo '<returnValues_6 selectomit="1">' . implode("|", $nombre_programa) . '</returnValues_6>';
+
+		echo '<returnValues_7 selectomit="1">' . implode("|", $qry1_id_usuario) . '</returnValues_7>';
+
+		echo '<returnValues_8 selectomit="1">' . implode("|", $nombre_usuario) . '</returnValues_8>';
+
+		echo '<returnValues_9 selectomit="1">' . implode("|", $num_intentos) . '</returnValues_9>';
+
+		echo '<returnValues_10 selectomit="1">' . implode("|", $ultima_fecha) . '</returnValues_10>';
+
+		echo '<returnValues_11 content="id">' . implode("|", $id_ultimo_intento) . '</returnValues_11>';
+
+		echo '<returnValues_12 selectomit="1">' . implode("|", $revaloracion) . '</returnValues_12>';
+
+		echo '</response>';
+
+		break;
+
+
+
+	case 'showAssignedLabUser':
+
+
+
+		switch ($filterid) {
+
+			default:
+
+				$filterQry = '';
 
 				break;
 
-			}
-
-			
-
-			$qry = "SELECT id_conexion,nombre_usuario,nombre_laboratorio,no_laboratorio FROM $tbl_usuario_laboratorio INNER JOIN $tbl_usuario ON $tbl_usuario_laboratorio.id_usuario = $tbl_usuario.id_usuario INNER JOIN $tbl_laboratorio ON $tbl_usuario_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio $filterQry ORDER BY nombre_usuario ASC, no_laboratorio ASC";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_conexion'];
-
-				$returnValue_2[$x] = $qryData['nombre_usuario'];
-
-				$returnValue_3[$x] = $qryData['no_laboratorio'];
-
-				$returnValue_4[$x] = $qryData['nombre_laboratorio'];
+		}
 
 
 
-				$x++;
+		$qry = "SELECT id_conexion,nombre_usuario,nombre_laboratorio,no_laboratorio FROM $tbl_usuario_laboratorio INNER JOIN $tbl_usuario ON $tbl_usuario_laboratorio.id_usuario = $tbl_usuario.id_usuario INNER JOIN $tbl_laboratorio ON $tbl_usuario_laboratorio.id_laboratorio = $tbl_laboratorio.id_laboratorio $filterQry ORDER BY nombre_usuario ASC, no_laboratorio ASC";
 
-			}
 
-			
 
-			echo '<response code="1">';
+		$qryArray = mysql_query($qry);
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		mysqlException(mysql_error(), $header . "_01");
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_1 = array();
 
-			echo '</response>';
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
+
+		$returnValue_4 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_conexion'];
+
+			$returnValue_2[$x] = $qryData['nombre_usuario'];
+
+			$returnValue_3[$x] = $qryData['no_laboratorio'];
+
+			$returnValue_4[$x] = $qryData['nombre_laboratorio'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showLog':
+	case 'showLog':
 
-			actionRestriction_0();
+		actionRestriction_0();
 
-			$limit = clean($_POST['querylimit']);
+		$limit = clean($_POST['querylimit']);
 
-			
 
-			$qry = "SELECT id_log,fecha,hora,log,query,$tbl_usuario.nombre_usuario FROM $tbl_log INNER JOIN $tbl_usuario ON $tbl_log.id_usuario = $tbl_usuario.id_usuario ORDER BY fecha DESC,hora DESC LIMIT 0,$limit";
 
-			
+		$qry = "SELECT id_log,fecha,hora,log,query,$tbl_usuario.nombre_usuario FROM $tbl_log INNER JOIN $tbl_usuario ON $tbl_log.id_usuario = $tbl_usuario.id_usuario ORDER BY fecha DESC,hora DESC LIMIT 0,$limit";
 
-			$logId = array();
 
-			$logDate = array();
 
-			$logHour = array();
+		$logId = array();
 
-			$logUser = array();
+		$logDate = array();
 
-			$logAction = array();
+		$logHour = array();
 
-			$logQuery = array();
+		$logUser = array();
 
-			
+		$logAction = array();
 
-			$data = mysql_query($qry);
+		$logQuery = array();
 
-			mysqlException(mysql_error(),$header."_01");
 
-			
 
-			$x = 0;
+		$data = mysql_query($qry);
 
-			
+		mysqlException(mysql_error(), $header . "_01");
 
-			while ($reg = mysql_fetch_array($data)) {
 
-				mysqlException(mysql_error(),$header."_02");
 
-				$logId[$x] = $reg['id_log'];
+		$x = 0;
 
-				$logDate[$x] = $reg['fecha'];
 
-				$logHour[$x] = $reg['hora'];
 
-				$logUser[$x] = $reg['nombre_usuario'];
+		while ($reg = mysql_fetch_array($data)) {
 
-				$logAction[$x] = $reg['log'];
+			mysqlException(mysql_error(), $header . "_02");
 
-				$logQuery[$x] = clean($reg['query']);
+			$logId[$x] = $reg['id_log'];
 
-				
+			$logDate[$x] = $reg['fecha'];
 
-				$x++;
+			$logHour[$x] = $reg['hora'];
 
-			}
+			$logUser[$x] = $reg['nombre_usuario'];
 
-			
+			$logAction[$x] = $reg['log'];
 
-			echo '<response code="1">';
+			$logQuery[$x] = clean($reg['query']);
 
-				echo'<logid>'.implode("|",$logId).'</logid>';
 
-				echo'<logdate>'.implode("|",$logDate).'</logdate>';
 
-				echo'<loghour>'.implode("|",$logHour).'</loghour>';
+			$x++;
 
-				echo'<loguser>'.implode("|",$logUser).'</loguser>';
+		}
 
-				echo'<logaction>'.implode("|",$logAction).'</logaction>';
 
-				echo'<logquery>'.implode("|",$logQuery).'</logquery>';
 
-			echo '</response>';	
+		echo '<response code="1">';
+
+		echo '<logid>' . implode("|", $logId) . '</logid>';
+
+		echo '<logdate>' . implode("|", $logDate) . '</logdate>';
+
+		echo '<loghour>' . implode("|", $logHour) . '</loghour>';
+
+		echo '<loguser>' . implode("|", $logUser) . '</loguser>';
+
+		echo '<logaction>' . implode("|", $logAction) . '</logaction>';
+
+		echo '<logquery>' . implode("|", $logQuery) . '</logquery>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showLogEnrolamiento':
+	case 'showLogEnrolamiento':
 
-			actionRestriction_100();
+		actionRestriction_100();
 
 
 
-			$laboratorioid = clean($_POST['laboratorioid']);
+		$laboratorioid = clean($_POST['laboratorioid']);
 
-			$programaid = clean($_POST['programaid']);
+		$programaid = clean($_POST['programaid']);
 
-			$fechainicial = clean($_POST['fechainicial']);
+		$fechainicial = clean($_POST['fechainicial']);
 
-			$fechafinal = clean($_POST['fechafinal']);
+		$fechafinal = clean($_POST['fechafinal']);
 
-			
 
-			// Trae los primero 50 que encuentre
 
-			$qry = "SELECT 
+		// Trae los primero 50 que encuentre
+
+		$qry = "SELECT 
 
 				laboratorio.no_laboratorio,
 
@@ -4026,951 +4026,643 @@
 
 			WHERE 
 
-				laboratorio.id_laboratorio = '".$laboratorioid."'
+				laboratorio.id_laboratorio = '" . $laboratorioid . "'
 
-				AND programa.id_programa = '".$programaid."'
+				AND programa.id_programa = '" . $programaid . "'
 
-				and fecha between '".$fechainicial."' and DATE_ADD(DATE_ADD(DATE_ADD('".$fechafinal."', INTERVAL 23 HOUR), INTERVAL 59 MINUTE), INTERVAL 59 SECOND)
+				and fecha between '" . $fechainicial . "' and DATE_ADD(DATE_ADD(DATE_ADD('" . $fechafinal . "', INTERVAL 23 HOUR), INTERVAL 59 MINUTE), INTERVAL 59 SECOND)
 
 			ORDER BY fecha DESC";
 
-			
 
-			$no_laboratorio = array();
 
-			$nombre_programa = array();
+		$no_laboratorio = array();
 
-			$fecha = array();
+		$nombre_programa = array();
 
-			$nombre_usuario = array();
+		$fecha = array();
 
-			$titulo = array();
+		$nombre_usuario = array();
 
-			$resumen = array();
+		$titulo = array();
 
-			
+		$resumen = array();
 
-			$data = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");
 
-			
+		$data = mysql_query($qry);
 
-			$x = 0;
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			while ($reg = mysql_fetch_array($data)) {
 
-				mysqlException(mysql_error(),$header."_02");
+		$x = 0;
 
-				$no_laboratorio[$x] = $reg['no_laboratorio'];
 
-				$nombre_programa[$x] = $reg['nombre_programa'];
 
-				$fecha[$x] = $reg['fecha'];
+		while ($reg = mysql_fetch_array($data)) {
 
-				$nombre_usuario[$x] = $reg['nombre_usuario'];
+			mysqlException(mysql_error(), $header . "_02");
 
-				$titulo[$x] = $reg['titulo'];
+			$no_laboratorio[$x] = $reg['no_laboratorio'];
 
-				$resumen[$x] = clean($reg['resumen']);
+			$nombre_programa[$x] = $reg['nombre_programa'];
 
-				$x++;
+			$fecha[$x] = $reg['fecha'];
 
-			}
+			$nombre_usuario[$x] = $reg['nombre_usuario'];
 
-			
+			$titulo[$x] = $reg['titulo'];
 
-			echo '<response code="1">';
+			$resumen[$x] = clean($reg['resumen']);
 
-				echo'<no_laboratorio>'.implode("|",$no_laboratorio).'</no_laboratorio>';
+			$x++;
 
-				echo'<nombre_programa>'.implode("|",$nombre_programa).'</nombre_programa>';
+		}
 
-				echo'<fecha>'.implode("|",$fecha).'</fecha>';
 
-				echo'<nombre_usuario>'.implode("|",$nombre_usuario).'</nombre_usuario>';
 
-				echo'<titulo>'.implode("|",$titulo).'</titulo>';
+		echo '<response code="1">';
 
-				echo'<resumen>'.implode("|",$resumen).'</resumen>';
+		echo '<no_laboratorio>' . implode("|", $no_laboratorio) . '</no_laboratorio>';
 
-			echo '</response>';	
+		echo '<nombre_programa>' . implode("|", $nombre_programa) . '</nombre_programa>';
+
+		echo '<fecha>' . implode("|", $fecha) . '</fecha>';
+
+		echo '<nombre_usuario>' . implode("|", $nombre_usuario) . '</nombre_usuario>';
+
+		echo '<titulo>' . implode("|", $titulo) . '</titulo>';
+
+		echo '<resumen>' . implode("|", $resumen) . '</resumen>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showDis':
+	case 'showDis':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				default:
+			default:
 
-					$filterQry = '';
+				$filterQry = '';
 
 				break;
 
-			}				
+		}
 
 
 
-			$qry = "SELECT id_distribuidor,nombre_distribuidor FROM $tbl_distribuidor $filterQry ORDER BY nombre_distribuidor ASC";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_distribuidor'];
-
-				$returnValue_2[$x] = $qryData['nombre_distribuidor'];
+		$qry = "SELECT id_distribuidor,nombre_distribuidor FROM $tbl_distribuidor $filterQry ORDER BY nombre_distribuidor ASC";
 
 
 
-				$x++;
+		$qryArray = mysql_query($qry);
 
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_2 = array();
 
-			echo '</response>';		
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_distribuidor'];
+
+			$returnValue_2[$x] = $qryData['nombre_distribuidor'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAssignedAnalitMedia':
+	case 'showAssignedAnalitMedia':
 
-			
+		if (isset($_POST['minitemstoshow'])) {
+			$min = mysql_real_escape_string(clean($_POST['minitemstoshow']));
+		} else {
+			$min = 0;
+		}
+		if (isset($_POST['maxitemstoshow'])) {
+			$max = mysql_real_escape_string(clean($_POST['maxitemstoshow']));
+		} else {
+			$max = 100;
+		}
+		if (isset($_POST['programtypeid'])) {
+			$programtypeid = mysql_real_escape_string(clean($_POST['programtypeid']));
+		} else {
+			$programtypeid = "null";
+		}
 
-			if (isset($_POST['minitemstoshow'])) {
-
-				$min = mysql_real_escape_string(clean($_POST['minitemstoshow']));
-
-			} else {
-
-				$min = 0;
-
-			}
-
-			if (isset($_POST['maxitemstoshow'])) {
-
-				$max = mysql_real_escape_string(clean($_POST['maxitemstoshow']));
-
-			} else {
-
-				$max = 100;
-
-			}
-
-			if (isset($_POST['programtypeid'])) {
-
-				$programtypeid = mysql_real_escape_string(clean($_POST['programtypeid']));
-
-			} else {
-
-				$programtypeid = "null";
-
-			}			
-
-			
-
-			switch ($filterid) {
-
-				case 'id_programa':
-
-					$filterQry = "WHERE $tbl_programa.id_programa = ".$filter;
-
-				break;				
-
-				case 'id_array':
-
-				
-
-					$filterArray = explode("|",$filter);
-
-					
-
-					for ($x = 0; $x < sizeof($filterArray); $x++) {
-
-						if ($filterArray[$x] == "") {
-
-							$filterArray[$x] = "NULL";
-
-						}
-
-					}					
-
-					
-
+		switch ($filterid) {
+			case 'id_programa':
+				$filterQry = "WHERE $tbl_programa.id_programa = " . $filter;
 				break;
+			case 'id_array':
 
-				default:
+				$filterArray = explode("|", $filter);
 
-					$filterQry = '';
-
-				break;		
-
-			}				
-
-			
-
-			if ($filterArray[2] != "NULL") {		
-
-				
-
-				$qry = "SELECT * FROM $tbl_configuracion_laboratorio_analito WHERE id_laboratorio = ".$filterArray[2]." AND id_programa = ".$filterArray[1]." AND activo = 1";					
-
-				
-
-				$filterQryArray = mysql_query($qry);
-
-				
-
-				$filterQry = array();
-
-				
-
-				$x = 0;
-
-				
-
-				while ($filterQryData = mysql_fetch_array($filterQryArray)) {
-
-					$filterQry[$x] = "WHERE $tbl_programa.id_programa = ".$filterArray[1]." AND $tbl_configuracion_laboratorio_analito.id_analito = ".$filterQryData['id_analito']." AND $tbl_configuracion_laboratorio_analito.id_analizador = ".$filterQryData['id_analizador']." AND $tbl_configuracion_laboratorio_analito.id_metodologia = ".$filterQryData['id_metodologia']." AND $tbl_configuracion_laboratorio_analito.id_reactivo = ".$filterQryData['id_reactivo']." AND $tbl_configuracion_laboratorio_analito.id_unidad = ".$filterQryData['id_unidad']." AND $tbl_configuracion_laboratorio_analito.id_gen_vitros = ".$filterQryData['id_gen_vitros'];
-
-					$x++;
-
-				}			
-
-				
-
-				$returnValue_1 = array();
-
-				$returnValue_2 = array();
-
-				$returnValue_3 = array();
-
-				$returnValue_4 = array();
-
-				$returnValue_5 = array();
-
-				$returnValue_6 = array();
-
-				$returnValue_7 = array();
-
-				$returnValue_9 = array(
-
-					'level0' => array(),
-
-					'level1' => array(),
-
-					'level2' => array(),
-
-					'level3' => array()
-
-				);
-
-				$returnValue_10 = array();
-
-				
-
-				for ($x = 0; $x < sizeof($filterQry); $x++) {
-
-					$qry = "SELECT $tbl_configuracion_laboratorio_analito.id_configuracion,nombre_programa,nombre_analito,nombre_analizador,nombre_metodologia,nombre_reactivo,nombre_unidad,$tbl_analito.id_analito,valor_gen_vitros FROM $tbl_configuracion_laboratorio_analito INNER JOIN $tbl_programa ON $tbl_configuracion_laboratorio_analito.id_programa = $tbl_programa.id_programa INNER JOIN $tbl_analito ON $tbl_configuracion_laboratorio_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_analizador ON $tbl_configuracion_laboratorio_analito.id_analizador = $tbl_analizador.id_analizador INNER JOIN $tbl_metodologia ON $tbl_configuracion_laboratorio_analito.id_metodologia = $tbl_metodologia.id_metodologia INNER JOIN $tbl_reactivo ON $tbl_configuracion_laboratorio_analito.id_reactivo = $tbl_reactivo.id_reactivo INNER JOIN $tbl_unidad ON $tbl_configuracion_laboratorio_analito.id_unidad = $tbl_unidad.id_unidad INNER JOIN $tbl_gen_vitros ON $tbl_configuracion_laboratorio_analito.id_gen_vitros = $tbl_gen_vitros.id_gen_vitros ".$filterQry[$x]." ORDER BY nombre_programa ASC, nombre_analizador ASC, nombre_analito ASC LIMIT $min,$max";
-
-					
-
-					$qryData = mysql_fetch_array(mysql_query($qry));
-
-					
-
-					if (!empty($qryData['id_configuracion'])) {
-
-						$returnValue_1[$x] = $qryData['id_configuracion'];
-
-					} else {
-
-						$returnValue_1[$x] = "0";
-
+				for ($x = 0; $x < sizeof($filterArray); $x++) {
+					if ($filterArray[$x] == "") {
+						$filterArray[$x] = "NULL";
 					}
-
-					
-
-					$returnValue_2[$x] = $qryData['nombre_programa'];
-
-					$returnValue_3[$x] = $qryData['nombre_analito'];
-
-					$returnValue_4[$x] = $qryData['nombre_analizador'];
-
-					$returnValue_5[$x] = $qryData['nombre_metodologia'];
-
-					$returnValue_6[$x] = $qryData['nombre_reactivo'];
-
-					$returnValue_7[$x] = $qryData['nombre_unidad'];
-
-					$returnValue_10[$x] = $qryData['valor_gen_vitros'];	
-
-					
-
-				}			
-
-				
-
-				$lvl = array(1,2,3,0);
-
-				
-
-				$level0Counter = 0;		
-
-				$level1Counter = 0;		
-
-				$level2Counter = 0;		
-
-				$level3Counter = 0;
-
-				
-
-				if (sizeof($returnValue_1) > 0) {
-
-					for ($x = 0; $x < sizeof($returnValue_1); $x++) {
-
-						
-
-						$qry = "SELECT media_estandar,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = ".$returnValue_1[$x]." AND nivel = ".$lvl[0]." AND id_muestra = ".$filterArray[0]." AND id_laboratorio = ".$filterArray[2];
-
-		
-
-						$qryArray_2 = mysql_query($qry);
-
-						mysqlException(mysql_error(),$header."_02_".$x);
-
-						
-
-						$qryData_2 = mysql_fetch_array($qryArray_2);						
-
-							
-
-						if (!empty($qryData_2)) {
-
-							$returnValue_9['level1'][$level1Counter] = $qryData_2['media_estandar'];				
-
-							$returnValue_9['level1'][$level1Counter + 1] = $qryData_2['desviacion_estandar'];				
-
-							$returnValue_9['level1'][$level1Counter + 2] = $qryData_2['coeficiente_variacion'];
-
-							$returnValue_9['level1'][$level1Counter + 3] = $qryData_2['n_evaluacion'];
-
-						} else {
-
-							$returnValue_9['level1'][$level1Counter] = 0;		
-
-							$returnValue_9['level1'][$level1Counter + 1] = 0;		
-
-							$returnValue_9['level1'][$level1Counter + 2] = 0;
-
-							$returnValue_9['level1'][$level1Counter + 3] = 0;	
-
-						}
-
-						
-
-						$level1Counter = ($level1Counter + 4);
-
-							
-
-						$qry = "SELECT media_estandar,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = ".$returnValue_1[$x]." AND nivel = ".$lvl[1]." AND id_muestra = ".$filterArray[0]." AND id_laboratorio = ".$filterArray[2];
-
-		
-
-						$qryArray_2 = mysql_query($qry);
-
-						mysqlException(mysql_error(),$header."_02_".$x);
-
-						
-
-						$qryData_2 = mysql_fetch_array($qryArray_2);						
-
-							
-
-						if (!empty($qryData_2)) {
-
-							$returnValue_9['level2'][$level1Counter] = $qryData_2['media_estandar'];				
-
-							$returnValue_9['level2'][$level1Counter + 1] = $qryData_2['desviacion_estandar'];				
-
-							$returnValue_9['level2'][$level1Counter + 2] = $qryData_2['coeficiente_variacion'];
-
-							$returnValue_9['level2'][$level1Counter + 3] = $qryData_2['n_evaluacion'];
-
-						} else {
-
-							$returnValue_9['level2'][$level1Counter] = 0;		
-
-							$returnValue_9['level2'][$level1Counter + 1] = 0;		
-
-							$returnValue_9['level2'][$level1Counter + 2] = 0;
-
-							$returnValue_9['level2'][$level1Counter + 3] = 0;	
-
-						}
-
-		
-
-						$level2Counter = ($level2Counter + 4);
-
-	
-
-						$qry = "SELECT media_estandar,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = ".$returnValue_1[$x]." AND nivel = ".$lvl[2]." AND id_muestra = ".$filterArray[0]." AND id_laboratorio = ".$filterArray[2];
-
-		
-
-						$qryArray_2 = mysql_query($qry);
-
-						mysqlException(mysql_error(),$header."_02_".$x);
-
-						
-
-						$qryData_2 = mysql_fetch_array($qryArray_2);						
-
-							
-
-						if (!empty($qryData_2)) {
-
-							$returnValue_9['level3'][$level1Counter] = $qryData_2['media_estandar'];				
-
-							$returnValue_9['level3'][$level1Counter + 1] = $qryData_2['desviacion_estandar'];				
-
-							$returnValue_9['level3'][$level1Counter + 2] = $qryData_2['coeficiente_variacion'];
-
-							$returnValue_9['level3'][$level1Counter + 3] = $qryData_2['n_evaluacion'];
-
-						} else {
-
-							$returnValue_9['level3'][$level1Counter] = 0;		
-
-							$returnValue_9['level3'][$level1Counter + 1] = 0;		
-
-							$returnValue_9['level3'][$level1Counter + 2] = 0;
-
-							$returnValue_9['level3'][$level1Counter + 3] = 0;	
-
-						}
-
-						
-
-						$level3Counter = ($level3Counter + 4);
-
-					
-
-						$qry = "SELECT $tbl_analito_resultado_reporte_cualitativo.desc_resultado_reporte_cualitativo FROM $tbl_media_evaluacion_caso_especial INNER JOIN $tbl_analito_resultado_reporte_cualitativo ON $tbl_media_evaluacion_caso_especial.id_analito_resultado_reporte_cualitativo = $tbl_analito_resultado_reporte_cualitativo.id_analito_resultado_reporte_cualitativo WHERE id_configuracion = ".$returnValue_1[$x]." AND id_muestra = ".$filterArray[0]." AND id_laboratorio = ".$filterArray[2];
-
-		
-
-						$qryArray_2 = mysql_query($qry);
-
-						mysqlException(mysql_error(),$header."_02_".$x);
-
-						
-
-						$qryData_2 = mysql_fetch_array($qryArray_2);						
-
-							
-
-						if (!empty($qryData_2)) {
-
-							$returnValue_9['level0'][$level0Counter] = $qryData_2['desc_resultado_reporte_cualitativo'];				
-
-						} else {
-
-							$returnValue_9['level0'][$level0Counter] = "N/A";
-
-						}
-
-						
-
-						$level0Counter++;					
-
-					
-
-					}				
-
-				}				
-
-				
-
-			} else {
-
-				
-
-				$filterQry = "WHERE $tbl_programa.id_programa = ".$filterArray[1];
-
-				
-
-				$qry = "SELECT $tbl_configuracion_laboratorio_analito.id_configuracion,nombre_programa,nombre_analito,nombre_analizador,nombre_metodologia,nombre_reactivo,nombre_unidad,$tbl_analito.id_analito,valor_gen_vitros FROM $tbl_configuracion_laboratorio_analito INNER JOIN $tbl_programa ON $tbl_configuracion_laboratorio_analito.id_programa = $tbl_programa.id_programa INNER JOIN $tbl_analito ON $tbl_configuracion_laboratorio_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_analizador ON $tbl_configuracion_laboratorio_analito.id_analizador = $tbl_analizador.id_analizador INNER JOIN $tbl_metodologia ON $tbl_configuracion_laboratorio_analito.id_metodologia = $tbl_metodologia.id_metodologia INNER JOIN $tbl_reactivo ON $tbl_configuracion_laboratorio_analito.id_reactivo = $tbl_reactivo.id_reactivo INNER JOIN $tbl_unidad ON $tbl_configuracion_laboratorio_analito.id_unidad = $tbl_unidad.id_unidad INNER JOIN $tbl_gen_vitros ON $tbl_configuracion_laboratorio_analito.id_gen_vitros = $tbl_gen_vitros.id_gen_vitros ".$filterQry." ORDER BY nombre_programa ASC, nombre_analizador ASC, nombre_analito ASC LIMIT $min,$max";					
-
-				
-
-				$qryArray = mysql_query($qry);
-
-				mysqlException(mysql_error(),$header."_01");			
-
-				
-
-				$returnValue_1 = array();
-
-				$returnValue_2 = array();
-
-				$returnValue_3 = array();
-
-				$returnValue_4 = array();
-
-				$returnValue_5 = array();
-
-				$returnValue_6 = array();
-
-				$returnValue_7 = array();
-
-				$returnValue_9 = array(
-
-					'level0' => array(),
-
-					'level1' => array(),
-
-					'level2' => array(),
-
-					'level3' => array()
-
-				);
-
-				$returnValue_10 = array();
-
-				
-
-				$x = 0;
-
-				
-
-				while ($qryData = mysql_fetch_array($qryArray)) {
-
-					$returnValue_1[$x] = $qryData['id_configuracion'];
-
-					$returnValue_2[$x] = $qryData['nombre_programa'];
-
-					$returnValue_3[$x] = $qryData['nombre_analito'];
-
-					$returnValue_4[$x] = $qryData['nombre_analizador'];
-
-					$returnValue_5[$x] = $qryData['nombre_metodologia'];
-
-					$returnValue_6[$x] = $qryData['nombre_reactivo'];
-
-					$returnValue_7[$x] = $qryData['nombre_unidad'];
-
-					$returnValue_10[$x] = $qryData['valor_gen_vitros'];
-
-					
-
-					$x++;
-
 				}
 
-				
+				break;
+			default:
+				$filterQry = '';
+				break;
+		}
 
-				$lvl = array(1,2,3,0);
+		if ($filterArray[2] != "NULL") {
 
-				
+			$qry = "SELECT * FROM $tbl_configuracion_laboratorio_analito WHERE id_laboratorio = " . $filterArray[2] . " AND id_programa = " . $filterArray[1] . " AND activo = 1";
 
-				$level0Counter = 0;		
+			$filterQryArray = mysql_query($qry);
 
-				$level1Counter = 0;		
+			$filterQry = array();
 
-				$level2Counter = 0;		
+			$x = 0;
 
-				$level3Counter = 0;		
-
-				
-
-				for ($x = 0; $x < sizeof($returnValue_1); $x++) {
-
-					
-
-					$qry = "SELECT media_estandar,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = ".$returnValue_1[$x]." AND nivel = ".$lvl[0]." AND id_muestra = ".$filterArray[0];
-
-			
-
-					$qryArray = mysql_query($qry);
-
-					mysqlException(mysql_error(),$header."_02_".$x);
-
-					
-
-					$qryData = mysql_fetch_array($qryArray);
-
-						
-
-					if (!empty($qryData)) {
-
-						$returnValue_9['level1'][$level1Counter] = $qryData['media_estandar'];				
-
-						$returnValue_9['level1'][$level1Counter + 1] = $qryData['desviacion_estandar'];				
-
-						$returnValue_9['level1'][$level1Counter + 2] = $qryData['coeficiente_variacion'];
-
-						$returnValue_9['level1'][$level1Counter + 3] = $qryData['n_evaluacion'];
-
-						
-
-					} else {
-
-						$returnValue_9['level1'][$level1Counter] = 0;		
-
-						$returnValue_9['level1'][$level1Counter + 1] = 0;		
-
-						$returnValue_9['level1'][$level1Counter + 2] = 0;
-
-						$returnValue_9['level1'][$level1Counter + 3] = 0;	
-
-					}
-
-					
-
-					$level1Counter = ($level1Counter + 4);
-
-					
-
-					$qry = "SELECT media_estandar,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = ".$returnValue_1[$x]." AND nivel = ".$lvl[1]." AND id_muestra = ".$filterArray[0];
-
-					
-
-					$qryArray = mysql_query($qry);
-
-					mysqlException(mysql_error(),$header."_03_".$x);
-
-					
-
-					$qryData = mysql_fetch_array($qryArray);
-
-						
-
-					if (!empty($qryData)) {
-
-						$returnValue_9['level2'][$level2Counter] = $qryData['media_estandar'];				
-
-						$returnValue_9['level2'][$level2Counter + 1] = $qryData['desviacion_estandar'];				
-
-						$returnValue_9['level2'][$level2Counter + 2] = $qryData['coeficiente_variacion'];
-
-						$returnValue_9['level2'][$level2Counter + 3] = $qryData['n_evaluacion'];
-
-						
-
-					} else {
-
-						$returnValue_9['level2'][$level2Counter] = 0;		
-
-						$returnValue_9['level2'][$level2Counter + 1] = 0;	
-
-						$returnValue_9['level2'][$level2Counter + 2] = 0;
-
-						$returnValue_9['level2'][$level2Counter + 3] = 0;	
-
-					}
-
-			
-
-					$level2Counter = ($level2Counter + 4);
-
-					
-
-					$qry = "SELECT media_estandar,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = ".$returnValue_1[$x]." AND nivel = ".$lvl[2]." AND id_muestra = ".$filterArray[0];
-
-					
-
-					$qryArray = mysql_query($qry);
-
-					mysqlException(mysql_error(),$header."_04_".$x);
-
-					
-
-					$qryData = mysql_fetch_array($qryArray);
-
-						
-
-					if (!empty($qryData)) {
-
-						$returnValue_9['level3'][$level3Counter] = $qryData['media_estandar'];				
-
-						$returnValue_9['level3'][$level3Counter + 1] = $qryData['desviacion_estandar'];				
-
-						$returnValue_9['level3'][$level3Counter + 2] = $qryData['coeficiente_variacion'];	
-
-						$returnValue_9['level3'][$level3Counter + 3] = $qryData['n_evaluacion'];	
-
-						
-
-					} else {
-
-						$returnValue_9['level3'][$level3Counter] = 0;		
-
-						$returnValue_9['level3'][$level3Counter + 1] = 0;			
-
-						$returnValue_9['level3'][$level3Counter + 2] = 0;
-
-						$returnValue_9['level3'][$level3Counter + 3] = 0;				
-
-					}
-
-					
-
-					$level3Counter = ($level3Counter + 4);
-
-					
-
-					$qry = "SELECT $tbl_analito_resultado_reporte_cualitativo.desc_resultado_reporte_cualitativo FROM $tbl_media_evaluacion_caso_especial INNER JOIN $tbl_analito_resultado_reporte_cualitativo ON $tbl_media_evaluacion_caso_especial.id_analito_resultado_reporte_cualitativo = $tbl_analito_resultado_reporte_cualitativo.id_analito_resultado_reporte_cualitativo WHERE id_configuracion = ".$returnValue_1[$x]." AND id_muestra = ".$filterArray[0];
-
-					
-
-					$qryArray = mysql_query($qry);
-
-					mysqlException(mysql_error(),$header."_04_".$x);
-
-					
-
-					$qryData = mysql_fetch_array($qryArray);
-
-					
-
-					if (!empty($qryData)) {
-
-						$returnValue_9['level0'][$level0Counter] = $qryData['desc_resultado_reporte_cualitativo'];	
-
-						
-
-					} else {
-
-						$returnValue_9['level0'][$level0Counter] = "N/A";			
-
-					}
-
-					
-
-					$level0Counter++;					
-
-				
-
-				}						
-
-				
-
+			while ($filterQryData = mysql_fetch_array($filterQryArray)) {
+				$filterQry[$x] = "WHERE $tbl_programa.id_programa = " . $filterArray[1] . " AND $tbl_configuracion_laboratorio_analito.id_analito = " . $filterQryData['id_analito'] . " AND $tbl_configuracion_laboratorio_analito.id_analizador = " . $filterQryData['id_analizador'] . " AND $tbl_configuracion_laboratorio_analito.id_metodologia = " . $filterQryData['id_metodologia'] . " AND $tbl_configuracion_laboratorio_analito.id_reactivo = " . $filterQryData['id_reactivo'] . " AND $tbl_configuracion_laboratorio_analito.id_unidad = " . $filterQryData['id_unidad'] . " AND $tbl_configuracion_laboratorio_analito.id_gen_vitros = " . $filterQryData['id_gen_vitros'];
+				$x++;
 			}
 
-			
+			$returnValue_1 = array();
+			$returnValue_2 = array();
+			$returnValue_3 = array();
+			$returnValue_4 = array();
+			$returnValue_5 = array();
+			$returnValue_6 = array();
+			$returnValue_7 = array();
+			$returnValue_9 = array(
+				'level0' => array(),
+				'level1' => array(),
+				'level2' => array(),
+				'level3' => array()
+			);
+			$returnValue_10 = array();
 
-			if ($programtypeid == 1) {
-
-				$qry = "SELECT nivel_lote FROM $tbl_lote INNER JOIN $tbl_muestra_programa ON $tbl_lote.id_lote = $tbl_muestra_programa.id_lote WHERE $tbl_muestra_programa.id_muestra = $filterArray[0] AND $tbl_muestra_programa.id_programa = $filterArray[1]";
-
-				
+			for ($x = 0; $x < sizeof($filterQry); $x++) {
+				$qry = "SELECT $tbl_configuracion_laboratorio_analito.id_configuracion,nombre_programa,nombre_analito,nombre_analizador,nombre_metodologia,nombre_reactivo,nombre_unidad,$tbl_analito.id_analito,valor_gen_vitros FROM $tbl_configuracion_laboratorio_analito INNER JOIN $tbl_programa ON $tbl_configuracion_laboratorio_analito.id_programa = $tbl_programa.id_programa INNER JOIN $tbl_analito ON $tbl_configuracion_laboratorio_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_analizador ON $tbl_configuracion_laboratorio_analito.id_analizador = $tbl_analizador.id_analizador INNER JOIN $tbl_metodologia ON $tbl_configuracion_laboratorio_analito.id_metodologia = $tbl_metodologia.id_metodologia INNER JOIN $tbl_reactivo ON $tbl_configuracion_laboratorio_analito.id_reactivo = $tbl_reactivo.id_reactivo INNER JOIN $tbl_unidad ON $tbl_configuracion_laboratorio_analito.id_unidad = $tbl_unidad.id_unidad INNER JOIN $tbl_gen_vitros ON $tbl_configuracion_laboratorio_analito.id_gen_vitros = $tbl_gen_vitros.id_gen_vitros " . $filterQry[$x] . " ORDER BY nombre_programa ASC, nombre_analizador ASC, nombre_analito ASC LIMIT $min,$max";
 
 				$qryData = mysql_fetch_array(mysql_query($qry));
 
-				mysqlException(mysql_error(),$header."_05");
-
-				
-
-				$lotLevel = $qryData['nivel_lote'];					
-
-			} else if ($programtypeid == 2) {
-
-				$lotLevel = 0;
-
-			}		
-
-			
-
-			echo '<response code="1">';
-
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-				echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
-
-				echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
-
-				echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
-
-				echo'<returnvalues6>'.implode("|",$returnValue_6).'</returnvalues6>';
-
-				echo'<returnvalues7>'.implode("|",$returnValue_7).'</returnvalues7>';
-
-				echo'<returnvalues9lvl0>'.implode("|",$returnValue_9['level0']).'</returnvalues9lvl0>';
-
-				echo'<returnvalues9lvl1>'.implode("|",$returnValue_9['level1']).'</returnvalues9lvl1>';
-
-				echo'<returnvalues9lvl2>'.implode("|",$returnValue_9['level2']).'</returnvalues9lvl2>';
-
-				echo'<returnvalues9lvl3>'.implode("|",$returnValue_9['level3']).'</returnvalues9lvl3>';
-
-				echo'<returnvalues10>'.implode("|",$returnValue_10).'</returnvalues10>';
-
-				echo'<returnvalues11>'.$lotLevel.'</returnvalues11>';
-
-			echo '</response>';		
-
-		break;
-
-		case 'showAssignedAnalitLimit':
-
-		
-
-			switch ($filterid) {			
-
-				case 'id_array':
-
-				
-
-					$filterArray = explode("|",$filter);
-
-					
-
-					for ($x = 0; $x < sizeof($filterArray); $x++) {
-
-						if ($filterArray[$x] == "") {
-
-							$filterArray[$x] = "NULL";
-
-						}
-
-					}					
-
-				
-
-					$filterQry = "WHERE $tbl_programa_analito.id_programa = $filterArray[0]";
-
-				break;
-
-				default:
-
-					$filterQry = '';
-
-				break;		
-
-			}				
-
-			
-
-			$qry = "SELECT $tbl_analito.id_analito,nombre_analito,nombre_programa FROM $tbl_analito INNER JOIN $tbl_programa_analito ON $tbl_analito.id_analito = $tbl_programa_analito.id_analito INNER JOIN $tbl_programa ON $tbl_programa_analito.id_programa = $tbl_programa.id_programa $filterQry ORDER BY nombre_analito ASC";
-
-
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();			
-
-			$returnValue_5 = array();			
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_analito'];
-
-				$returnValue_2[$x] = $qryData['nombre_analito'];
-
-				$returnValue_3[$x] = $qryData['nombre_programa'];
-
-				
-
-				$qry = "SELECT limite,id_calculo_limite_evaluacion FROM $tbl_limite_evaluacion WHERE id_analito = ".$qryData['id_analito']." AND id_opcion_limite = $filterArray[1]";
-
-				
-
-				$innerQryData = mysql_fetch_array(mysql_query($qry));
-
-				mysqlException(mysql_error(),$header."_02");	
-
-				
-
-				$returnValue_4[$x] = $innerQryData['limite'];
-
-				$returnValue_5[$x] = $innerQryData['id_calculo_limite_evaluacion'];
-
-				
-
-				$x++;
+				if (!empty($qryData['id_configuracion'])) {
+					$returnValue_1[$x] = $qryData['id_configuracion'];
+				} else {
+					$returnValue_1[$x] = "0";
+				}
+
+				$returnValue_2[$x] = $qryData['nombre_programa'];
+				$returnValue_3[$x] = $qryData['nombre_analito'];
+				$returnValue_4[$x] = $qryData['nombre_analizador'];
+				$returnValue_5[$x] = $qryData['nombre_metodologia'];
+				$returnValue_6[$x] = $qryData['nombre_reactivo'];
+				$returnValue_7[$x] = $qryData['nombre_unidad'];
+				$returnValue_10[$x] = $qryData['valor_gen_vitros'];
 
 			}
 
-			
+			$lvl = array(1, 2, 3, 0);
 
-			echo '<response code="1">';
+			$level0Counter = 0;
+			$level1Counter = 0;
+			$level2Counter = 0;
+			$level3Counter = 0;
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			if (sizeof($returnValue_1) > 0) {
+				for ($x = 0; $x < sizeof($returnValue_1); $x++) {
 
-				echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+					// NIVEL 1
+					$qry = "SELECT percentil_25,media_estandar,percentil_75,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = " . $returnValue_1[$x] . " AND nivel = " . $lvl[0] . " AND id_muestra = " . $filterArray[0] . " AND id_laboratorio = " . $filterArray[2];
 
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+					$qryArray_2 = mysql_query($qry);
+					mysqlException(mysql_error(), $header . "_02_" . $x);
 
-				echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+					$qryData_2 = mysql_fetch_array($qryArray_2);
 
-				echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
+					if (!empty($qryData_2)) {
+						$returnValue_9['level1'][$level1Counter] = $qryData_2['percentil_25'];
+						$returnValue_9['level1'][$level1Counter + 1] = $qryData_2['media_estandar'];
+						$returnValue_9['level1'][$level1Counter + 2] = $qryData_2['percentil_75'];
+						$returnValue_9['level1'][$level1Counter + 3] = $qryData_2['desviacion_estandar'];
+						$returnValue_9['level1'][$level1Counter + 4] = $qryData_2['coeficiente_variacion'];
+						$returnValue_9['level1'][$level1Counter + 5] = $qryData_2['n_evaluacion'];
+					} else {
+						$returnValue_9['level1'][$level1Counter] = 0;
+						$returnValue_9['level1'][$level1Counter + 1] = 0;
+						$returnValue_9['level1'][$level1Counter + 2] = 0;
+						$returnValue_9['level1'][$level1Counter + 3] = 0;
+						$returnValue_9['level1'][$level1Counter + 4] = 0;
+						$returnValue_9['level1'][$level1Counter + 5] = 0;
+					}
 
-			echo '</response>';		
+					$level1Counter = ($level1Counter + 6);
 
-		break;		
+					// NIVEL 2
+					$qry = "SELECT percentil_25,media_estandar,percentil_75,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = " . $returnValue_1[$x] . " AND nivel = " . $lvl[1] . " AND id_muestra = " . $filterArray[0] . " AND id_laboratorio = " . $filterArray[2];
 
-		case 'showAssignedProgramRound':
+					$qryArray_2 = mysql_query($qry);
+					mysqlException(mysql_error(), $header . "_02_" . $x);
+
+					$qryData_2 = mysql_fetch_array($qryArray_2);
+
+					if (!empty($qryData_2)) {
+						$returnValue_9['level2'][$level2Counter] = $qryData_2['percentil_25'];
+						$returnValue_9['level2'][$level2Counter + 1] = $qryData_2['media_estandar'];
+						$returnValue_9['level2'][$level2Counter + 2] = $qryData_2['percentil_75'];
+						$returnValue_9['level2'][$level2Counter + 3] = $qryData_2['desviacion_estandar'];
+						$returnValue_9['level2'][$level2Counter + 4] = $qryData_2['coeficiente_variacion'];
+						$returnValue_9['level2'][$level2Counter + 5] = $qryData_2['n_evaluacion'];
+					} else {
+						$returnValue_9['level2'][$level2Counter] = 0;
+						$returnValue_9['level2'][$level2Counter + 1] = 0;
+						$returnValue_9['level2'][$level2Counter + 2] = 0;
+						$returnValue_9['level2'][$level2Counter + 3] = 0;
+						$returnValue_9['level2'][$level2Counter + 4] = 0;
+						$returnValue_9['level2'][$level2Counter + 5] = 0;
+					}
+
+					$level2Counter = ($level2Counter + 6);
+
+					// NIVEL 3
+					$qry = "SELECT percentil_25,media_estandar,percentil_75,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = " . $returnValue_1[$x] . " AND nivel = " . $lvl[2] . " AND id_muestra = " . $filterArray[0] . " AND id_laboratorio = " . $filterArray[2];
+
+					$qryArray_2 = mysql_query($qry);
+					mysqlException(mysql_error(), $header . "_02_" . $x);
+
+					$qryData_2 = mysql_fetch_array($qryArray_2);
+
+					if (!empty($qryData_2)) {
+						$returnValue_9['level3'][$level3Counter] = $qryData_2['percentil_25'];
+						$returnValue_9['level3'][$level3Counter + 1] = $qryData_2['media_estandar'];
+						$returnValue_9['level3'][$level3Counter + 2] = $qryData_2['percentil_75'];
+						$returnValue_9['level3'][$level3Counter + 3] = $qryData_2['desviacion_estandar'];
+						$returnValue_9['level3'][$level3Counter + 4] = $qryData_2['coeficiente_variacion'];
+						$returnValue_9['level3'][$level3Counter + 5] = $qryData_2['n_evaluacion'];
+					} else {
+						$returnValue_9['level3'][$level3Counter] = 0;
+						$returnValue_9['level3'][$level3Counter + 1] = 0;
+						$returnValue_9['level3'][$level3Counter + 2] = 0;
+						$returnValue_9['level3'][$level3Counter + 3] = 0;
+						$returnValue_9['level3'][$level3Counter + 4] = 0;
+						$returnValue_9['level3'][$level3Counter + 5] = 0;
+					}
+
+					$level3Counter = ($level3Counter + 6);
+
+					// NIVEL 0 (Cualitativo)
+					$qry = "SELECT $tbl_analito_resultado_reporte_cualitativo.desc_resultado_reporte_cualitativo FROM $tbl_media_evaluacion_caso_especial INNER JOIN $tbl_analito_resultado_reporte_cualitativo ON $tbl_media_evaluacion_caso_especial.id_analito_resultado_reporte_cualitativo = $tbl_analito_resultado_reporte_cualitativo.id_analito_resultado_reporte_cualitativo WHERE id_configuracion = " . $returnValue_1[$x] . " AND id_muestra = " . $filterArray[0] . " AND id_laboratorio = " . $filterArray[2];
+
+					$qryArray_2 = mysql_query($qry);
+					mysqlException(mysql_error(), $header . "_02_" . $x);
+
+					$qryData_2 = mysql_fetch_array($qryArray_2);
+
+					if (!empty($qryData_2)) {
+						$returnValue_9['level0'][$level0Counter] = $qryData_2['desc_resultado_reporte_cualitativo'];
+					} else {
+						$returnValue_9['level0'][$level0Counter] = "N/A";
+					}
+
+					$level0Counter++;
+
+				}
+			}
+
+		} else {
+
+			$filterQry = "WHERE $tbl_programa.id_programa = " . $filterArray[1];
+
+			$qry = "SELECT $tbl_configuracion_laboratorio_analito.id_configuracion,nombre_programa,nombre_analito,nombre_analizador,nombre_metodologia,nombre_reactivo,nombre_unidad,$tbl_analito.id_analito,valor_gen_vitros FROM $tbl_configuracion_laboratorio_analito INNER JOIN $tbl_programa ON $tbl_configuracion_laboratorio_analito.id_programa = $tbl_programa.id_programa INNER JOIN $tbl_analito ON $tbl_configuracion_laboratorio_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_analizador ON $tbl_configuracion_laboratorio_analito.id_analizador = $tbl_analizador.id_analizador INNER JOIN $tbl_metodologia ON $tbl_configuracion_laboratorio_analito.id_metodologia = $tbl_metodologia.id_metodologia INNER JOIN $tbl_reactivo ON $tbl_configuracion_laboratorio_analito.id_reactivo = $tbl_reactivo.id_reactivo INNER JOIN $tbl_unidad ON $tbl_configuracion_laboratorio_analito.id_unidad = $tbl_unidad.id_unidad INNER JOIN $tbl_gen_vitros ON $tbl_configuracion_laboratorio_analito.id_gen_vitros = $tbl_gen_vitros.id_gen_vitros " . $filterQry . " ORDER BY nombre_programa ASC, nombre_analizador ASC, nombre_analito ASC LIMIT $min,$max";
+
+			$qryArray = mysql_query($qry);
+			mysqlException(mysql_error(), $header . "_01");
+
+			$returnValue_1 = array();
+			$returnValue_2 = array();
+			$returnValue_3 = array();
+			$returnValue_4 = array();
+			$returnValue_5 = array();
+			$returnValue_6 = array();
+			$returnValue_7 = array();
+			$returnValue_9 = array(
+				'level0' => array(),
+				'level1' => array(),
+				'level2' => array(),
+				'level3' => array()
+			);
+			$returnValue_10 = array();
+
+			$x = 0;
+
+			while ($qryData = mysql_fetch_array($qryArray)) {
+				$returnValue_1[$x] = $qryData['id_configuracion'];
+				$returnValue_2[$x] = $qryData['nombre_programa'];
+				$returnValue_3[$x] = $qryData['nombre_analito'];
+				$returnValue_4[$x] = $qryData['nombre_analizador'];
+				$returnValue_5[$x] = $qryData['nombre_metodologia'];
+				$returnValue_6[$x] = $qryData['nombre_reactivo'];
+				$returnValue_7[$x] = $qryData['nombre_unidad'];
+				$returnValue_10[$x] = $qryData['valor_gen_vitros'];
+
+				$x++;
+			}
+
+			$lvl = array(1, 2, 3, 0);
+
+			$level0Counter = 0;
+			$level1Counter = 0;
+			$level2Counter = 0;
+			$level3Counter = 0;
+
+			for ($x = 0; $x < sizeof($returnValue_1); $x++) {
+
+				// NIVEL 1
+				$qry = "SELECT percentil_25,media_estandar,percentil_75,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = " . $returnValue_1[$x] . " AND nivel = " . $lvl[0] . " AND id_muestra = " . $filterArray[0];
+
+				$qryArray = mysql_query($qry);
+				mysqlException(mysql_error(), $header . "_02_" . $x);
+
+				$qryData = mysql_fetch_array($qryArray);
+
+				if (!empty($qryData)) {
+					$returnValue_9['level1'][$level1Counter] = $qryData['percentil_25'];
+					$returnValue_9['level1'][$level1Counter + 1] = $qryData['media_estandar'];
+					$returnValue_9['level1'][$level1Counter + 2] = $qryData['percentil_75'];
+					$returnValue_9['level1'][$level1Counter + 3] = $qryData['desviacion_estandar'];
+					$returnValue_9['level1'][$level1Counter + 4] = $qryData['coeficiente_variacion'];
+					$returnValue_9['level1'][$level1Counter + 5] = $qryData['n_evaluacion'];
+
+				} else {
+					$returnValue_9['level1'][$level1Counter] = 0;
+					$returnValue_9['level1'][$level1Counter + 1] = 0;
+					$returnValue_9['level1'][$level1Counter + 2] = 0;
+					$returnValue_9['level1'][$level1Counter + 3] = 0;
+					$returnValue_9['level1'][$level1Counter + 4] = 0;
+					$returnValue_9['level1'][$level1Counter + 5] = 0;
+				}
+
+				$level1Counter = ($level1Counter + 6);
+
+				// NIVEL 2
+				$qry = "SELECT percentil_25,media_estandar,percentil_75,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = " . $returnValue_1[$x] . " AND nivel = " . $lvl[1] . " AND id_muestra = " . $filterArray[0];
+
+				$qryArray = mysql_query($qry);
+				mysqlException(mysql_error(), $header . "_03_" . $x);
+
+				$qryData = mysql_fetch_array($qryArray);
+
+				if (!empty($qryData)) {
+					$returnValue_9['level2'][$level2Counter] = $qryData['percentil_25'];
+					$returnValue_9['level2'][$level2Counter + 1] = $qryData['media_estandar'];
+					$returnValue_9['level2'][$level2Counter + 2] = $qryData['percentil_75'];
+					$returnValue_9['level2'][$level2Counter + 3] = $qryData['desviacion_estandar'];
+					$returnValue_9['level2'][$level2Counter + 4] = $qryData['coeficiente_variacion'];
+					$returnValue_9['level2'][$level2Counter + 5] = $qryData['n_evaluacion'];
+
+				} else {
+					$returnValue_9['level2'][$level2Counter] = 0;
+					$returnValue_9['level2'][$level2Counter + 1] = 0;
+					$returnValue_9['level2'][$level2Counter + 2] = 0;
+					$returnValue_9['level2'][$level2Counter + 3] = 0;
+					$returnValue_9['level2'][$level2Counter + 4] = 0;
+					$returnValue_9['level2'][$level2Counter + 5] = 0;
+				}
+
+				$level2Counter = ($level2Counter + 6);
+
+				// NIVEL 3
+				$qry = "SELECT percentil_25,media_estandar,percentil_75,desviacion_estandar,coeficiente_variacion,n_evaluacion,nivel FROM $tbl_media_evaluacion_caso_especial WHERE id_configuracion = " . $returnValue_1[$x] . " AND nivel = " . $lvl[2] . " AND id_muestra = " . $filterArray[0];
+
+				$qryArray = mysql_query($qry);
+				mysqlException(mysql_error(), $header . "_04_" . $x);
+
+				$qryData = mysql_fetch_array($qryArray);
+
+				if (!empty($qryData)) {
+					$returnValue_9['level3'][$level3Counter] = $qryData['percentil_25'];
+					$returnValue_9['level3'][$level3Counter + 1] = $qryData['media_estandar'];
+					$returnValue_9['level3'][$level3Counter + 2] = $qryData['percentil_75'];
+					$returnValue_9['level3'][$level3Counter + 3] = $qryData['desviacion_estandar'];
+					$returnValue_9['level3'][$level3Counter + 4] = $qryData['coeficiente_variacion'];
+					$returnValue_9['level3'][$level3Counter + 5] = $qryData['n_evaluacion'];
+
+				} else {
+					$returnValue_9['level3'][$level3Counter] = 0;
+					$returnValue_9['level3'][$level3Counter + 1] = 0;
+					$returnValue_9['level3'][$level3Counter + 2] = 0;
+					$returnValue_9['level3'][$level3Counter + 3] = 0;
+					$returnValue_9['level3'][$level3Counter + 4] = 0;
+					$returnValue_9['level3'][$level3Counter + 5] = 0;
+				}
+
+				$level3Counter = ($level3Counter + 6);
+
+				// NIVEL 0 (Cualitativo)
+				$qry = "SELECT $tbl_analito_resultado_reporte_cualitativo.desc_resultado_reporte_cualitativo FROM $tbl_media_evaluacion_caso_especial INNER JOIN $tbl_analito_resultado_reporte_cualitativo ON $tbl_media_evaluacion_caso_especial.id_analito_resultado_reporte_cualitativo = $tbl_analito_resultado_reporte_cualitativo.id_analito_resultado_reporte_cualitativo WHERE id_configuracion = " . $returnValue_1[$x] . " AND id_muestra = " . $filterArray[0];
+
+				$qryArray = mysql_query($qry);
+				mysqlException(mysql_error(), $header . "_04_" . $x);
+
+				$qryData = mysql_fetch_array($qryArray);
+
+				if (!empty($qryData)) {
+					$returnValue_9['level0'][$level0Counter] = $qryData['desc_resultado_reporte_cualitativo'];
+
+				} else {
+					$returnValue_9['level0'][$level0Counter] = "N/A";
+				}
+
+				$level0Counter++;
+
+			}
+
+		}
+
+		if ($programtypeid == 1) {
+			$qry = "SELECT nivel_lote FROM $tbl_lote INNER JOIN $tbl_muestra_programa ON $tbl_lote.id_lote = $tbl_muestra_programa.id_lote WHERE $tbl_muestra_programa.id_muestra = $filterArray[0] AND $tbl_muestra_programa.id_programa = $filterArray[1]";
+
+			$qryData = mysql_fetch_array(mysql_query($qry));
+			mysqlException(mysql_error(), $header . "_05");
+
+			$lotLevel = $qryData['nivel_lote'];
+		} else if ($programtypeid == 2) {
+			$lotLevel = 0;
+		}
+
+		echo '<response code="1">';
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+		echo '<returnvalues6>' . implode("|", $returnValue_6) . '</returnvalues6>';
+		echo '<returnvalues7>' . implode("|", $returnValue_7) . '</returnvalues7>';
+		echo '<returnvalues9lvl0>' . implode("|", $returnValue_9['level0']) . '</returnvalues9lvl0>';
+		echo '<returnvalues9lvl1>' . implode("|", $returnValue_9['level1']) . '</returnvalues9lvl1>';
+		echo '<returnvalues9lvl2>' . implode("|", $returnValue_9['level2']) . '</returnvalues9lvl2>';
+		echo '<returnvalues9lvl3>' . implode("|", $returnValue_9['level3']) . '</returnvalues9lvl3>';
+		echo '<returnvalues10>' . implode("|", $returnValue_10) . '</returnvalues10>';
+		echo '<returnvalues11>' . $lotLevel . '</returnvalues11>';
+		echo '</response>';
+
+		break;
+	case 'showAssignedAnalitLimit':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_programa':
+			case 'id_array':
 
-					// $filterQry = "WHERE $tbl_programa.id_programa = $filter GROUP BY $tbl_ronda.no_ronda";
 
-					// Se actualiza group by
 
-					// $filterQry = "WHERE $tbl_programa.id_programa = $filter GROUP BY $tbl_ronda.id_ronda";
+				$filterArray = explode("|", $filter);
 
-					$qry = "SELECT DISTINCT
+
+
+				for ($x = 0; $x < sizeof($filterArray); $x++) {
+
+					if ($filterArray[$x] == "") {
+
+						$filterArray[$x] = "NULL";
+
+					}
+
+				}
+
+
+
+				$filterQry = "WHERE $tbl_programa_analito.id_programa = $filterArray[0]";
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT $tbl_analito.id_analito,nombre_analito,nombre_programa FROM $tbl_analito INNER JOIN $tbl_programa_analito ON $tbl_analito.id_analito = $tbl_programa_analito.id_analito INNER JOIN $tbl_programa ON $tbl_programa_analito.id_programa = $tbl_programa.id_programa $filterQry ORDER BY nombre_analito ASC";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
+
+		$returnValue_4 = array();
+
+		$returnValue_5 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_analito'];
+
+			$returnValue_2[$x] = $qryData['nombre_analito'];
+
+			$returnValue_3[$x] = $qryData['nombre_programa'];
+
+
+
+			$qry = "SELECT limite,id_calculo_limite_evaluacion FROM $tbl_limite_evaluacion WHERE id_analito = " . $qryData['id_analito'] . " AND id_opcion_limite = $filterArray[1]";
+
+
+
+			$innerQryData = mysql_fetch_array(mysql_query($qry));
+
+			mysqlException(mysql_error(), $header . "_02");
+
+
+
+			$returnValue_4[$x] = $innerQryData['limite'];
+
+			$returnValue_5[$x] = $innerQryData['id_calculo_limite_evaluacion'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '</response>';
+
+		break;
+
+	case 'showAssignedProgramRound':
+
+
+
+		switch ($filterid) {
+
+			case 'id_programa':
+
+				// $filterQry = "WHERE $tbl_programa.id_programa = $filter GROUP BY $tbl_ronda.no_ronda";
+
+				// Se actualiza group by
+
+				// $filterQry = "WHERE $tbl_programa.id_programa = $filter GROUP BY $tbl_ronda.id_ronda";
+
+				$qry = "SELECT DISTINCT
 
     			        $tbl_programa.nombre_programa,
 
@@ -4998,15 +4690,15 @@
 
 					";
 
-			        // ".$filterQry." 
+				// ".$filterQry." 
 
-				break;					
+				break;
 
-				case 'id_ronda':
+			case 'id_ronda':
 
-					$filterQry = "WHERE $tbl_ronda.id_ronda = ".$filter;
+				$filterQry = "WHERE $tbl_ronda.id_ronda = " . $filter;
 
-					$qry = "SELECT 
+				$qry = "SELECT 
 
     			        $tbl_programa.nombre_programa,
 
@@ -5028,21 +4720,21 @@
 
 			        INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa 
 
-			        ".$filterQry." 
+			        " . $filterQry . " 
 
 			        ORDER BY $tbl_ronda.no_ronda DESC, $tbl_contador_muestra.no_contador ASC";
 
 				break;
 
-				case 'no_id':
+			case 'no_id':
 
-					// $filterQry = "GROUP BY $tbl_ronda.no_ronda";
+				// $filterQry = "GROUP BY $tbl_ronda.no_ronda";
 
-					// Se actualizo el group by
+				// Se actualizo el group by
 
-					// $filterQry = "GROUP BY $tbl_ronda.id_ronda, $tbl_muestra.id_muestra, $tbl_contador_muestra.id_conexion";
+				// $filterQry = "GROUP BY $tbl_ronda.id_ronda, $tbl_muestra.id_muestra, $tbl_contador_muestra.id_conexion";
 
-					$qry = "SELECT DISTINCT
+				$qry = "SELECT DISTINCT
 
     			        $tbl_programa.nombre_programa,
 
@@ -5066,15 +4758,15 @@
 
 			        ORDER BY $tbl_ronda.no_ronda DESC, $tbl_contador_muestra.no_contador ASC";
 
-			        // ".$filterQry." 
+				// ".$filterQry." 
 
-				break;				
+				break;
 
-				default:
+			default:
 
-					$filterQry = '';
+				$filterQry = '';
 
-					$qry = "SELECT 
+				$qry = "SELECT 
 
     			        $tbl_programa.nombre_programa,
 
@@ -5096,101 +4788,101 @@
 
 			        INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa 
 
-			        ".$filterQry." 
+			        " . $filterQry . " 
 
 			        ORDER BY $tbl_ronda.no_ronda DESC, $tbl_contador_muestra.no_contador ASC";
 
 				break;
 
-			}	
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_ronda'];
-
-				$returnValue_2[$x] = $qryData['no_ronda'];
-
-				$returnValue_3[$x] = $qryData['no_contador'];
-
-				$returnValue_4[$x] = $qryData['codigo_muestra'];
-
-				$returnValue_5[$x] = $qryData['nombre_programa'];
+		}
 
 
 
-				$x++;
+		$qryArray = mysql_query($qry);
 
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_2 = array();
 
-			echo'<returnvalues3 selectomit="1">'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_3 = array();
 
-			echo'<returnvalues4 selectomit="1">'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_4 = array();
 
-			echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
+		$returnValue_5 = array();
 
-			echo '</response>';			
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_ronda'];
+
+			$returnValue_2[$x] = $qryData['no_ronda'];
+
+			$returnValue_3[$x] = $qryData['no_contador'];
+
+			$returnValue_4[$x] = $qryData['codigo_muestra'];
+
+			$returnValue_5[$x] = $qryData['nombre_programa'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 selectomit="1">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4 selectomit="1">' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAssignedLabRound':
+	case 'showAssignedLabRound':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_laboratorio':
+			case 'id_laboratorio':
 
-					// $filterQry = "WHERE $tbl_laboratorio.id_laboratorio = ".$filter." GROUP BY $tbl_programa.nombre_programa, $tbl_ronda.no_ronda";
+				// $filterQry = "WHERE $tbl_laboratorio.id_laboratorio = ".$filter." GROUP BY $tbl_programa.nombre_programa, $tbl_ronda.no_ronda";
 
-					// Se actualiza el group  by
+				// Se actualiza el group  by
 
-					$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = ".$filter." GROUP BY programa.nombre_programa, ronda.no_ronda, ronda_laboratorio.id_ronda_laboratorio, laboratorio.no_laboratorio,laboratorio.nombre_laboratorio";
-
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_laboratorio.id_laboratorio = " . $filter . " GROUP BY programa.nombre_programa, ronda.no_ronda, ronda_laboratorio.id_ronda_laboratorio, laboratorio.no_laboratorio,laboratorio.nombre_laboratorio";
 
 				break;
 
-			}
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 			            $tbl_laboratorio.no_laboratorio,
 
@@ -5212,115 +4904,115 @@
 
 			        INNER JOIN $tbl_muestra_programa ON $tbl_muestra.id_muestra = $tbl_muestra_programa.id_muestra 
 
-			        INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa ".$filterQry." 
+			        INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa " . $filterQry . " 
 
 			        ORDER BY $tbl_programa.nombre_programa ASC, $tbl_laboratorio.nombre_laboratorio ASC, $tbl_ronda.no_ronda ASC";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_ronda_laboratorio'];
-
-				$returnValue_2[$x] = $qryData['no_laboratorio'];
-
-				$returnValue_3[$x] = $qryData['nombre_laboratorio'];
-
-				$returnValue_4[$x] = $qryData['nombre_programa'];
-
-				$returnValue_5[$x] = $qryData['no_ronda'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
+		$returnValue_3 = array();
 
-			echo '<response code="1">';
+		$returnValue_4 = array();
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_5 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$x = 0;
 
-			echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
 
-			echo'<returnvalues6>'.implode("|",$returnValue_5).'</returnvalues6>';
 
-			echo '</response>';		
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_ronda_laboratorio'];
+
+			$returnValue_2[$x] = $qryData['no_laboratorio'];
+
+			$returnValue_3[$x] = $qryData['nombre_laboratorio'];
+
+			$returnValue_4[$x] = $qryData['nombre_programa'];
+
+			$returnValue_5[$x] = $qryData['no_ronda'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6>' . implode("|", $returnValue_5) . '</returnvalues6>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAssignedLabRoundSimple':
+	case 'showAssignedLabRoundSimple':
 
 
 
-			$filterArray = explode("|",$filter);
+		$filterArray = explode("|", $filter);
 
-			
 
-			for ($x = 0; $x < sizeof($filterArray); $x++) {
 
-				if ($filterArray[$x] == "") {
+		for ($x = 0; $x < sizeof($filterArray); $x++) {
 
-					$filterArray[$x] = "NULL";
+			if ($filterArray[$x] == "") {
 
-				}
-
-			}					
-
-			
-
-			switch ($filterid) {
-
-				case 'id_laboratorio':
-
-					// $filterQry = "WHERE $tbl_ronda_laboratorio.id_laboratorio = $filterArray[1] AND $tbl_ronda.id_programa = $filterArray[0] GROUP BY $tbl_ronda.no_ronda";
-
-					// Se actualiza el group  by
-
-					$filterQry = "WHERE $tbl_ronda_laboratorio.id_laboratorio = $filterArray[1] AND $tbl_ronda.id_programa = $filterArray[0]";
-
-				break;
-
-				default:
-
-					$filterQry = '';
-
-				break;
+				$filterArray[$x] = "NULL";
 
 			}
 
+		}
 
 
-			$qry = "SELECT DISTINCT $tbl_ronda.no_ronda,$tbl_ronda.id_ronda 
+
+		switch ($filterid) {
+
+			case 'id_laboratorio':
+
+				// $filterQry = "WHERE $tbl_ronda_laboratorio.id_laboratorio = $filterArray[1] AND $tbl_ronda.id_programa = $filterArray[0] GROUP BY $tbl_ronda.no_ronda";
+
+				// Se actualiza el group  by
+
+				$filterQry = "WHERE $tbl_ronda_laboratorio.id_laboratorio = $filterArray[1] AND $tbl_ronda.id_programa = $filterArray[0]";
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT DISTINCT $tbl_ronda.no_ronda,$tbl_ronda.id_ronda 
 
 					FROM $tbl_ronda 
 
@@ -5334,161 +5026,162 @@
 
 					ORDER BY $tbl_ronda.no_ronda DESC";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();;
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_ronda'];
-
-				$returnValue_2[$x] = $qryData['no_ronda'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
-
-			
-
-			echo '<response code="1">';
-
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '</response>';		
-
-		break;
-
-		case 'showAssignedRoundSample':
+		$returnValue_2 = array();
+		;
 
 
 
-			switch ($filterid) {				
-
-				case 'id_ronda':
-
-					$filterQry = "WHERE $tbl_ronda.id_ronda = $filter";
-
-				break;					
-
-				default:
-
-					$filterQry = '';
-
-				break;
-
-			}
+		$x = 0;
 
 
 
-			$qry = "SELECT $tbl_muestra.id_muestra,$tbl_muestra.codigo_muestra,$tbl_contador_muestra.no_contador FROM $tbl_ronda INNER JOIN $tbl_contador_muestra ON $tbl_ronda.id_ronda = $tbl_contador_muestra.id_ronda INNER JOIN $tbl_muestra ON $tbl_contador_muestra.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_muestra_programa ON $tbl_muestra.id_muestra = $tbl_muestra_programa.id_muestra INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa $filterQry ORDER BY $tbl_ronda.no_ronda DESC, $tbl_contador_muestra.no_contador ASC";
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-			$qryArray = mysql_query($qry);
+			$returnValue_1[$x] = $qryData['id_ronda'];
 
-			mysqlException(mysql_error(),$header."_01");		
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_muestra'];
-
-				$returnValue_2[$x] = $qryData['no_contador'];
-
-				$returnValue_3[$x] = $qryData['codigo_muestra'];
-
-				$x++;
-
-			}
+			$returnValue_2[$x] = $qryData['no_ronda'];
 
 
 
-			echo '<response code="1">';
+			$x++;
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
-
-			echo '</response>';
+		}
 
 
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-
-
-		case 'showAssignedLabAnalitWithResult':
+	case 'showAssignedRoundSample':
 
 
 
-			$filterArray = explode("|",$filter);
+		switch ($filterid) {
 
-			
+			case 'id_ronda':
 
-			for ($x = 0; $x < sizeof($filterArray); $x++) {
-
-				if ($filterArray[$x] == "") {
-
-					$filterArray[$x] = "NULL";
-
-				}
-
-			}				
-
-			
-
-			switch ($filterid) {
-
-				case 'id_array':
-
-					$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_laboratorio = $filterArray[0] AND $tbl_configuracion_laboratorio_analito.id_programa = $filterArray[1] AND activo = 1";
-
-				break;				
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_ronda.id_ronda = $filter";
 
 				break;
 
-			}			
+			default:
 
-				
+				$filterQry = '';
 
-			$qry = "SELECT DISTINCT
+				break;
+
+		}
+
+
+
+		$qry = "SELECT $tbl_muestra.id_muestra,$tbl_muestra.codigo_muestra,$tbl_contador_muestra.no_contador FROM $tbl_ronda INNER JOIN $tbl_contador_muestra ON $tbl_ronda.id_ronda = $tbl_contador_muestra.id_ronda INNER JOIN $tbl_muestra ON $tbl_contador_muestra.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_muestra_programa ON $tbl_muestra.id_muestra = $tbl_muestra_programa.id_muestra INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa $filterQry ORDER BY $tbl_ronda.no_ronda DESC, $tbl_contador_muestra.no_contador ASC";
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
+
+		$returnValue_4 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_muestra'];
+
+			$returnValue_2[$x] = $qryData['no_contador'];
+
+			$returnValue_3[$x] = $qryData['codigo_muestra'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
+
+
+
+		break;
+
+
+
+	case 'showAssignedLabAnalitWithResult':
+
+
+
+		$filterArray = explode("|", $filter);
+
+
+
+		for ($x = 0; $x < sizeof($filterArray); $x++) {
+
+			if ($filterArray[$x] == "") {
+
+				$filterArray[$x] = "NULL";
+
+			}
+
+		}
+
+
+
+		switch ($filterid) {
+
+			case 'id_array':
+
+				$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_laboratorio = $filterArray[0] AND $tbl_configuracion_laboratorio_analito.id_programa = $filterArray[1] AND activo = 1";
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT DISTINCT
 
 						$tbl_configuracion_laboratorio_analito.id_configuracion,
 
@@ -5526,273 +5219,273 @@
 
 
 
-			// Se elimina el group by
+		// Se elimina el group by
 
-			// GROUP BY $tbl_configuracion_laboratorio_analito.id_configuracion 
+		// GROUP BY $tbl_configuracion_laboratorio_analito.id_configuracion 
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");			
+		$qryArray = mysql_query($qry);
 
-			
+		mysqlException(mysql_error(), $header . "_01");
 
-			$returnValue_1 = array();
 
-			$returnValue_2 = array();
 
-			$returnValue_3 = array();
+		$returnValue_1 = array();
 
-			$returnValue_4 = array();
+		$returnValue_2 = array();
 
-			$returnValue_5 = array();
+		$returnValue_3 = array();
 
-			$returnValue_6 = array();
+		$returnValue_4 = array();
 
-			$returnValue_7 = array();
+		$returnValue_5 = array();
 
-			$returnValue_8 = array();
+		$returnValue_6 = array();
 
-			$returnValue_9 = array();
+		$returnValue_7 = array();
 
-			$returnValue_10 = array();
+		$returnValue_8 = array();
 
-			$returnValue_11 = array();
+		$returnValue_9 = array();
 
-			$returnValue_12 = array();
+		$returnValue_10 = array();
 
-			$returnValue_13 = array();
+		$returnValue_11 = array();
 
-			
+		$returnValue_12 = array();
 
-			$x = 0;
+		$returnValue_13 = array();
 
-			
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_13[$x] = $qryData['id_configuracion'];
+		$x = 0;
 
-				$returnValue_2[$x] = $qryData['nombre_analito'];
 
-				$returnValue_3[$x] = $qryData['nombre_analizador'];
 
-				$returnValue_4[$x] = $qryData['nombre_metodologia'];
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_5[$x] = $qryData['nombre_reactivo'];
+			$returnValue_13[$x] = $qryData['id_configuracion'];
 
-				$returnValue_6[$x] = $qryData['nombre_unidad'];
+			$returnValue_2[$x] = $qryData['nombre_analito'];
 
-				$returnValue_11[$x] = $qryData['valor_gen_vitros'];
+			$returnValue_3[$x] = $qryData['nombre_analizador'];
 
+			$returnValue_4[$x] = $qryData['nombre_metodologia'];
 
+			$returnValue_5[$x] = $qryData['nombre_reactivo'];
 
-				$x++;
+			$returnValue_6[$x] = $qryData['nombre_unidad'];
 
-			}
+			$returnValue_11[$x] = $qryData['valor_gen_vitros'];
 
-			
 
-			for ($x = 0; $x < sizeof($returnValue_13); $x++) {
 
-				
+			$x++;
 
-				$qry = "SELECT id_resultado,valor_resultado,observacion_resultado,nombre_usuario,fecha_resultado,revalorado FROM $tbl_resultado INNER JOIN $tbl_usuario ON $tbl_resultado.id_usuario = $tbl_usuario.id_usuario WHERE id_configuracion = $returnValue_13[$x] AND id_muestra = $filterArray[2]";
+		}
 
-				
 
-				$qryData = mysql_fetch_array(mysql_query($qry));
 
-				mysqlException(mysql_error(),$header."_01_".$x);
+		for ($x = 0; $x < sizeof($returnValue_13); $x++) {
 
-				$returnValue_1[$x] = $qryData['id_resultado'];
 
-				$returnValue_7[$x] = $qryData['valor_resultado'];
 
-				$returnValue_8[$x] = $qryData['observacion_resultado'];
+			$qry = "SELECT id_resultado,valor_resultado,observacion_resultado,nombre_usuario,fecha_resultado,revalorado FROM $tbl_resultado INNER JOIN $tbl_usuario ON $tbl_resultado.id_usuario = $tbl_usuario.id_usuario WHERE id_configuracion = $returnValue_13[$x] AND id_muestra = $filterArray[2]";
 
-				$returnValue_9[$x] = $qryData['nombre_usuario'];
 
-				$returnValue_10[$x] = $qryData['fecha_resultado'];
 
-				$returnValue_12[$x] = $qryData['revalorado'];
+			$qryData = mysql_fetch_array(mysql_query($qry));
 
-				
+			mysqlException(mysql_error(), $header . "_01_" . $x);
 
-			}
+			$returnValue_1[$x] = $qryData['id_resultado'];
 
-			
+			$returnValue_7[$x] = $qryData['valor_resultado'];
 
-			echo '<response code="1">';
+			$returnValue_8[$x] = $qryData['observacion_resultado'];
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			$returnValue_9[$x] = $qryData['nombre_usuario'];
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+			$returnValue_10[$x] = $qryData['fecha_resultado'];
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+			$returnValue_12[$x] = $qryData['revalorado'];
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
 
-			echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
 
-			echo'<returnvalues6>'.implode("|",$returnValue_6).'</returnvalues6>';
+		}
 
-			echo'<returnvalues7>'.implode("|",$returnValue_7).'</returnvalues7>';
 
-			echo'<returnvalues8>'.implode("|",$returnValue_8).'</returnvalues8>';
 
-			echo'<returnvalues9>'.implode("|",$returnValue_9).'</returnvalues9>';
+		echo '<response code="1">';
 
-			echo'<returnvalues10>'.implode("|",$returnValue_10).'</returnvalues10>';
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
-			echo'<returnvalues11>'.implode("|",$returnValue_11).'</returnvalues11>';
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
 
-			echo'<returnvalues12>'.implode("|",$returnValue_12).'</returnvalues12>';
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
 
-			echo'<returnvalues13>'.implode("|",$returnValue_13).'</returnvalues13>';
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
 
-			echo '</response>';		
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6>' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '<returnvalues7>' . implode("|", $returnValue_7) . '</returnvalues7>';
+
+		echo '<returnvalues8>' . implode("|", $returnValue_8) . '</returnvalues8>';
+
+		echo '<returnvalues9>' . implode("|", $returnValue_9) . '</returnvalues9>';
+
+		echo '<returnvalues10>' . implode("|", $returnValue_10) . '</returnvalues10>';
+
+		echo '<returnvalues11>' . implode("|", $returnValue_11) . '</returnvalues11>';
+
+		echo '<returnvalues12>' . implode("|", $returnValue_12) . '</returnvalues12>';
+
+		echo '<returnvalues13>' . implode("|", $returnValue_13) . '</returnvalues13>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showReferenceValue':
+	case 'showReferenceValue':
 
-				
 
-			switch ($filterid) {
 
-				case 'id_array':
+		switch ($filterid) {
 
-				
+			case 'id_array':
 
-					$filterArray = explode("|",$filter);
 
-					
 
-					for ($x = 0; $x < sizeof($filterArray); $x++) {
+				$filterArray = explode("|", $filter);
 
-						if ($filterArray[$x] == "") {
 
-							$filterArray[$x] = "NULL";
 
-						}
+				for ($x = 0; $x < sizeof($filterArray); $x++) {
 
-					}					
+					if ($filterArray[$x] == "") {
 
-				
+						$filterArray[$x] = "NULL";
 
-					$filterQry = "WHERE $tbl_valor_metodo_referencia.id_muestra = $filterArray[1]";
+					}
 
-				break;
+				}
 
-				default:
 
-					$filterQry = '';
+
+				$filterQry = "WHERE $tbl_valor_metodo_referencia.id_muestra = $filterArray[1]";
 
 				break;
 
-			}
+			default:
 
-			
+				$filterQry = '';
 
-			$qry = "SELECT id_valor_metodo_referencia,$tbl_programa.nombre_programa,$tbl_analito.nombre_analito,$tbl_metodologia.nombre_metodologia,$tbl_unidad.nombre_unidad,$tbl_muestra.codigo_muestra,valor_metodo_referencia FROM $tbl_valor_metodo_referencia INNER JOIN $tbl_analito ON $tbl_valor_metodo_referencia.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_metodologia ON $tbl_valor_metodo_referencia.id_metodologia = $tbl_metodologia.id_metodologia INNER JOIN $tbl_unidad ON $tbl_valor_metodo_referencia.id_unidad = $tbl_unidad.id_unidad INNER JOIN $tbl_muestra ON $tbl_valor_metodo_referencia.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_muestra_programa ON $tbl_muestra.id_muestra = $tbl_muestra_programa.id_muestra INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa $filterQry ORDER BY $tbl_programa.nombre_programa ASC, $tbl_muestra.codigo_muestra ASC, $tbl_analito.nombre_analito ASC";
+				break;
 
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			$returnValue_7 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_valor_metodo_referencia'];
-
-				$returnValue_2[$x] = $qryData['nombre_programa'];
-
-				$returnValue_3[$x] = $qryData['codigo_muestra'];
-
-				$returnValue_4[$x] = $qryData['nombre_analito'];
-
-				$returnValue_5[$x] = $qryData['nombre_metodologia'];
-
-				$returnValue_6[$x] = $qryData['valor_metodo_referencia'];
-
-				$returnValue_7[$x] = $qryData['nombre_unidad'];
+		}
 
 
 
-				$x++;
+		$qry = "SELECT id_valor_metodo_referencia,$tbl_programa.nombre_programa,$tbl_analito.nombre_analito,$tbl_metodologia.nombre_metodologia,$tbl_unidad.nombre_unidad,$tbl_muestra.codigo_muestra,valor_metodo_referencia FROM $tbl_valor_metodo_referencia INNER JOIN $tbl_analito ON $tbl_valor_metodo_referencia.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_metodologia ON $tbl_valor_metodo_referencia.id_metodologia = $tbl_metodologia.id_metodologia INNER JOIN $tbl_unidad ON $tbl_valor_metodo_referencia.id_unidad = $tbl_unidad.id_unidad INNER JOIN $tbl_muestra ON $tbl_valor_metodo_referencia.id_muestra = $tbl_muestra.id_muestra INNER JOIN $tbl_muestra_programa ON $tbl_muestra.id_muestra = $tbl_muestra_programa.id_muestra INNER JOIN $tbl_programa ON $tbl_muestra_programa.id_programa = $tbl_programa.id_programa $filterQry ORDER BY $tbl_programa.nombre_programa ASC, $tbl_muestra.codigo_muestra ASC, $tbl_analito.nombre_analito ASC";
 
-			}
 
-			
 
-			echo '<response code="1">';
+		$qryArray = mysql_query($qry);
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		mysqlException(mysql_error(), $header . "_01");
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
+		$returnValue_2 = array();
 
-			echo'<returnvalues6>'.implode("|",$returnValue_6).'</returnvalues6>';
+		$returnValue_3 = array();
 
-			echo'<returnvalues7>'.implode("|",$returnValue_7).'</returnvalues7>';
+		$returnValue_4 = array();
 
-			echo '</response>';		
+		$returnValue_5 = array();
+
+		$returnValue_6 = array();
+
+		$returnValue_7 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_valor_metodo_referencia'];
+
+			$returnValue_2[$x] = $qryData['nombre_programa'];
+
+			$returnValue_3[$x] = $qryData['codigo_muestra'];
+
+			$returnValue_4[$x] = $qryData['nombre_analito'];
+
+			$returnValue_5[$x] = $qryData['nombre_metodologia'];
+
+			$returnValue_6[$x] = $qryData['valor_metodo_referencia'];
+
+			$returnValue_7[$x] = $qryData['nombre_unidad'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6>' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '<returnvalues7>' . implode("|", $returnValue_7) . '</returnvalues7>';
+
+		echo '</response>';
 
 		break;
 
 
 
-		case "showReferenciaPAT":
+	case "showReferenciaPAT":
 
-			switch ($filterid) {				
+		switch ($filterid) {
 
-				case 'id_caso_clinico':
+			case 'id_caso_clinico':
 
-					$filterQry = "WHERE caso_clinico.id_caso_clinico = $filter";
-
-				break;					
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE caso_clinico.id_caso_clinico = $filter";
 
 				break;
 
-			}
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 						referencia.id_referencia as 'id_referencia',
 
@@ -5812,81 +5505,81 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_04579");		
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_referencia'];
-
-				$returnValue_2[$x] = $qryData['descripcion'];
-
-				$returnValue_3[$x] = $qryData['estado'];
-
-				$returnValue_4[$x] = $qryData['codigo_caso_clinico'];
-
-				$x++;
-
-			}
+		mysqlException(mysql_error(), $header . "_04579");
 
 
 
-			echo '<response code="1">';
+		$returnValue_1 = array();
 
-			echo '<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_2 = array();
 
-			echo '<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_3 = array();
 
-			echo '<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
-
-			echo '<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
-
-			echo '</response>';
+		$returnValue_4 = array();
 
 
 
-			break;
+		$x = 0;
 
-		case "showImagen":
 
-			
 
-			switch ($filterid) {				
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				case 'id_caso_clinico_pat':
+			$returnValue_1[$x] = $qryData['id_referencia'];
 
-					$filterQry = "WHERE caso_clinico.id_caso_clinico = $filter";
+			$returnValue_2[$x] = $qryData['descripcion'];
 
-				break;					
+			$returnValue_3[$x] = $qryData['estado'];
 
-				default:
+			$returnValue_4[$x] = $qryData['codigo_caso_clinico'];
 
-					$filterQry = '';
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '</response>';
+
+
+
+		break;
+
+	case "showImagen":
+
+
+
+		switch ($filterid) {
+
+			case 'id_caso_clinico_pat':
+
+				$filterQry = "WHERE caso_clinico.id_caso_clinico = $filter";
 
 				break;
 
-			}
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 						imagen_adjunta.id_imagen_adjunta as 'id_imagen_adjunta', 
 
@@ -5912,101 +5605,101 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_04579");		
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			$returnValue_7 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_imagen_adjunta'];
-
-				$returnValue_2[$x] = $qryData['caso_clinico_id_caso_clinico'];
-
-				$returnValue_3[$x] = $qryData['tipo'];
-
-				$returnValue_4[$x] = $qryData['ruta'];
-
-				$returnValue_5[$x] = $qryData['nombre'];
-
-				$returnValue_6[$x] = $qryData['estado'];
-
-				$returnValue_7[$x] = $qryData['codigo_caso_clinico'];
-
-				$x++;
-
-			}
+		mysqlException(mysql_error(), $header . "_04579");
 
 
 
-			echo '<response code="1">';
+		$returnValue_1 = array();
 
-			echo '<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_2 = array();
 
-			echo '<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_3 = array();
 
-			echo '<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_4 = array();
 
-			echo '<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_5 = array();
 
-			echo '<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
+		$returnValue_6 = array();
 
-			echo '<returnvalues6>'.implode("|",$returnValue_6).'</returnvalues6>';
-
-			echo '<returnvalues7>'.implode("|",$returnValue_7).'</returnvalues7>';
-
-			echo '</response>';
+		$returnValue_7 = array();
 
 
 
-			break;
+		$x = 0;
 
 
 
-		case "showGrupo":
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-		
+			$returnValue_1[$x] = $qryData['id_imagen_adjunta'];
 
-			switch ($filterid) {				
+			$returnValue_2[$x] = $qryData['caso_clinico_id_caso_clinico'];
 
-				case 'id_caso_clinico_pat':
+			$returnValue_3[$x] = $qryData['tipo'];
 
-					$filterQry = "WHERE caso_clinico.id_caso_clinico = $filter";
+			$returnValue_4[$x] = $qryData['ruta'];
 
-					break;			
+			$returnValue_5[$x] = $qryData['nombre'];
 
-				default:
+			$returnValue_6[$x] = $qryData['estado'];
 
-					$filterQry = '';
+			$returnValue_7[$x] = $qryData['codigo_caso_clinico'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6>' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '<returnvalues7>' . implode("|", $returnValue_7) . '</returnvalues7>';
+
+		echo '</response>';
+
+
+
+		break;
+
+
+
+	case "showGrupo":
+
+
+
+		switch ($filterid) {
+
+			case 'id_caso_clinico_pat':
+
+				$filterQry = "WHERE caso_clinico.id_caso_clinico = $filter";
 
 				break;
 
-			}
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 						grupo.id_grupo as 'id_grupo',
 
@@ -6024,77 +5717,77 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_0457902");		
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_grupo'];
-
-				$returnValue_2[$x] = $qryData['nombre_grupo'];
-
-				$returnValue_3[$x] = $qryData['codigo_caso_clinico'];
-
-				$x++;
-
-			}
+		mysqlException(mysql_error(), $header . "_0457902");
 
 
 
-			echo '<response code="1">';
+		$returnValue_1 = array();
 
-			echo '<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_2 = array();
 
-			echo '<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '<returnvalues3 selectomit="1">'.implode("|",$returnValue_3).'</returnvalues3>';
-
-			echo '</response>';
+		$returnValue_3 = array();
 
 
 
-			break;
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_grupo'];
+
+			$returnValue_2[$x] = $qryData['nombre_grupo'];
+
+			$returnValue_3[$x] = $qryData['codigo_caso_clinico'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 selectomit="1">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '</response>';
+
+
+
+		break;
 
 
 
 
 
-		case "showPregunta":
+	case "showPregunta":
 
-			switch ($filterid) {				
+		switch ($filterid) {
 
-				case 'id_grupo':
+			case 'id_grupo':
 
-					$filterQry = "WHERE grupo.id_grupo = $filter";
-
-					break;			
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE grupo.id_grupo = $filter";
 
 				break;
 
-			}
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 						pregunta.id_pregunta as 'id_pregunta',
 
@@ -6118,93 +5811,93 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_045790345");		
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			$returnValue_6 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_pregunta'];
-
-				$returnValue_2[$x] = $qryData['nombre_pregunta'];
-
-				$returnValue_3[$x] = $qryData['intervalo_min'];
-
-				$returnValue_4[$x] = $qryData['intervalo_max'];
-
-				$returnValue_5[$x] = $qryData['nombre_grupo'];
-
-				$returnValue_6[$x] = $qryData['codigo_caso_clinico'];
-
-				$x++;
-
-			}
+		mysqlException(mysql_error(), $header . "_045790345");
 
 
 
-			echo '<response code="1">';
+		$returnValue_1 = array();
 
-			echo '<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_2 = array();
 
-			echo '<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_3 = array();
 
-			echo '<returnvalues3 selectomit="1">'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_4 = array();
 
-			echo '<returnvalues4 selectomit="1">'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_5 = array();
 
-			echo '<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
-
-			echo '<returnvalues6 selectomit="1">'.implode("|",$returnValue_6).'</returnvalues6>';
-
-			echo '</response>';
+		$returnValue_6 = array();
 
 
 
-			break;
+		$x = 0;
 
 
 
-		case "showDistractor":
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-			switch ($filterid) {				
+			$returnValue_1[$x] = $qryData['id_pregunta'];
 
-				case 'id_pregunta':
+			$returnValue_2[$x] = $qryData['nombre_pregunta'];
 
-					$filterQry = "WHERE pregunta.id_pregunta = $filter";
+			$returnValue_3[$x] = $qryData['intervalo_min'];
 
-					break;			
+			$returnValue_4[$x] = $qryData['intervalo_max'];
 
-				default:
+			$returnValue_5[$x] = $qryData['nombre_grupo'];
 
-					$filterQry = '';
+			$returnValue_6[$x] = $qryData['codigo_caso_clinico'];
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 selectomit="1">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4 selectomit="1">' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '<returnvalues6 selectomit="1">' . implode("|", $returnValue_6) . '</returnvalues6>';
+
+		echo '</response>';
+
+
+
+		break;
+
+
+
+	case "showDistractor":
+
+		switch ($filterid) {
+
+			case 'id_pregunta':
+
+				$filterQry = "WHERE pregunta.id_pregunta = $filter";
 
 				break;
 
-			}
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT 
+		$qry = "SELECT 
 
 						distractor.id_distractor as 'id_distractor',
 
@@ -6226,159 +5919,159 @@
 
 
 
-			$qryArray = mysql_query($qry);
+		$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_04579034543");		
+		mysqlException(mysql_error(), $header . "_04579034543");
 
-			
 
-			$returnValue_1 = array();
 
-			$returnValue_2 = array();
+		$returnValue_1 = array();
 
-			$returnValue_3 = array();
+		$returnValue_2 = array();
 
-			$returnValue_4 = array();
+		$returnValue_3 = array();
 
-			$returnValue_5 = array();
+		$returnValue_4 = array();
 
-			$returnValue_6 = array();
+		$returnValue_5 = array();
 
-			
+		$returnValue_6 = array();
 
-			$x = 0;
 
-			
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
+		$x = 0;
 
-				$returnValue_1[$x] = $qryData['id_distractor'];
 
-				$returnValue_2[$x] = $qryData['abreviatura'];
 
-				$returnValue_3[$x] = $qryData['nombre_distractor'];
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_4[$x] = $qryData['valor_distractor'];
+			$returnValue_1[$x] = $qryData['id_distractor'];
 
-				$returnValue_5[$x] = $qryData['estado_distractor'];
+			$returnValue_2[$x] = $qryData['abreviatura'];
 
-				$returnValue_6[$x] = $qryData['nombre_pregunta'];
+			$returnValue_3[$x] = $qryData['nombre_distractor'];
 
-				$x++;
+			$returnValue_4[$x] = $qryData['valor_distractor'];
 
-			}
+			$returnValue_5[$x] = $qryData['estado_distractor'];
 
+			$returnValue_6[$x] = $qryData['nombre_pregunta'];
 
+			$x++;
 
-			echo '<response code="1">';
+		}
 
-			echo '<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
 
-			echo '<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo '<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+		echo '<response code="1">';
 
-			echo '<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
-			echo '<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
 
-			echo '<returnvalues6>'.implode("|",$returnValue_6).'</returnvalues6>';
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
 
-			echo '</response>';
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
 
-			break;
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
 
+		echo '<returnvalues6>' . implode("|", $returnValue_6) . '</returnvalues6>';
 
-
-		case 'showAssignedAnalitLimitType':
-
-
-
-			switch ($filterid) {
-
-				default:
-
-					$filterQry = '';
-
-				break;
-
-			}				
-
-
-
-			$qry = "SELECT id_calculo_limite_evaluacion,desc_calculo_limite_evaluacion FROM $tbl_calculo_limite_evaluacion ORDER BY desc_calculo_limite_evaluacion ASC";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_calculo_limite_evaluacion'];
-
-				$returnValue_2[$x] = $qryData['desc_calculo_limite_evaluacion'];
-
-
-
-				$x++;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '</response>';		
+		echo '</response>';
 
 		break;
 
-		case 'showJctlmMethod':
 
-		
 
-			switch ($filterid) {
+	case 'showAssignedAnalitLimitType':
 
-				case 'id_programa':
 
-					$filterQry = "WHERE $tbl_programa_analito.id_programa = $filter";
 
-				break;
+		switch ($filterid) {
 
-				case 'id_analito':
+			default:
 
-					$filterQry = "WHERE $tbl_programa_analito.id_analito = $filter";
+				$filterQry = '';
 
 				break;
 
-				default:
+		}
 
-					$filterQry = '';
+
+
+		$qry = "SELECT id_calculo_limite_evaluacion,desc_calculo_limite_evaluacion FROM $tbl_calculo_limite_evaluacion ORDER BY desc_calculo_limite_evaluacion ASC";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_calculo_limite_evaluacion'];
+
+			$returnValue_2[$x] = $qryData['desc_calculo_limite_evaluacion'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
+
+		break;
+
+	case 'showJctlmMethod':
+
+
+
+		switch ($filterid) {
+
+			case 'id_programa':
+
+				$filterQry = "WHERE $tbl_programa_analito.id_programa = $filter";
 
 				break;
 
-			}
+			case 'id_analito':
+
+				$filterQry = "WHERE $tbl_programa_analito.id_analito = $filter";
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT id_metodo_jctlm,$tbl_programa.nombre_programa,$tbl_analito.nombre_analito,desc_metodo_jctlm,activo 
+		$qry = "SELECT id_metodo_jctlm,$tbl_programa.nombre_programa,$tbl_analito.nombre_analito,desc_metodo_jctlm,activo 
 
 					FROM $tbl_metodo_jctlm 
 
@@ -6390,375 +6083,375 @@
 
 					ORDER BY $tbl_programa.nombre_programa ASC, $tbl_analito.nombre_analito ASC, activo ASC";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_metodo_jctlm'];
-
-				$returnValue_2[$x] = $qryData['nombre_programa'];
-
-				$returnValue_3[$x] = $qryData['nombre_analito'];
-
-				$returnValue_4[$x] = $qryData['desc_metodo_jctlm'];
-
-				$returnValue_5[$x] = $qryData['activo'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
+		$returnValue_3 = array();
 
-			echo '<response code="1">';
+		$returnValue_4 = array();
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_5 = array();
 
-			echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3 selectomit="1">'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$x = 0;
 
-			echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
 
-			echo '</response>';
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_metodo_jctlm'];
+
+			$returnValue_2[$x] = $qryData['nombre_programa'];
+
+			$returnValue_3[$x] = $qryData['nombre_analito'];
+
+			$returnValue_4[$x] = $qryData['desc_metodo_jctlm'];
+
+			$returnValue_5[$x] = $qryData['activo'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 selectomit="1">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showJctlmMaterial':
+	case 'showJctlmMaterial':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_programa':
+			case 'id_programa':
 
-					$filterQry = "WHERE $tbl_programa_analito.id_programa = $filter";
-
-				break;
-
-				case 'id_analito':
-
-					$filterQry = "WHERE $tbl_programa_analito.id_analito = $filter";
-
-				break;				
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_programa_analito.id_programa = $filter";
 
 				break;
 
-			}				
+			case 'id_analito':
+
+				$filterQry = "WHERE $tbl_programa_analito.id_analito = $filter";
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT id_material_jctlm,$tbl_programa.nombre_programa,$tbl_analito.nombre_analito,desc_material_jctlm,activo FROM $tbl_material_jctlm INNER JOIN $tbl_programa_analito ON $tbl_material_jctlm.id_analito = $tbl_programa_analito.id_analito INNER JOIN $tbl_analito ON $tbl_programa_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_programa ON $tbl_programa_analito.id_programa = $tbl_programa.id_programa $filterQry ORDER BY $tbl_programa.nombre_programa ASC, $tbl_analito.nombre_analito ASC, activo ASC";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_material_jctlm'];
-
-				$returnValue_2[$x] = $qryData['nombre_programa'];
-
-				$returnValue_3[$x] = $qryData['nombre_analito'];
-
-				$returnValue_4[$x] = $qryData['desc_material_jctlm'];
-
-				$returnValue_5[$x] = $qryData['activo'];
+		$qry = "SELECT id_material_jctlm,$tbl_programa.nombre_programa,$tbl_analito.nombre_analito,desc_material_jctlm,activo FROM $tbl_material_jctlm INNER JOIN $tbl_programa_analito ON $tbl_material_jctlm.id_analito = $tbl_programa_analito.id_analito INNER JOIN $tbl_analito ON $tbl_programa_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_programa ON $tbl_programa_analito.id_programa = $tbl_programa.id_programa $filterQry ORDER BY $tbl_programa.nombre_programa ASC, $tbl_analito.nombre_analito ASC, activo ASC";
 
 
 
-				$x++;
+		$qryArray = mysql_query($qry);
 
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues2 selectomit="1">'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_2 = array();
 
-			echo'<returnvalues3 selectomit="1">'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_3 = array();
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_4 = array();
 
-			echo'<returnvalues5 selectomit="1">'.implode("|",$returnValue_5).'</returnvalues5>';
+		$returnValue_5 = array();
 
-			echo '</response>';
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_material_jctlm'];
+
+			$returnValue_2[$x] = $qryData['nombre_programa'];
+
+			$returnValue_3[$x] = $qryData['nombre_analito'];
+
+			$returnValue_4[$x] = $qryData['desc_material_jctlm'];
+
+			$returnValue_5[$x] = $qryData['activo'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2 selectomit="1">' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 selectomit="1">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5 selectomit="1">' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showMaterial':
+	case 'showMaterial':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				default:
+			default:
 
-					$filterQry = '';
+				$filterQry = '';
 
 				break;
 
-			}
-
-		
-
-			$qry = "SELECT id_material,nombre_material FROM $tbl_material ORDER BY nombre_material ASC";
+		}
 
 
 
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");			
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_material'];
-
-				$returnValue_2[$x] = $qryData['nombre_material'];
+		$qry = "SELECT id_material,nombre_material FROM $tbl_material ORDER BY nombre_material ASC";
 
 
 
-				$x++;
+		$qryArray = mysql_query($qry);
 
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_2 = array();
 
-			echo '</response>';		
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_material'];
+
+			$returnValue_2[$x] = $qryData['nombre_material'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showInUseMethods':
+	case 'showInUseMethods':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_analito':
+			case 'id_analito':
 
-					$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_analito = $filter";
-
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_analito = $filter";
 
 				break;
 
-			}				
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT DISTINCT id_metodologia, nombre_metodologia 
+		$qry = "SELECT DISTINCT id_metodologia, nombre_metodologia 
 
 					FROM $tbl_metodologia WHERE id_metodologia IN 
 
 					(SELECT id_metodologia FROM $tbl_configuracion_laboratorio_analito $filterQry)";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_metodologia'];
-
-				$returnValue_2[$x] = $qryData['nombre_metodologia'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
-
-			
-
-			echo '<response code="1">';
-
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '</response>';		
-
-		break;
-
-		case 'showInUseMaterials':
+		$returnValue_2 = array();
 
 
 
-			switch ($filterid) {
-
-				case 'id_analito':
-
-					$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_analito = $filter";
-
-				break;
-
-				default:
-
-					$filterQry = '';
-
-				break;
-
-			}				
+		$x = 0;
 
 
 
-			$qry = "SELECT DISTINCT id_material, nombre_material FROM $tbl_material WHERE id_material IN (SELECT id_material FROM $tbl_configuracion_laboratorio_analito $filterQry)";
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-			
+			$returnValue_1[$x] = $qryData['id_metodologia'];
 
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_material'];
-
-				$returnValue_2[$x] = $qryData['nombre_material'];
+			$returnValue_2[$x] = $qryData['nombre_metodologia'];
 
 
 
-				$x++;
+			$x++;
 
-			}
+		}
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		echo '<response code="1">';
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
-			echo '</response>';		
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showPairedJctlmMethods':
+	case 'showInUseMaterials':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_analito':
+			case 'id_analito':
 
-					$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_analito = $filter";
-
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_analito = $filter";
 
 				break;
 
-			}				
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT DISTINCT id_conexion,$tbl_metodologia.nombre_metodologia,$tbl_metodo_jctlm.desc_metodo_jctlm,$tbl_analito.nombre_analito 
+		$qry = "SELECT DISTINCT id_material, nombre_material FROM $tbl_material WHERE id_material IN (SELECT id_material FROM $tbl_configuracion_laboratorio_analito $filterQry)";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_material'];
+
+			$returnValue_2[$x] = $qryData['nombre_material'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
+
+		break;
+
+	case 'showPairedJctlmMethods':
+
+
+
+		switch ($filterid) {
+
+			case 'id_analito':
+
+				$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_analito = $filter";
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT DISTINCT id_conexion,$tbl_metodologia.nombre_metodologia,$tbl_metodo_jctlm.desc_metodo_jctlm,$tbl_analito.nombre_analito 
 
 					FROM $tbl_metodo_jctlm_emparejado
 
@@ -6770,377 +6463,377 @@
 
 						WHERE $tbl_metodologia.id_metodologia IN (SELECT id_metodologia FROM $tbl_configuracion_laboratorio_analito $filterQry)";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");
+		$qryArray = mysql_query($qry);
 
-			
+		mysqlException(mysql_error(), $header . "_01");
 
-			$returnValue_1 = array();
 
-			$returnValue_2 = array();
 
-			$returnValue_3 = array();
+		$returnValue_1 = array();
 
-			$returnValue_4 = array();
+		$returnValue_2 = array();
 
-			
+		$returnValue_3 = array();
 
-			$x = 0;
+		$returnValue_4 = array();
 
-			
 
-			while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$returnValue_1[$x] = $qryData['id_conexion'];
+		$x = 0;
 
-				$returnValue_2[$x] = $qryData['nombre_metodologia'];
 
-				$returnValue_3[$x] = $qryData['desc_metodo_jctlm'];
 
-				$returnValue_4[$x] = $qryData['nombre_analito'];
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-				$x++;
+			$returnValue_1[$x] = $qryData['id_conexion'];
 
-			}
+			$returnValue_2[$x] = $qryData['nombre_metodologia'];
 
-			
+			$returnValue_3[$x] = $qryData['desc_metodo_jctlm'];
 
-			echo '<response code="1">';
+			$returnValue_4[$x] = $qryData['nombre_analito'];
 
-				echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			$x++;
 
-				echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		}
 
-				echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-				echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
 
-			echo '</response>';		
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showPairedJctlmMaterials':
+	case 'showPairedJctlmMaterials':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_analito':
+			case 'id_analito':
 
-					$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_analito = $filter";
-
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_analito = $filter";
 
 				break;
 
-			}				
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
 
 
 
-			$qry = "SELECT DISTINCT id_conexion,$tbl_material.nombre_material,$tbl_material_jctlm.desc_material_jctlm,$tbl_analito.nombre_analito FROM $tbl_material_jctlm_emparejado INNER JOIN $tbl_material ON $tbl_material_jctlm_emparejado.id_material = $tbl_material.id_material INNER JOIN $tbl_material_jctlm ON $tbl_material_jctlm_emparejado.id_material_jctlm = $tbl_material_jctlm.id_material_jctlm INNER JOIN $tbl_analito ON $tbl_material_jctlm.id_analito = $tbl_analito.id_analito WHERE $tbl_material.id_material IN (SELECT id_material FROM $tbl_configuracion_laboratorio_analito $filterQry)";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_conexion'];
-
-				$returnValue_2[$x] = $qryData['nombre_material'];
-
-				$returnValue_3[$x] = $qryData['desc_material_jctlm'];
-
-				$returnValue_4[$x] = $qryData['nombre_analito'];
+		$qry = "SELECT DISTINCT id_conexion,$tbl_material.nombre_material,$tbl_material_jctlm.desc_material_jctlm,$tbl_analito.nombre_analito FROM $tbl_material_jctlm_emparejado INNER JOIN $tbl_material ON $tbl_material_jctlm_emparejado.id_material = $tbl_material.id_material INNER JOIN $tbl_material_jctlm ON $tbl_material_jctlm_emparejado.id_material_jctlm = $tbl_material_jctlm.id_material_jctlm INNER JOIN $tbl_analito ON $tbl_material_jctlm.id_analito = $tbl_analito.id_analito WHERE $tbl_material.id_material IN (SELECT id_material FROM $tbl_configuracion_laboratorio_analito $filterQry)";
 
 
 
-				$x++;
+		$qryArray = mysql_query($qry);
 
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_2 = array();
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+		$returnValue_3 = array();
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$returnValue_4 = array();
 
-			echo '</response>';		
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_conexion'];
+
+			$returnValue_2[$x] = $qryData['nombre_material'];
+
+			$returnValue_3[$x] = $qryData['desc_material_jctlm'];
+
+			$returnValue_4[$x] = $qryData['nombre_analito'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showProgramTypes':
+	case 'showProgramTypes':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				default:
+			default:
 
-					$filterQry = '';
+				$filterQry = '';
 
 				break;
 
-			}				
+		}
 
 
 
-			$qry = "SELECT id_tipo_programa,desc_tipo_programa FROM $tbl_tipo_programa ORDER BY id_tipo_programa ASC";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_tipo_programa'];
-
-				$returnValue_2[$x] = $qryData['desc_tipo_programa'];
+		$qry = "SELECT id_tipo_programa,desc_tipo_programa FROM $tbl_tipo_programa ORDER BY id_tipo_programa ASC";
 
 
 
-				$x++;
+		$qryArray = mysql_query($qry);
 
-			}
+		mysqlException(mysql_error(), $header . "_01");
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+		$returnValue_1 = array();
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$returnValue_2 = array();
 
-			echo '</response>';		
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_tipo_programa'];
+
+			$returnValue_2[$x] = $qryData['desc_tipo_programa'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAssignedProgramType':
+	case 'showAssignedProgramType':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_programa':
+			case 'id_programa':
 
-					$filterQry = "WHERE $tbl_programa.id_programa = $filter";
-
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_programa.id_programa = $filter";
 
 				break;
 
-			}				
+			default:
 
-
-
-			$qry = "SELECT id_tipo_programa FROM $tbl_programa $filterQry LIMIT 0,1";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_tipo_programa'];
-
-
-
-				$x++;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
-
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
-
-			echo '</response>';		
-
-		break;		
-
-		case 'showAnalitCualitativeTypeOfResult':
-
-		case 'showAnalitCualitativeTypeOfResult2':
-
-
-
-			switch ($filterid) {
-
-				case 'id_analito':
-
-					$filterQry = "WHERE $tbl_analito.id_analito = ".$filter;
+				$filterQry = '';
 
 				break;
 
-				default:
+		}
 
-					$filterQry = '';
+
+
+		$qry = "SELECT id_tipo_programa FROM $tbl_programa $filterQry LIMIT 0,1";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_tipo_programa'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
+
+		break;
+
+	case 'showAnalitCualitativeTypeOfResult':
+
+	case 'showAnalitCualitativeTypeOfResult2':
+
+
+
+		switch ($filterid) {
+
+			case 'id_analito':
+
+				$filterQry = "WHERE $tbl_analito.id_analito = " . $filter;
 
 				break;
 
-			}
+			default:
 
-			
+				$filterQry = '';
 
-			$qry = "SELECT id_analito_resultado_reporte_cualitativo,desc_resultado_reporte_cualitativo,$tbl_analito.nombre_analito, $tbl_puntuaciones.valor FROM $tbl_analito_resultado_reporte_cualitativo 
+				break;
+
+		}
+
+
+
+		$qry = "SELECT id_analito_resultado_reporte_cualitativo,desc_resultado_reporte_cualitativo,$tbl_analito.nombre_analito, $tbl_puntuaciones.valor FROM $tbl_analito_resultado_reporte_cualitativo 
 			INNER JOIN $tbl_analito ON $tbl_analito_resultado_reporte_cualitativo.id_analito = $tbl_analito.id_analito 
 			INNER JOIN $tbl_puntuaciones ON $tbl_puntuaciones.id = $tbl_analito_resultado_reporte_cualitativo.id_puntuacion
 			$filterQry ORDER BY nombre_analito ASC, desc_resultado_reporte_cualitativo ASC";
 
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
 
 
-			
+		$qryArray = mysql_query($qry);
 
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_analito_resultado_reporte_cualitativo'];
-
-				$returnValue_2[$x] = $qryData['nombre_analito'];
-
-				$returnValue_3[$x] = $qryData['desc_resultado_reporte_cualitativo'];
-
-				$returnValue_4[$x] = $qryData['valor'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
+		$returnValue_2 = array();
 
-			
+		$returnValue_3 = array();
 
-			echo '<response code="1">';
+		$returnValue_4 = array();
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+		$x = 0;
 
-			echo '</response>';		
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_analito_resultado_reporte_cualitativo'];
+
+			$returnValue_2[$x] = $qryData['nombre_analito'];
+
+			$returnValue_3[$x] = $qryData['desc_resultado_reporte_cualitativo'];
+
+			$returnValue_4[$x] = $qryData['valor'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAnalitConfiguredCualitativeTypeOfResult':
+	case 'showAnalitConfiguredCualitativeTypeOfResult':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_configuracion':
+			case 'id_configuracion':
 
-					$filterQry = "WHERE $tbl_configuracion_analito_resultado_reporte_cualitativo.id_configuracion = ".$filter;
-
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_configuracion_analito_resultado_reporte_cualitativo.id_configuracion = " . $filter;
 
 				break;
 
-			}
+			default:
 
-			
+				$filterQry = '';
 
-			$qry = "SELECT id_analito FROM $tbl_configuracion_laboratorio_analito WHERE id_configuracion = $filter LIMIT 0,1";
+				break;
 
-			$qryData = mysql_fetch_array(mysql_query($qry));
+		}
 
-			
 
-			$analitid = $qryData['id_analito'];
 
-			
+		$qry = "SELECT id_analito FROM $tbl_configuracion_laboratorio_analito WHERE id_configuracion = $filter LIMIT 0,1";
 
-			$qry = "SELECT id_analito_resultado_reporte_cualitativo,desc_resultado_reporte_cualitativo 
+		$qryData = mysql_fetch_array(mysql_query($qry));
+
+
+
+		$analitid = $qryData['id_analito'];
+
+
+
+		$qry = "SELECT id_analito_resultado_reporte_cualitativo,desc_resultado_reporte_cualitativo 
 
 					FROM $tbl_analito_resultado_reporte_cualitativo 
 
@@ -7152,384 +6845,384 @@
 
 					ORDER BY desc_resultado_reporte_cualitativo ASC";
 
-			
 
-			$qryArray = mysql_query($qry);
 
-			mysqlException(mysql_error(),$header."_01");
+		$qryArray = mysql_query($qry);
 
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_analito_resultado_reporte_cualitativo'];
-
-				$returnValue_2[$x] = $qryData['desc_resultado_reporte_cualitativo'];
+		mysqlException(mysql_error(), $header . "_01");
 
 
 
-				$x++;
+		$returnValue_1 = array();
 
-			}
-
-			
-
-			$qry = "SELECT id_analito_resultado_reporte_cualitativo,desc_resultado_reporte_cualitativo FROM $tbl_analito_resultado_reporte_cualitativo WHERE id_analito = $analitid AND  id_analito_resultado_reporte_cualitativo NOT IN (SELECT id_analito_resultado_reporte_cualitativo FROM $tbl_configuracion_analito_resultado_reporte_cualitativo $filterQry) ORDER BY desc_resultado_reporte_cualitativo ASC";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_02");
-
-			
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_3[$x] = $qryData['id_analito_resultado_reporte_cualitativo'];
-
-				$returnValue_4[$x] = $qryData['desc_resultado_reporte_cualitativo'];
+		$returnValue_2 = array();
 
 
 
-				$x++;
+		$x = 0;
 
-			}			
 
-			
 
-			echo '<response code="1">';
+		while ($qryData = mysql_fetch_array($qryArray)) {
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
+			$returnValue_1[$x] = $qryData['id_analito_resultado_reporte_cualitativo'];
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+			$returnValue_2[$x] = $qryData['desc_resultado_reporte_cualitativo'];
 
-			echo'<returnvalues3 content="id">'.implode("|",$returnValue_3).'</returnvalues3>';
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';			
 
-			echo '</response>';		
+			$x++;
+
+		}
+
+
+
+		$qry = "SELECT id_analito_resultado_reporte_cualitativo,desc_resultado_reporte_cualitativo FROM $tbl_analito_resultado_reporte_cualitativo WHERE id_analito = $analitid AND  id_analito_resultado_reporte_cualitativo NOT IN (SELECT id_analito_resultado_reporte_cualitativo FROM $tbl_configuracion_analito_resultado_reporte_cualitativo $filterQry) ORDER BY desc_resultado_reporte_cualitativo ASC";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_02");
+
+
+
+		$returnValue_3 = array();
+
+		$returnValue_4 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_3[$x] = $qryData['id_analito_resultado_reporte_cualitativo'];
+
+			$returnValue_4[$x] = $qryData['desc_resultado_reporte_cualitativo'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3 content="id">' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '</response>';
 
 		break;
 
-		case 'showAnalitCualitativeTypeOfResultForConfiguration':
+	case 'showAnalitCualitativeTypeOfResultForConfiguration':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_configuracion':
+			case 'id_configuracion':
 
-					$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_configuracion = ".$filter;
-
-				break;
-
-				default:
-
-					$filterQry = '';
+				$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_configuracion = " . $filter;
 
 				break;
 
-			}
+			default:
 
-			
+				$filterQry = '';
 
-			$qry = "SELECT id_analito FROM $tbl_configuracion_laboratorio_analito $filterQry LIMIT 0,1";
+				break;
 
-			$qryData = mysql_fetch_array(mysql_query($qry));
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$qry = "SELECT id_analito_resultado_reporte_cualitativo,desc_resultado_reporte_cualitativo FROM $tbl_analito_resultado_reporte_cualitativo WHERE id_analito = ".$qryData['id_analito']." ORDER BY desc_resultado_reporte_cualitativo ASC";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_02");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				$returnValue_1[$x] = $qryData['id_analito_resultado_reporte_cualitativo'];
-
-				$returnValue_2[$x] = $qryData['desc_resultado_reporte_cualitativo'];
+		}
 
 
 
-				$x++;
+		$qry = "SELECT id_analito FROM $tbl_configuracion_laboratorio_analito $filterQry LIMIT 0,1";
 
-			}
+		$qryData = mysql_fetch_array(mysql_query($qry));
 
-			
+		mysqlException(mysql_error(), $header . "_01");
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
+		$qry = "SELECT id_analito_resultado_reporte_cualitativo,desc_resultado_reporte_cualitativo FROM $tbl_analito_resultado_reporte_cualitativo WHERE id_analito = " . $qryData['id_analito'] . " ORDER BY desc_resultado_reporte_cualitativo ASC";
 
-			echo '</response>';		
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_02");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+			$returnValue_1[$x] = $qryData['id_analito_resultado_reporte_cualitativo'];
+
+			$returnValue_2[$x] = $qryData['desc_resultado_reporte_cualitativo'];
+
+
+
+			$x++;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
+
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '</response>';
 
 		break;
 
-		case 'checkAmmountOfSamplesForRound':
+	case 'checkAmmountOfSamplesForRound':
 
 
 
-			switch ($filterid) {
+		switch ($filterid) {
 
-				case 'id_array':
+			case 'id_array':
 
-				
 
-					$filterArray = explode("|",mysql_real_escape_string(stripslashes(clean($filter))));
 
-					
+				$filterArray = explode("|", mysql_real_escape_string(stripslashes(clean($filter))));
 
-					for ($x = 0; $x < sizeof($filterArray); $x++) {
 
-						if ($filterArray[$x] == "") {
 
-							$filterArray[$x] = "NULL";
+				for ($x = 0; $x < sizeof($filterArray); $x++) {
 
-						}
+					if ($filterArray[$x] == "") {
 
-					}					
+						$filterArray[$x] = "NULL";
 
-				
-
-					$filterQry = "WHERE id_programa = ".$filterArray[0]." AND no_ronda = ".$filterArray[1];
-
-				break;
-
-				default:
-
-					$filterQry = '';
-
-				break;
-
-			}		
-
-			
-
-			$qry = "SELECT no_muestras FROM $tbl_programa WHERE id_programa = ".$filterArray[0];
-
-			$qryData = mysql_fetch_array(mysql_query($qry));
-
-			mysqlException(mysql_error(),$header."_0x01_");
-
-			$sampleLimit = $qryData['no_muestras'];	
-
-			
-
-			$qry = "SELECT id_ronda FROM $tbl_ronda $filterQry ORDER BY no_ronda DESC LIMIT 0,1";
-
-			$qryData = mysql_fetch_array(mysql_query($qry));
-
-			mysqlException(mysql_error(),$header."_0x02_");
-
-			
-
-			if (mysql_num_rows(mysql_query($qry)) > 0) {
-
-				$tempId = $qryData['id_ronda'];
-
-			} else {
-
-				$tempId = "null";
-
-			}
-
-			
-
-			
-
-			
-
-			$qry = "SELECT no_contador FROM $tbl_contador_muestra WHERE id_ronda = $tempId ORDER BY no_contador DESC LIMIT 0,1";
-
-			$qryData = mysql_fetch_array(mysql_query($qry));
-
-			mysqlException(mysql_error(),$header."_0x03_");				
-
-			
-
-			if ($qryData['no_contador'] < $sampleLimit) {
-
-				$response = 1;
-
-			} else {
-
-				$response = 0;
-
-			}
-
-			
-
-			echo '<response code="1">';
-
-			echo $response;
-
-			echo '</response>';		
-
-		break;
-
-		case 'showGlobalUnits':
-
-
-
-			switch ($filterid) {
-
-				case 'id_programa':
-
-					$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_programa = ".$filter;
-
-				break;			
-
-				default:
-
-					$filterQry = '';
-
-				break;
-
-			}
-
-			
-
-			$qry = "SELECT DISTINCT $tbl_configuracion_laboratorio_analito.id_analito, $tbl_configuracion_laboratorio_analito.id_unidad, nombre_analito, nombre_unidad FROM $tbl_configuracion_laboratorio_analito INNER JOIN $tbl_analito ON $tbl_configuracion_laboratorio_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_unidad ON $tbl_configuracion_laboratorio_analito.id_unidad = $tbl_unidad.id_unidad $filterQry ORDER BY nombre_analito ASC, nombre_unidad ASC";
-
-			
-
-			$qryArray = mysql_query($qry);
-
-			mysqlException(mysql_error(),$header."_01");
-
-			
-
-			$returnValue_1 = array();
-
-			$returnValue_2 = array();
-
-			$returnValue_3 = array();
-
-			$returnValue_4 = array();
-
-			$returnValue_5 = array();
-
-			
-
-			$x = 0;
-
-			
-
-			while ($qryData = mysql_fetch_array($qryArray)) {
-
-				
-
-				$qry = "SELECT id_conexion, nombre_unidad_global, factor_conversion FROM $tbl_unidad_global_analito WHERE id_analito = ".$qryData['id_analito']." AND id_unidad = ".$qryData['id_unidad']." LIMIT 0,1";
-
-				$innerQryArray1 = mysql_query($qry);
-
-				$innerQryData1 = mysql_fetch_array($innerQryArray1);
-
-				$innerQryRows1 = mysql_num_rows($innerQryArray1);
-
-				mysqlException(mysql_error(),$header."_02");
-
-				
-
-				if ($innerQryRows1 > 0) {
-
-					$returnValue_1[$x] = $innerQryData1['id_conexion']."-".$qryData['id_analito']."-".$qryData['id_unidad'];
-
-				} else {
-
-					$returnValue_1[$x] = "null"."-".$qryData['id_analito']."-".$qryData['id_unidad'];
+					}
 
 				}
 
-				
-
-				
-
-				$returnValue_2[$x] = $qryData['nombre_analito'];
-
-				$returnValue_3[$x] = $qryData['nombre_unidad'];
-
-				$returnValue_4[$x] = $innerQryData1['nombre_unidad_global'];
-
-				$returnValue_5[$x] = $innerQryData1['factor_conversion'];
 
 
+				$filterQry = "WHERE id_programa = " . $filterArray[0] . " AND no_ronda = " . $filterArray[1];
 
-				$x++;
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT no_muestras FROM $tbl_programa WHERE id_programa = " . $filterArray[0];
+
+		$qryData = mysql_fetch_array(mysql_query($qry));
+
+		mysqlException(mysql_error(), $header . "_0x01_");
+
+		$sampleLimit = $qryData['no_muestras'];
+
+
+
+		$qry = "SELECT id_ronda FROM $tbl_ronda $filterQry ORDER BY no_ronda DESC LIMIT 0,1";
+
+		$qryData = mysql_fetch_array(mysql_query($qry));
+
+		mysqlException(mysql_error(), $header . "_0x02_");
+
+
+
+		if (mysql_num_rows(mysql_query($qry)) > 0) {
+
+			$tempId = $qryData['id_ronda'];
+
+		} else {
+
+			$tempId = "null";
+
+		}
+
+
+
+
+
+
+
+		$qry = "SELECT no_contador FROM $tbl_contador_muestra WHERE id_ronda = $tempId ORDER BY no_contador DESC LIMIT 0,1";
+
+		$qryData = mysql_fetch_array(mysql_query($qry));
+
+		mysqlException(mysql_error(), $header . "_0x03_");
+
+
+
+		if ($qryData['no_contador'] < $sampleLimit) {
+
+			$response = 1;
+
+		} else {
+
+			$response = 0;
+
+		}
+
+
+
+		echo '<response code="1">';
+
+		echo $response;
+
+		echo '</response>';
+
+		break;
+
+	case 'showGlobalUnits':
+
+
+
+		switch ($filterid) {
+
+			case 'id_programa':
+
+				$filterQry = "WHERE $tbl_configuracion_laboratorio_analito.id_programa = " . $filter;
+
+				break;
+
+			default:
+
+				$filterQry = '';
+
+				break;
+
+		}
+
+
+
+		$qry = "SELECT DISTINCT $tbl_configuracion_laboratorio_analito.id_analito, $tbl_configuracion_laboratorio_analito.id_unidad, nombre_analito, nombre_unidad FROM $tbl_configuracion_laboratorio_analito INNER JOIN $tbl_analito ON $tbl_configuracion_laboratorio_analito.id_analito = $tbl_analito.id_analito INNER JOIN $tbl_unidad ON $tbl_configuracion_laboratorio_analito.id_unidad = $tbl_unidad.id_unidad $filterQry ORDER BY nombre_analito ASC, nombre_unidad ASC";
+
+
+
+		$qryArray = mysql_query($qry);
+
+		mysqlException(mysql_error(), $header . "_01");
+
+
+
+		$returnValue_1 = array();
+
+		$returnValue_2 = array();
+
+		$returnValue_3 = array();
+
+		$returnValue_4 = array();
+
+		$returnValue_5 = array();
+
+
+
+		$x = 0;
+
+
+
+		while ($qryData = mysql_fetch_array($qryArray)) {
+
+
+
+			$qry = "SELECT id_conexion, nombre_unidad_global, factor_conversion FROM $tbl_unidad_global_analito WHERE id_analito = " . $qryData['id_analito'] . " AND id_unidad = " . $qryData['id_unidad'] . " LIMIT 0,1";
+
+			$innerQryArray1 = mysql_query($qry);
+
+			$innerQryData1 = mysql_fetch_array($innerQryArray1);
+
+			$innerQryRows1 = mysql_num_rows($innerQryArray1);
+
+			mysqlException(mysql_error(), $header . "_02");
+
+
+
+			if ($innerQryRows1 > 0) {
+
+				$returnValue_1[$x] = $innerQryData1['id_conexion'] . "-" . $qryData['id_analito'] . "-" . $qryData['id_unidad'];
+
+			} else {
+
+				$returnValue_1[$x] = "null" . "-" . $qryData['id_analito'] . "-" . $qryData['id_unidad'];
 
 			}
 
-			
 
-			echo '<response code="1">';
 
-			echo'<returnvalues1 content="id">'.implode("|",$returnValue_1).'</returnvalues1>';
 
-			echo'<returnvalues2>'.implode("|",$returnValue_2).'</returnvalues2>';
 
-			echo'<returnvalues3>'.implode("|",$returnValue_3).'</returnvalues3>';
+			$returnValue_2[$x] = $qryData['nombre_analito'];
 
-			echo'<returnvalues4>'.implode("|",$returnValue_4).'</returnvalues4>';
+			$returnValue_3[$x] = $qryData['nombre_unidad'];
 
-			echo'<returnvalues5>'.implode("|",$returnValue_5).'</returnvalues5>';
+			$returnValue_4[$x] = $innerQryData1['nombre_unidad_global'];
 
-			echo '</response>';		
+			$returnValue_5[$x] = $innerQryData1['factor_conversion'];
 
-		break;		
 
-		default:
 
-			echo'<response code="0">PHP callsHandler error: id "'.$header.'" not found</response>';
+			$x++;
 
-		break;		
+		}
 
-	}
 
-	
 
-	mysql_close($con);
+		echo '<response code="1">';
 
-	exit;
+		echo '<returnvalues1 content="id">' . implode("|", $returnValue_1) . '</returnvalues1>';
 
-?>	
+		echo '<returnvalues2>' . implode("|", $returnValue_2) . '</returnvalues2>';
+
+		echo '<returnvalues3>' . implode("|", $returnValue_3) . '</returnvalues3>';
+
+		echo '<returnvalues4>' . implode("|", $returnValue_4) . '</returnvalues4>';
+
+		echo '<returnvalues5>' . implode("|", $returnValue_5) . '</returnvalues5>';
+
+		echo '</response>';
+
+		break;
+
+	default:
+
+		echo '<response code="0">PHP callsHandler error: id "' . $header . '" not found</response>';
+
+		break;
+
+}
+
+
+
+mysql_close($con);
+
+exit;
+
+?>
