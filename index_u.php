@@ -130,7 +130,7 @@
 									<thead>
 										<tr>
 											<th class="center-text">Muestra #</th>
-											<th class="center-text">Código de muestrax</th>
+											<th class="center-text">Código de muestra</th>
 											<th class="center-text">Fecha de reporte de muestra</th>
 											<th class="center-text"></th>
 										</tr>

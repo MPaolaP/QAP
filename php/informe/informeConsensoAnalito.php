@@ -64,7 +64,7 @@ if (
 
 
 
-    // Obtener la infromacion del lote
+    // Obtener la informacion del lote
 
     $qry_lote_cs = "SELECT nombre_lote, nombre_programa FROM lote INNER JOIN muestra_programa ON lote.id_lote = muestra_programa.id_lote join programa on programa.id_programa = muestra_programa.id_programa 
 
@@ -1807,6 +1807,10 @@ if (
 
     $n_general = $qryData_participantesGrubbs['n'];
 
+    $p_25 = round($qryData_participantesGrubbs['q1'], 2);
+
+    $p_75 = round($qryData_participantesGrubbs['q3'], 2);
+
 
 
     $pdf->Ln(4);
@@ -1951,6 +1955,22 @@ if (
 
     $pdf->SetX(5);
 
+
+
+    $pdf->SetFillColor(200, 212, 221);
+
+    $pdf->SetFont('Arial', 'B', 6);
+
+    $pdf->Cell(16, 4, "P25", 1, 0, 'C', 1);
+
+    $pdf->SetFillColor(230, 237, 242);
+
+    $pdf->SetFont('Arial', '', 6);
+
+    $pdf->Cell(15, 4, "$p_25", 1, 0, 'C', 1);
+
+
+
     $pdf->SetFont('Arial', 'B', 6);
 
     $pdf->SetFillColor(200, 212, 221);
@@ -1962,6 +1982,20 @@ if (
     $pdf->SetFont('Arial', '', 6);
 
     $pdf->Cell(15, 4, $mediana, 1, 0, 'C', 1);
+
+
+
+    $pdf->SetFillColor(200, 212, 221);
+
+    $pdf->SetFont('Arial', 'B', 6);
+
+    $pdf->Cell(16, 4, "P75", 1, 0, 'C', 1);
+
+    $pdf->SetFillColor(230, 237, 242);
+
+    $pdf->SetFont('Arial', '', 6);
+
+    $pdf->Cell(15, 4, "$p_75", 1, 0, 'C', 1);
 
 
 
@@ -2006,6 +2040,7 @@ if (
     $pdf->SetFont('Arial', '', 6);
 
     $pdf->Cell(15, 4, "$n_general", 1, 0, 'C', 1);
+
 
 
 

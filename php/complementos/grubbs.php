@@ -244,40 +244,39 @@ class Grubbs
 
     }
 
-    private function calcularCuartiles()
+    private function calcularCuartiles($datos)
     {
-        $n = count($this->resultados);
-
+        $n = count($datos);
         if ($n == 0) {
             $this->q1 = $this->q2 = $this->q3 = 0;
             $this->iqr = 0;
             return;
         }
 
-        sort($this->resultados, SORT_NUMERIC);
+        sort($datos, SORT_NUMERIC);
 
         // Método de interpolación lineal para cuartiles
-        $this->q1 = $this->calcularPercentil(0.25);
-        $this->q2 = $this->calcularPercentil(0.50); // Mediana
-        $this->q3 = $this->calcularPercentil(0.75);
+        $this->q1 = $this->calcularPercentil($datos, 0.25);
+        $this->q2 = $this->calcularPercentil($datos, 0.50); // Mediana
+        $this->q3 = $this->calcularPercentil($datos, 0.75);
         $this->iqr = $this->q3 - $this->q1;
     }
 
 
-    private function calcularPercentil($percentil)
+    private function calcularPercentil($datos, $percentil)
     {
-        $n = count($this->resultados);
+        $n = count($datos);
         $position = ($n - 1) * $percentil;
 
         $low = floor($position);
         $high = ceil($position);
 
         if ($low == $high) {
-            return $this->resultados[$low];
+            return $datos[$low];
         }
 
-        return $this->resultados[$low] + ($position - $low) *
-            ($this->resultados[$high] - $this->resultados[$low]);
+        return $datos[$low] + ($position - $low) *
+            ($datos[$high] - $datos[$low]);
     }
 
     public function getPromediosNormales($columna)
@@ -302,14 +301,16 @@ class Grubbs
         $n = count($valores);
         $media = $this->stats_average($valores);
         $de = $this->stats_standard_deviation($valores, true);
+
+        // Calcular cuartiles
+        $this->calcularCuartiles($valores);
+
         $cv_robusto = (($this->get_iqr() / 1.349) / $this->get_q2()) * 100;
         $iqr = $this->get_q3() - $this->get_q1();
         $s = $iqr / 1.349; // Factor de corrección para IQR
         $cv = ($media != 0) ? ($de / $media) * 100 : 0;
-
-        // Calcular cuartiles
-        $this->resultados = $valores;
-        $this->calcularCuartiles();
+        $q1 = $this->get_q1();
+        $q3 = $this->get_q3();
 
         return [
             "media" => $media,
@@ -318,8 +319,8 @@ class Grubbs
             "cv_robusto" => $cv_robusto,
             "n" => $n,
             "mediana" => $this->get_q2(),
-            "q1" => $this->get_q1(),
-            "q3" => $this->get_q3(),
+            "q1" => $q1,
+            "q3" => $q3,
             "iqr" => $iqr,
             "s" => $s
         ];
