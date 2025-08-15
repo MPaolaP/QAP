@@ -416,9 +416,7 @@ switch ($header) {
 				WHERE programa.id_programa = $id_programa
 				AND laboratorio.id_laboratorio = $id_laboratorio
 				ORDER BY
-					programa.nombre_programa ASC,
-					laboratorio.nombre_laboratorio ASC,
-					ronda.no_ronda ASC";
+					ronda.no_ronda DESC";
 
 			$qryArray = mysql_query($qry);
 			mysqlException(mysql_error(), $header . "_01");

@@ -5,3 +5,4 @@ php/informe/temp-pdf/*.*
 php/database_backup/*.*
 */error_log
 error_log
+*.bak
