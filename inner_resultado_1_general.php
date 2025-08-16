@@ -13,7 +13,6 @@ error_reporting(E_ALL);
 */
 
 
-
 session_start();
 
 
@@ -5541,7 +5540,7 @@ switch ($header) {
 											echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["s"], 2) . "</td>";
 											echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["n"], 2) . "</td>";
 											echo "<td style='text-align:center;width: 11%'>" . round($datosAUsar["incertidumbre"], 2) . "</td>";
-											echo "<td style='text-align:center;width: 10%'>" . round($datosAUsar["diff"], 2) . "</td>";
+											echo "<td style='text-align:center;width: 10%'>" . round($datosAUsar["diferencia_robusta"], 2) . "</td>";
 											echo "<td style='text-align:center;width: 7%'>" . round($datosAUsar["zscore"], 2) . "</td>";
 											if ($indicadorAUsar == 1) {
 												$rendimiento = "Satisfactorio";
@@ -5590,7 +5589,7 @@ switch ($header) {
 											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["s"], 2) . "</td>";
 											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["n"], 2) . "</td>";
 											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 11%'>" . round($datosAUsar["incertidumbre"], 2) . "</td>";
-											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . round($datosAUsar["diff"], 2) . "</td>";
+											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . round($datosAUsar["diferencia_robusta"], 2) . "</td>";
 											echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7%'>" . round($datosAUsar["zscore"], 2) . "</td>";
 
 											if ($indicadorAUsar == 1) {
@@ -5689,10 +5688,17 @@ switch ($header) {
 								}
 
 								// Diferencia porcentual
-								if (isset($pageContent["labconfigurationitems"]["diff_porcentual"][$x])) {
-									echo "<td style='width: 10%;" . $pageContent["tablestyle_text_center"] . "'>" . round($pageContent["labconfigurationitems"]["diff_porcentual"][$x], 2) . "</td>";
+		
+								if ($pageContent["labconfigurationitems"]["media_estandar"][$x] == "" || $pageContent["labconfigurationitems"]["media_estandar"][$x] == 0 || $pageContent["labconfigurationitems"]["valor_resultado"][$x] == "") {
+
+									$pageContent["labconfigurationitems"]["diff_porcentual"][$x] = "N/A";
+
+									echo "<td style='width: 10%;" . $pageContent["tablestyle_text_center"] . "'>" . $pageContent["labconfigurationitems"]["diff_porcentual"][$x] . "</td>";
 								} else {
-									echo "<td style='width: 10%;" . $pageContent["tablestyle_text_center"] . "'>N/A</td>";
+
+									$pageContent["labconfigurationitems"]["diff_porcentual"][$x] = (($pageContent["labconfigurationitems"]["valor_resultado"][$x] - $pageContent["labconfigurationitems"]["media_estandar"][$x]) / $pageContent["labconfigurationitems"]["media_estandar"][$x]) * 100;
+
+									echo "<td style='width: 10%;" . $pageContent["tablestyle_text_center"] . "'>" . round($pageContent["labconfigurationitems"]["diff_porcentual"][$x], 2) . "</td>";
 								}
 
 								// Z-Score
@@ -5733,7 +5739,7 @@ switch ($header) {
 										echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["s"], 2) . "</td>";
 										echo "<td style='text-align:center;width: 6.5%'>" . round($datosAUsar["n"], 2) . "</td>";
 										echo "<td style='text-align:center;width: 11%'>" . round($datosAUsar["incertidumbre"], 2) . "</td>";
-										echo "<td style='text-align:center;width: 10%'>" . round($datosAUsar["diff"], 2) . "</td>";
+										echo "<td style='text-align:center;width: 10%'>" . round($datosAUsar["diferencia_robusta"], 2) . "</td>";
 										echo "<td style='text-align:center;width: 7%'>" . round($datosAUsar["zscore"], 2) . "</td>";
 
 										if ($indicadorAUsar == 1) {
@@ -5783,7 +5789,7 @@ switch ($header) {
 										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["s"], 2) . "</td>";
 										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 6.5%'>" . round($datosAUsar["n"], 2) . "</td>";
 										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 11%'>" . round($datosAUsar["incertidumbre"], 2) . "</td>";
-										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . round($datosAUsar["diff"], 2) . "</td>";
+										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 10%'>" . round($datosAUsar["diferencia_robusta"], 2) . "</td>";
 										echo "<td style='border-bottom:1px solid #B2BABB;text-align:center;width: 7%'>" . round($datosAUsar["zscore"], 2) . "</td>";
 
 										if ($indicadorAUsar == 1) {
